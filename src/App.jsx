@@ -1,34 +1,14 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
-import "./App.css";
+import DarkModeToggler from "./components/ui/DarkModeToggler";
 
 function App() {
-  const [count, setCount] = useState(0);
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className="flex flex-col gap-5 min-h-screen items-center justify-center px-4 py-8 bg-white dark:bg-gray-900 dark:text-white">
+      <div className=" font-bold text-2xl">Welcome, Developer Siladan !</div>
+
+      <div className="mt-5">
+        <DarkModeToggler />
       </div>
-      <h1>Vite + React</h1>
-      <div className="card bg-amber-400">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    </div>
   );
 }
 
