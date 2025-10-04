@@ -14,7 +14,7 @@ Proyek frontend ini dibangun dan dikelola menggunakan teknologi modern berikut:
 
 - **Node.js** - Lingkungan eksekusi untuk alat bantu dan dependensi proyek.
 
-##🚀 Instalasi & Menjalankan Proyek
+## 🚀 Instalasi & Menjalankan Proyek
 
 Untuk memastikan semua dependensi yang dibutuhkan terpasang dengan benar, ikuti langkah ini setiap kali Anda melakukan clone atau pull terbaru dari repository.
 
