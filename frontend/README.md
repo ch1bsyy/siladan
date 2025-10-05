@@ -1,16 +1,30 @@
-# React + Vite
+# 📂 Frontend SILADAN
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+folder ini berisi semua kode yang berkaitan dengan antarmuka pengguna (UI/UX) untuk proyek SILADAN.
 
-Currently, two official plugins are available:
+## 🛠️ Dibangun Menggunakan
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Proyek frontend ini dibangun dan dikelola menggunakan teknologi modern berikut:
 
-## React Compiler
+- **React.js** - Library JavaScript untuk membangun antarmuka pengguna.
 
-The React Compiler is not enabled on this template. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Vite** - Alat bantu modern untuk pengembangan frontend yang sangat cepat.
 
-## Expanding the ESLint configuration
+-  **Tailwind CSS** - Kerangka kerja CSS untuk desain yang cepat dan responsif.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- **Node.js** - Lingkungan eksekusi untuk alat bantu dan dependensi proyek.
+
+## 🚀 Instalasi & Menjalankan Proyek
+
+Untuk memastikan semua dependensi yang dibutuhkan terpasang dengan benar, ikuti langkah ini setiap kali Anda melakukan clone atau pull terbaru dari repository.
+
+### Instal Dependensi
+Setelah menarik kode terbaru, pastikan Anda berada di direktori /frontend dan jalankan perintah berikut untuk menginstal semua paket yang diperlukan.
+
+```npm install```
+
+### Jalankan Server Pengembangan
+
+Setelah instalasi selesai, jalankan proyek secara lokal dengan perintah:
+
+```npm run dev```
