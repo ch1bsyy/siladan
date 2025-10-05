@@ -1,62 +1,72 @@
-import React, { useEffect } from "react";
-import { animate } from "animejs";
+/* eslint-disable no-unused-vars */
+// SplashScreen.jsx
+import React from "react";
+import { motion } from "motion/react";
 import logo from "../assets/logo-siladan.png";
 
-const SplashScreen = () => {
-  useEffect(() => {
-    const timeline = animate.timeline({
-      easing: "easeOutExpo",
-      duration: 1500,
-    });
-
-    timeline
-      .add({
-        targets: "#splash-logo",
-        opacity: [0, 1],
-        scale: [0.8, 1],
-        translateY: [20, 0],
-      })
-      .add(
-        {
-          targets: "#splash-text-wrapper > span",
-          opacity: [0, 1],
-          translateY: [20, 0],
-          delay: animate.stagger(100),
-        },
-        "-=1000"
-      ); // start text animation 1000ms before logo animation finish;
-  }, []);
-
-  const text = "Sistem Layanan dan Aduan TI Pemerintah";
-
+function SplashScreen() {
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center bg-white dark:bg-gray-900">
-      <div className="text-center">
+    <div className="relative flex items-center justify-center min-h-screen w-screen bg-gradient-to-br from-blue-900 via-indigo-900 to-purple-900 overflow-hidden">
+      <div className="flex flex-col items-center text-center space-y-6 z-10">
         {/* Logo */}
-        <img
-          id="splash-logo"
+        <motion.img
           src={logo}
-          alt="SILADAN Logo"
-          className="w-24 h-24 mx-auto mb-4 opacity-0"
+          alt="Siladan Logo"
+          className="w-40 h-40 md:w-56 md:h-56 object-contain drop-shadow-2xl"
+          initial={{ scale: 0, rotate: -180, opacity: 0 }}
+          animate={{ scale: 1, rotate: 0, opacity: 1 }}
+          transition={{
+            duration: 1.2,
+            easing: "ease-out",
+          }}
         />
 
-        {/* Text */}
-        <div id="splash-text-wrapper" className="mt-4">
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 tracking-wider">
-            SILADAN
-          </h1>
+        {/* App Name */}
+        <motion.h1
+          className="text-4xl md:text-5xl font-extrabold text-white tracking-wide drop-shadow-lg"
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{
+            duration: 0.9,
+            delay: 0.7,
+            easing: "ease-out",
+          }}
+        >
+          Siladan
+        </motion.h1>
 
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            {text.split(" ").map((word, index) => (
-              <span key={index} className="inline-block opacity-0">
-                {word}&nbsp;
-              </span>
-            ))}
-          </p>
-        </div>
+        {/* Description */}
+        <motion.p
+          className="px-6 md:px-0 text-base md:text-lg text-gray-200 max-w-md leading-relaxed"
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{
+            duration: 0.9,
+            delay: 1.2,
+            easing: "ease-out",
+          }}
+        >
+          Sistem Informasi Layanan dan Pengaduan TI Pemerintah
+        </motion.p>
       </div>
+
+      {/* Soft glow animation behind the logo */}
+      <motion.div
+        className="absolute w-72 h-72 bg-indigo-500/30 blur-3xl rounded-full"
+        initial={{ opacity: 0, scale: 0.5 }}
+        animate={{
+          opacity: [0.3, 0.7, 0.3],
+          scale: [0.9, 1.2, 0.9],
+        }}
+        transition={{
+          duration: 4,
+          repeat: Infinity,
+          repeatType: "mirror",
+          easing: "ease-in-out",
+        }}
+      />
     </div>
   );
-};
+}
 
 export default SplashScreen;
