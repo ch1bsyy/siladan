@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useLoading } from "../context/LoadingContext";
 import Input from "../components/Input";
 import { FiUser, FiEye, FiEyeOff } from "react-icons/fi";
 
@@ -11,9 +12,10 @@ const LoginPage = () => {
   });
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const { login } = useAuth();
+
+  const { isLoading, showLoading, hideLoading } = useLoading();
 
   const togglePasswordVisibility = () => {
     setShowPassword((prev) => !prev);
@@ -63,7 +65,7 @@ const LoginPage = () => {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      setIsLoading(true);
+      showLoading("Autentikasi Pengguna...");
 
       try {
         await login(formData.email, formData.password);
@@ -72,7 +74,7 @@ const LoginPage = () => {
           err.message || "Login gagal. Periksa kembali kredensial anda."
         );
       } finally {
-        setIsLoading(false);
+        hideLoading();
       }
     }
   };
@@ -157,7 +159,7 @@ const LoginPage = () => {
               disabled={isLoading || !isFormValid}
               className="w-full min-h-[44px] min-w-[44px] flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-cyan-600 hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 cursor-pointer disabled:cursor-not-allowed transition-colors"
             >
-              {isLoading ? "Memproses..." : "Login"}
+              Login
             </button>
           </div>
         </form>
