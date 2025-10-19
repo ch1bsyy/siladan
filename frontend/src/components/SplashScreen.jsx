@@ -2,7 +2,7 @@
 // SplashScreen.jsx
 import React from "react";
 import { motion } from "motion/react";
-import logo from "../assets/logo-siladan.png";
+import Logo from "../assets/images/logo-siladan.png";
 
 function SplashScreen() {
   return (
@@ -10,7 +10,7 @@ function SplashScreen() {
       <div className="flex flex-col items-center text-center space-y-6 z-10">
         {/* Logo */}
         <motion.img
-          src={logo}
+          src={Logo}
           alt="Siladan Logo"
           className="w-40 h-40 md:w-56 md:h-56 object-contain drop-shadow-2xl"
           initial={{ scale: 0, rotate: -180, opacity: 0 }}

@@ -10,6 +10,7 @@ import DashboardLayout from "../layout/DashboardLayout";
 import HomePage from "../pages/HomePage";
 import DashboardPage from "../pages/DashboardPage";
 import LoginPage from "../pages/LoginPage";
+import AboutPage from "../pages/AboutPage";
 
 // Guard Component for protect route
 const DashboardGuard = ({ children }) => {
@@ -29,22 +30,11 @@ const DashboardGuard = ({ children }) => {
 };
 
 const AppRoutes = () => {
-  const { isAuthenticated } = useAuth();
-
   return (
     <Routes>
       <Route element={<PublicLayout />}>
         <Route path="/" element={<HomePage />} />
-        <Route
-          path="/track-ticket"
-          element={
-            isAuthenticated ? (
-              <p>Halaman Lacak Tiket</p>
-            ) : (
-              <Navigate to="/login" />
-            )
-          }
-        />
+        <Route path="/about" element={<AboutPage />}></Route>
       </Route>
 
       <Route

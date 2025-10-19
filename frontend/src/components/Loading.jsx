@@ -13,7 +13,7 @@ const Loading = ({ message }) => {
       <div className="relative flex items-center justify-center w-24 h-24">
         {/* Outer Circle */}
         <motion.div
-          className="absolute w-20 h-20 rounded-full border-4 border-t-transparent border-blue-500"
+          className="absolute w-20 h-20 rounded-full border-4 border-t-transparent border-[#429EBD]"
           animate={{ rotate: 360 }}
           transition={{
             repeat: Infinity,
@@ -24,7 +24,7 @@ const Loading = ({ message }) => {
 
         {/* Center Circle (reverse) */}
         <motion.div
-          className="absolute w-14 h-14 rounded-full border-4 border-t-transparent border-green-500"
+          className="absolute w-14 h-14 rounded-full border-4 border-t-transparent border-[#F7AD19]"
           animate={{ rotate: -360 }}
           transition={{
             repeat: Infinity,
@@ -35,7 +35,7 @@ const Loading = ({ message }) => {
 
         {/* Inner Circle */}
         <motion.div
-          className="absolute w-8 h-8 rounded-full border-4 border-t-transparent border-yellow-500"
+          className="absolute w-8 h-8 rounded-full border-4 border-t-transparent border-[#9FE7F5]"
           animate={{ rotate: 360 }}
           transition={{
             repeat: Infinity,
