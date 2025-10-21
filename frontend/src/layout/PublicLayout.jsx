@@ -7,7 +7,7 @@ const PublicLayout = () => {
     <div className="bg-slate-50 dark:bg-slate-900 min-h-screen">
       <PublicNavbar />
 
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main>
         <Outlet />
       </main>
     </div>

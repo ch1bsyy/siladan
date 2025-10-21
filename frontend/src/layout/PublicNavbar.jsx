@@ -49,7 +49,7 @@ const PublicNavbar = () => {
     ));
 
   return (
-    <header className="bg-[#9FE7F5]/10 dark:bg-[#053F5C]/80 backdrop-blur-sm sticky top-0 z-50 shadow-sm">
+    <header className="bg-white dark:bg-[#053F5C]/80 backdrop-blur-2xl sticky top-0 z-50 shadow-sm">
       <nav className="container mx-auto px-2 py-4">
         <div className="flex items-center justify-between h-18">
           {/* Logo */}
