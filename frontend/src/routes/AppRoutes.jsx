@@ -11,6 +11,7 @@ import HomePage from "../pages/HomePage";
 import DashboardPage from "../pages/DashboardPage";
 import LoginPage from "../pages/LoginPage";
 import AboutPage from "../pages/AboutPage";
+import ComplaintPage from "../pages/ComplaintPage";
 
 // Guard Component for protect route
 const DashboardGuard = ({ children }) => {
@@ -34,7 +35,8 @@ const AppRoutes = () => {
     <Routes>
       <Route element={<PublicLayout />}>
         <Route path="/" element={<HomePage />} />
-        <Route path="/about" element={<AboutPage />}></Route>
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/complaint" element={<ComplaintPage />} />
       </Route>
 
       <Route

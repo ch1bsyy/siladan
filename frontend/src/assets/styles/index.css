@@ -7,3 +7,12 @@
   --color-primary: #ffffff;
   --color-primary-dark: #000000;
 } */
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  /* Default (light mode), pastikan filter tidak aktif */
+  filter: invert(0);
+}
+
+.dark input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}

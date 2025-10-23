@@ -1,13 +1,13 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { FiFilePlus, FiSearch } from "react-icons/fi";
-import HeroIlustration from "../../../assets/images/hero-section.svg";
+import HeroIlustration from "../../../assets/images/hero-section.png";
 
 const HeroSection = () => {
   return (
     <section className="relative bg-white/20 dark:bg-[#053F5C]/30 overflow-hidden">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center py-4 md:py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-12 items-center py-4 md:pb-10">
           {/* Left Content */}
           <div className="text-center lg:text-left">
             <h1 className="text-4xl md:text-5xl font-extrabold text-[#053F5C] dark:text-white leading-tight">
@@ -45,7 +45,11 @@ const HeroSection = () => {
 
           {/* Right Content */}
           <div className="flex justify-center lg:justify-end">
-            <img src={HeroIlustration} alt="Hero Image" />
+            <img
+              src={HeroIlustration}
+              alt="Hero Image"
+              className="w-full h-80 object-contain lg:w-140 lg:h-140 lg:object-cover"
+            />
           </div>
         </div>
       </div>

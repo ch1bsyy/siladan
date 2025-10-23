@@ -131,7 +131,7 @@ const PublicNavbar = () => {
                 </div>
               ) : (
                 <button
-                  className="w-full min-h-[44px] min-w-[44px] flex items-center justify-center gap-2 bg-[#429EBD] hover:bg-[#053F5C] text-white px-4 py-2 rounded-md text-sm font-semibold transition-colors cursor-pointer"
+                  className="w-full min-h-[44px] min-w-[44px] flex items-center justify-center gap-2 bg-[#429EBD] hover:bg-[#327c95] text-white px-4 py-2 rounded-md text-sm font-semibold transition-colors cursor-pointer"
                   onClick={() => navigate("/login")}
                 >
                   <FiLogIn size={20} />
