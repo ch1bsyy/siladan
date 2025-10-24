@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom"; // Catch data from QR
+import { useAuth } from "../../../context/AuthContext";
 import Input from "../../../components/Input";
 import FormTextArea from "../../../components/FormTextArea";
 import FormSelect from "../../../components/FormSelect";
@@ -6,6 +8,10 @@ import FormFileUpload from "../../../components/FormFileUpload";
 import { FiSend } from "react-icons/fi";
 
 const ComplaintForm = () => {
+  const { isAuthenticated, user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const isPegawai = isAuthenticated && user?.role?.name === "pegawai_opd";
+
   const [formData, setFormData] = useState({
     nama: "",
     nik: "",
@@ -13,12 +19,28 @@ const ComplaintForm = () => {
     email: "",
     telepon: "",
     layanan: "",
+    namaAset: searchParams.get("aset") || "",
+    namaOpd: searchParams.get("opd") || "",
     judul: "",
     deskripsi: "",
     tanggalKejadian: "",
     lokasiKejadian: "",
     lampiran: null,
   });
+
+  useEffect(() => {
+    if (isPegawai) {
+      setFormData((prev) => ({
+        ...prev,
+        nama: user.name || "",
+        nik: user.nik || "",
+        alamat: user.address || "",
+        email: user.email || "",
+        telepon: user.phone_number || "",
+        namaOpd: user.opd?.value || "",
+      }));
+    }
+  }, [isPegawai, user]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -41,7 +63,7 @@ const ComplaintForm = () => {
         <h2 className="text-2xl md:text-3xl font-bold text-[#053F5C] dark:text-white">
           Formulir Pengaduan
         </h2>
-        <p className="mt-2 text-sm lg:text-base text-slate-600 dark:text-slate-400">
+        <p className="mt-2 text-sm lg:text-base text-slate-600 dark:text-slate-400 leading-relaxed">
           "Silakan isi detail pengaduan Anda pada form ini, kami akan segera
           menindaklanjutinya"
         </p>
@@ -56,47 +78,57 @@ const ComplaintForm = () => {
           <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
             <Input
               id="nama"
+              name="nama"
               label="Nama Lengkap"
               value={formData.nama}
               onChange={handleChange}
               placeholder="Masukkan nama lengkap"
               required
+              disabled={isPegawai}
             />
             <Input
               id="nik"
+              name="nik"
               label="NIK"
               value={formData.nik}
               onChange={handleChange}
               placeholder="Masukkan 16 digit NIK"
               required
+              disabled={isPegawai}
             />
             <Input
               id="email"
+              name="email"
               label="Email"
               type="email"
               value={formData.email}
               onChange={handleChange}
               placeholder="johndoe@email.com"
               required
+              disabled={isPegawai}
             />
             <Input
               id="telepon"
+              name="telepon"
               label="No. Telepon (WhatsApp)"
               type="tel"
               value={formData.telepon}
               onChange={handleChange}
               placeholder="0812xxxxxxxx"
               required
+              disabled={isPegawai}
             />
             <div className="md:col-span-2">
               <FormTextArea
                 id="alamat"
+                name="alamat"
                 label="Alamat Lengkap"
                 value={formData.alamat}
                 onChange={handleChange}
                 placeholder="Masukkan alamat lengkap"
                 rows={3}
                 required
+                disabled={isPegawai}
               />
             </div>
           </div>
@@ -109,7 +141,30 @@ const ComplaintForm = () => {
           </h3>
           <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
             <FormSelect
+              id="namaOpd"
+              name="namaOpd"
+              label="Nama OPD"
+              value={formData.namaOpd}
+              onChange={handleChange}
+              required
+              disabled={isPegawai}
+            >
+              <option value="" disabled>
+                -- Pilih OPD --
+              </option>
+              <option value="inspektorat">Inspektorat</option>
+              <option value="sekretariat_dprd">Sekretariat DPRD</option>
+              <option value="dinas_kebudayaan_kepemudaan_dan_olahraga_serta_pariwisata">
+                Dinas Kebudayaan Kepemudaan dan Olahraga serta Pariwisata
+              </option>
+              <option value="dinas_kependudukan_dan_pencatatan_sipil">
+                Dinas Kependudukan dan Pencatatan Sipil
+              </option>
+              <option value="lainnya">lainnya</option>
+            </FormSelect>
+            <FormSelect
               id="layanan"
+              name="layanan"
               label="Jenis Layanan"
               value={formData.layanan}
               onChange={handleChange}
@@ -123,8 +178,26 @@ const ComplaintForm = () => {
               <option value="sistem_info">Masalah Sistem Informasi</option>
               <option value="lainnya">Lainnya</option>
             </FormSelect>
+            <FormSelect
+              id="namaAset"
+              name="namaAset"
+              label="Nama Aset"
+              value={formData.namaAset}
+              onChange={handleChange}
+              required
+            >
+              <option value="" disabled>
+                -- Pilih Aset --
+              </option>
+              <option value="printer">Printer</option>
+              <option value="ac">AC</option>
+              <option value="Komputer">Komputer</option>
+              <option value="aplikasi_x">Aplikasi X</option>
+              <option value="lainnya">lainnya</option>
+            </FormSelect>
             <Input
               id="tanggalKejadian"
+              name="tanggalKejadian"
               label="Tanggal Kejadian"
               type="date"
               value={formData.tanggalKejadian}
@@ -134,6 +207,7 @@ const ComplaintForm = () => {
             <div className="md:col-span-2">
               <Input
                 id="judul"
+                name="judul"
                 label="Judul Pengaduan"
                 value={formData.judul}
                 onChange={handleChange}
@@ -144,6 +218,7 @@ const ComplaintForm = () => {
             <div className="md:col-span-2">
               <FormTextArea
                 id="deskripsi"
+                name="deskripsi"
                 label="Deskripsi Pengaduan"
                 value={formData.deskripsi}
                 onChange={handleChange}
@@ -155,6 +230,7 @@ const ComplaintForm = () => {
             <div className="md:col-span-2">
               <Input
                 id="lokasiKejadian"
+                name="lokasiKejadian"
                 label="Lokasi Kejadian"
                 value={formData.lokasiKejadian}
                 onChange={handleChange}
@@ -165,6 +241,7 @@ const ComplaintForm = () => {
             <div className="md:col-span-2">
               <FormFileUpload
                 id="lampiran"
+                name="lampiran"
                 label="Lampiran Bukti (Opsional)"
                 onChange={handleFileChange}
               />

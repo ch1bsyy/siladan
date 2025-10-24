@@ -12,6 +12,7 @@ import DashboardPage from "../pages/DashboardPage";
 import LoginPage from "../pages/LoginPage";
 import AboutPage from "../pages/AboutPage";
 import ComplaintPage from "../pages/ComplaintPage";
+import RequestPage from "../pages/RequestPage";
 
 // Guard Component for protect route
 const DashboardGuard = ({ children }) => {
@@ -24,8 +25,19 @@ const DashboardGuard = ({ children }) => {
     "admin_kota",
   ];
 
-  if (!isAuthenticated && !dashboardRoles.includes(user?.role?.name)) {
-    return <Navigate to="/login" />;
+  if (!isAuthenticated || !dashboardRoles.includes(user?.role?.name)) {
+    return <Navigate to="/login" replace />;
+  }
+  return children;
+};
+
+const RequestGuard = ({ children }) => {
+  const { isAuthenticated, user } = useAuth();
+
+  const isPegawai = isAuthenticated && user?.role?.name === "pegawai_opd";
+
+  if (!isPegawai) {
+    return <Navigate to="/login" replace />;
   }
   return children;
 };
@@ -37,6 +49,14 @@ const AppRoutes = () => {
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/complaint" element={<ComplaintPage />} />
+        <Route
+          path="/request"
+          element={
+            <RequestGuard>
+              <RequestPage />
+            </RequestGuard>
+          }
+        />
       </Route>
 
       <Route

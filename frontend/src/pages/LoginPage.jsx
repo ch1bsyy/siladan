@@ -85,10 +85,10 @@ const LoginPage = () => {
     formData.password;
 
   return (
-    <div className="min-h-screen p-4 flex flex-col justify-center items-center bg-slate-100">
-      <div className="w-full max-w-md bg-white rounded-xl shadow-md p-6 sm:p-8">
+    <div className="min-h-screen p-4 flex flex-col justify-center items-center bg-slate-100 dark:bg-slate-900">
+      <div className="w-full max-w-md bg-white dark:bg-[#053F5C]/50 rounded-xl shadow-md p-6 sm:p-8">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-800 tracking-tight mt-2">
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200 tracking-tight mt-2">
             Login ke Akun Anda
           </h1>
           <p className="text-sm text-gray-500 mt-1">
@@ -133,7 +133,7 @@ const LoginPage = () => {
               />
               <label
                 htmlFor="rememberMe"
-                className="ml-2 block text-sm text-gray-900 whitespace-nowrap"
+                className="ml-2 block text-sm text-gray-900 dark:text-gray-100 whitespace-nowrap"
               >
                 Ingat saya
               </label>
@@ -142,7 +142,7 @@ const LoginPage = () => {
             <div className="text-sm">
               <a
                 href="#"
-                className="font-medium text-blue-600 hover:text-blue-500"
+                className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500"
               >
                 Lupa password?
               </a>

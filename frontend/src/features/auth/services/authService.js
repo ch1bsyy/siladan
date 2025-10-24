@@ -4,8 +4,16 @@ const mockApiData = {
     user: {
       id: 1,
       name: "Bisma Pargoy",
+      nik: "1471070904020021",
       email: "pegawai@opd.go.id",
+      phone_number: "+62895-6348-62009",
+      address: "Rungkut Asri Timur, Surabaya",
       avatar: "https://i.pravatar.cc/150?u=pegawai@opd.go.id",
+      opd: {
+        name: "Sekretariat DPRD",
+        value: "sekretariat_dprd",
+        address: "Surabaya",
+      },
       role: { id: 1, name: "pegawai_opd", label: "Pegawai" },
       permissions: [],
     },

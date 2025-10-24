@@ -8,6 +8,7 @@ const FormTextArea = ({
   error,
   placeholder,
   rows = 4,
+  disabled = false,
   ...props
 }) => {
   return (
@@ -28,8 +29,13 @@ const FormTextArea = ({
         onChange={onChange}
         placeholder={placeholder}
         rows={rows}
+        disabled={disabled}
         {...props}
         className={`block text-sm md:text-base w-full px-3 py-2 border rounded-md shadow-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#429EBD] focus:border-[#429EBD] sm:text-sm transition-colors duration-200 ${
+          disabled
+            ? "bg-slate-100 dark:bg-slate-700 cursor-not-allowed opacity-70"
+            : "bg-white dark:bg-slate-800"
+        } ${
           error
             ? "border-red-500 focus:ring-red-500 focus:border-red-500"
             : "border-slate-300 dark:border-slate-600"
