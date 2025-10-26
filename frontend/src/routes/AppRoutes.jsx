@@ -14,6 +14,7 @@ import AboutPage from "../pages/AboutPage";
 import ComplaintPage from "../pages/ComplaintPage";
 import RequestPage from "../pages/RequestPage";
 import TrackTicket from "../pages/TrackTicket";
+import TicketDetailPage from "../pages/TicketDetailPage";
 
 // Guard Component for protect route
 const DashboardGuard = ({ children }) => {
@@ -59,6 +60,7 @@ const AppRoutes = () => {
           }
         />
         <Route path="/track-ticket" element={<TrackTicket />} />
+        <Route path="/track-ticket/:ticketId" element={<TicketDetailPage />} />
       </Route>
 
       <Route
