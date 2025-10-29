@@ -15,6 +15,7 @@ import ComplaintPage from "../pages/ComplaintPage";
 import RequestPage from "../pages/RequestPage";
 import TrackTicket from "../pages/TrackTicket";
 import TicketDetailPage from "../pages/TicketDetailPage";
+import ProfilePage from "../pages/ProfilePage";
 
 // Guard Component for protect route
 const DashboardGuard = ({ children }) => {
@@ -44,6 +45,16 @@ const RequestGuard = ({ children }) => {
   return children;
 };
 
+// Guard for page need login
+const AuthGuard = ({ children }) => {
+  const { isAuthenticated } = useAuth();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  return children;
+};
+
 const AppRoutes = () => {
   return (
     <Routes>
@@ -51,6 +62,8 @@ const AppRoutes = () => {
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/complaint" element={<ComplaintPage />} />
+        <Route path="/track-ticket" element={<TrackTicket />} />
+        <Route path="/track-ticket/:ticketId" element={<TicketDetailPage />} />
         <Route
           path="/request"
           element={
@@ -59,8 +72,14 @@ const AppRoutes = () => {
             </RequestGuard>
           }
         />
-        <Route path="/track-ticket" element={<TrackTicket />} />
-        <Route path="/track-ticket/:ticketId" element={<TicketDetailPage />} />
+        <Route
+          path="/profile"
+          element={
+            <AuthGuard>
+              <ProfilePage />
+            </AuthGuard>
+          }
+        />
       </Route>
 
       <Route
