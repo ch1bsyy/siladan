@@ -8,10 +8,18 @@ const PasswordChangeForm = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
 
-  const togglePasswordVisibility = () => {
-    setShowPassword((prev) => !prev);
+  const [showPassword, setShowPassword] = useState({
+    current: false,
+    new: false,
+    confirm: false,
+  });
+
+  const togglePasswordVisibility = (field) => {
+    setShowPassword((prev) => ({
+      ...prev,
+      [field]: !prev[field],
+    }));
   };
 
   const handleSubmit = (e) => {
@@ -54,39 +62,39 @@ const PasswordChangeForm = () => {
           id="current-password"
           name="current-password"
           label="Password Saat ini"
-          type={showPassword ? "text" : "password"}
+          type={showPassword.current ? "text" : "password"}
           value={currentPassword}
           onChange={(e) => setCurrentPassword(e.target.value)}
           rightIcon={
-            showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />
+            showPassword.current ? <FiEyeOff size={18} /> : <FiEye size={18} />
           }
-          onRightIconClick={togglePasswordVisibility}
+          onRightIconClick={() => togglePasswordVisibility("current")}
           required
         />
         <Input
           id="new-password"
           name="new-password"
           label="Password Baru"
-          type={showPassword ? "text" : "password"}
+          type={showPassword.new ? "text" : "password"}
           value={newPassword}
           onChange={(e) => setNewPassword(e.target.value)}
           rightIcon={
-            showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />
+            showPassword.new ? <FiEyeOff size={18} /> : <FiEye size={18} />
           }
-          onRightIconClick={togglePasswordVisibility}
+          onRightIconClick={() => togglePasswordVisibility("new")}
           required
         />
         <Input
           id="confirm-password"
           name="confirm-password"
           label="Konfirmasi Password Baru"
-          type={showPassword ? "text" : "password"}
+          type={showPassword.confirm ? "text" : "password"}
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
           rightIcon={
-            showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />
+            showPassword.confirm ? <FiEyeOff size={18} /> : <FiEye size={18} />
           }
-          onRightIconClick={togglePasswordVisibility}
+          onRightIconClick={() => togglePasswordVisibility("confirm")}
           required
         />
 

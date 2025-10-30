@@ -34,7 +34,8 @@ const ProfilePictureCard = () => {
   return (
     <div className="flex flex-col items-center bg-white dark:bg-slate-800 shadow-lg rounded-lg p-6 text-center">
       {/* Profile Picture */}
-      <div className="relative mb-4">
+
+      <div className="relative mb-4 group">
         <img
           src={
             user.avatar ||
@@ -42,19 +43,22 @@ const ProfilePictureCard = () => {
               user.name?.[0] || "U"
             }`
           }
+          onClick={handleChangePicture}
           alt="Foto Profil"
-          className="w-32 h-32 rounded-full object-cover border-4 border-slate-200 dark:border-slate-700 mx-auto"
+          className="w-32 h-32 rounded-full object-cover border-4 border-slate-200 dark:border-slate-700 mx-auto cursor-pointer"
         />
+
         <button
           onClick={handleChangePicture}
-          className="absolute bottom-0 right-0 bg-[#429EBD] hover:bg-[#053F5C] text-white p-2 rounded-full shadow-md transition-colors cursor-pointer"
+          className="absolute bottom-0 right-0 bg-[#429EBD] group-hover:bg-[#053F5C] text-white p-2 rounded-full shadow-md transition-colors cursor-pointer"
           aria-label="Ganti foto profil"
         >
-          <FiCamera size={16} />
+          <FiCamera size={20} />
         </button>
       </div>
 
       {/* User Name */}
+
       <div className="w-full mt-4">
         {isEditingName ? (
           <div className="flex flex-col lg:flex-row justify-center items-center gap-2">
@@ -64,6 +68,7 @@ const ProfilePictureCard = () => {
               onChange={handleNameChange}
               className="items-center"
             />
+
             <div className="flex items-center justify-center gap-2 mt-1">
               <button
                 onClick={handleSaveName}
@@ -72,6 +77,7 @@ const ProfilePictureCard = () => {
               >
                 <FiSave size={20} />
               </button>
+
               <button
                 onClick={handleCancelEdit}
                 className="p-2 flex items-center justify-center min-h-[44px] min-w-[44px] bg-red-500 hover:bg-red-600 text-white rounded-md cursor-pointer"
@@ -86,6 +92,7 @@ const ProfilePictureCard = () => {
             <h2 className="text-xl font-semibold text-slate-900 dark:text-white truncate">
               {user.name || "Nama Pengguna"}
             </h2>
+
             <button
               onClick={() => setIsEditingName(true)}
               className="text-slate-500 hover:text-[#429EBD] cursor-pointer"
@@ -96,7 +103,9 @@ const ProfilePictureCard = () => {
           </div>
         )}
       </div>
+
       {/* Role */}
+
       <p className="mt-2 text-sm md:text-base text-slate-500 dark:text-slate-400">
         {user?.role?.label || "Role Pengguna"}
       </p>
