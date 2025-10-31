@@ -57,7 +57,7 @@ const NotificationDropdown = () => {
 
       {/* Dropdown Content */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-60 md:w-80 bg-white dark:bg-slate-800 rounded-lg shadow-xl overflow-hidden">
+        <div className="absolute right-0 mt-2 w-55 md:w-80 bg-white dark:bg-slate-800 rounded-lg shadow-xl overflow-hidden">
           <div className="p-4 border-b border-slate-200 dark:border-slate-700">
             <h3 className="font-semibold     text-slate-800 dark:text-white">
               Notifikasi

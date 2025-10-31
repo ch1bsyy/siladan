@@ -27,6 +27,7 @@ const mockApiData = {
       avatar: "https://i.pravatar.cc/150?u=teknisi@siladan.go.id",
       role: { id: 2, name: "teknisi", label: "Teknisi" },
       permissions: [
+        { action: "read", subject: "dashboard" },
         { action: "read", subject: "ticket" },
         { action: "update", subject: "self_ticket" },
       ],
@@ -41,6 +42,7 @@ const mockApiData = {
       avatar: "https://i.pravatar.cc/150?u=teknisi@siladan.go.id",
       role: { id: 4, name: "seksi", label: "Seksi" },
       permissions: [
+        { action: "read", subject: "dashboard" },
         { action: "read", subject: "ticket" },
         { action: "assign", subject: "ticket" },
       ],

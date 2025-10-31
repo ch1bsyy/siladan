@@ -20,7 +20,28 @@ const DashboardPage = () => {
   const { user, hasPermission } = useAuth();
 
   return (
-    <div className="p-6 space-y-4">
+    <div className="space-y-4">
+      <h1 className="text-2xl font-bold">
+        Selamat Datang di Dashboard, {user?.name}
+      </h1>
+      <p className="text-gray-600">
+        Anda login sebagai:{" "}
+        <span className="font-semibold">{user?.role?.name}</span>
+      </p>
+      <h1 className="text-2xl font-bold">
+        Selamat Datang di Dashboard, {user?.name}
+      </h1>
+      <p className="text-gray-600">
+        Anda login sebagai:{" "}
+        <span className="font-semibold">{user?.role?.name}</span>
+      </p>
+      <h1 className="text-2xl font-bold">
+        Selamat Datang di Dashboard, {user?.name}
+      </h1>
+      <p className="text-gray-600">
+        Anda login sebagai:{" "}
+        <span className="font-semibold">{user?.role?.name}</span>
+      </p>
       <h1 className="text-2xl font-bold">
         Selamat Datang di Dashboard, {user?.name}
       </h1>
@@ -53,11 +74,13 @@ const DashboardPage = () => {
         {/* Teknisi & Seksi bisa melihat daftar tiket */}
         {hasPermission(["read", "ticket"]) && <TicketList />}
 
-        {/* Hanya Seksi yang bisa menugaskan tiket */}
-        {hasPermission(["assign", "ticket"]) && <AssignTicketButton />}
+        <div className="flex gap-3">
+          {/* Hanya Seksi yang bisa menugaskan tiket */}
+          {hasPermission(["assign", "ticket"]) && <AssignTicketButton />}
 
-        {/* Hanya Admin Kota yang bisa generate laporan (karena punya 'manage:all') */}
-        {hasPermission(["generate", "report"]) && <GenerateReportButton />}
+          {/* Hanya Admin Kota yang bisa generate laporan (karena punya 'manage:all') */}
+          {hasPermission(["generate", "report"]) && <GenerateReportButton />}
+        </div>
 
         {/* Jika user tidak punya izin apa pun, tampilkan pesan */}
         {!hasPermission(["read", "ticket"]) &&
