@@ -108,7 +108,7 @@ const RequestForm = () => {
               value={user.name || ""}
               disabled
             />
-            <Input id="nik" label="NIK" value={user.nik || ""} disabled />
+            <Input id="nik" label="NIP" value={user.nik || ""} disabled />
             <Input id="email" label="Email" value={user.email || ""} disabled />
             <Input
               id="telepon"

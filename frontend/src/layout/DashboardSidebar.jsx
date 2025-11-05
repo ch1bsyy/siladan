@@ -4,6 +4,7 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import {
   FiGrid,
+  FiPlus,
   FiTag,
   FiUsers,
   FiFileText,
@@ -12,6 +13,7 @@ import {
   FiChevronLeft,
   FiChevronRight,
 } from "react-icons/fi";
+import { IoChatbubblesOutline } from "react-icons/io5";
 import Logo from "../assets/images/logo-siladan.png";
 
 const navigationLinks = [
@@ -25,6 +27,18 @@ const navigationLinks = [
     name: "Manajemen Tiket",
     to: "/dashboard/tickets",
     icon: FiTag,
+    permission: ["read", "ticket"],
+  },
+  {
+    name: "Buat Tiket",
+    to: "/dashboard/new-ticket",
+    icon: FiPlus,
+    permission: ["read", "ticket"],
+  },
+  {
+    name: "Percakapan",
+    to: "/dashboard/chat",
+    icon: IoChatbubblesOutline,
     permission: ["read", "ticket"],
   },
   {

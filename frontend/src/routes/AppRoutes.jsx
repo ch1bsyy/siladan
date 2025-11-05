@@ -16,6 +16,7 @@ import RequestPage from "../pages/RequestPage";
 import TrackTicket from "../pages/TrackTicket";
 import TicketDetailPage from "../pages/TicketDetailPage";
 import ProfilePage from "../pages/ProfilePage";
+import NewTicketPage from "../pages/NewTicketPage";
 
 // Guard Component for protect route
 const DashboardGuard = ({ children }) => {
@@ -91,7 +92,7 @@ const AppRoutes = () => {
         }
       >
         <Route index element={<DashboardPage />} />
-        {/* example: <Route path="users" element={<UserPage />} /> */}
+        <Route path="new-ticket" element={<NewTicketPage />} />
       </Route>
 
       <Route path="/login" element={<LoginPage />} />

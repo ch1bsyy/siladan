@@ -6,7 +6,6 @@ import { useLoading } from "../../../context/LoadingContext";
 
 const TicketSearchForm = () => {
   const [ticketNumber, setTicketNumber] = useState("");
-  const [email, setEmail] = useState("");
   const [foundTicket, setFoundTicket] = useState(null);
   const [error, setError] = useState("");
 
@@ -23,7 +22,7 @@ const TicketSearchForm = () => {
     // z.B. api.get(`/tickets/search?number=${ticketNumber}&email=${email}`)
     setTimeout(() => {
       // Simulation success
-      if (ticketNumber === "SILADAN-123" && email === "user@mail.com") {
+      if (ticketNumber === "SILADAN-123") {
         setFoundTicket({
           id: "SILADAN-123",
           title: "Printer di Ruang A Rusak",
@@ -58,14 +57,6 @@ const TicketSearchForm = () => {
           value={ticketNumber}
           onChange={(e) => setTicketNumber(e.target.value)}
           placeholder="Contoh: SILADAN-123"
-        />
-        <Input
-          id="email"
-          label="Email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Email yang Anda gunakan saat melapor"
         />
         <button
           type="submit"

@@ -15,6 +15,7 @@ const ComplaintForm = () => {
   const [formData, setFormData] = useState({
     nama: "",
     nik: "",
+    nip: "",
     alamat: "",
     email: "",
     telepon: "",
@@ -89,10 +90,14 @@ const ComplaintForm = () => {
             <Input
               id="nik"
               name="nik"
-              label="NIK"
+              label={isPegawai ? "NIP" : "NIK"}
               value={formData.nik}
               onChange={handleChange}
-              placeholder="Masukkan 16 digit NIK"
+              placeholder={
+                isPegawai
+                  ? "Masukkan 16 digit angka NIK"
+                  : "Masukkan digit angka NIP"
+              }
               required
               disabled={isPegawai}
             />
