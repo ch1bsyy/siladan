@@ -105,7 +105,7 @@ const HelpdeskRequestForm = () => {
     }
     setFormData((prev) => ({
       ...prev,
-      pelaporId: null,
+      pemohonId: null,
       nama: "",
       nik: "",
       email: "",

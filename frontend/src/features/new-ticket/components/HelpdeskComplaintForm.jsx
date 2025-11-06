@@ -241,30 +241,27 @@ const HelpdeskComplaintForm = () => {
           Detail Pengaduan
         </h3>
         <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-          {!isPegawai && (
-            <FormSelect
-              id="namaOpd"
-              name="namaOpd"
-              label="Nama OPD"
-              value={formData.namaOpd}
-              onChange={handleChange}
-              required
-              disabled={isPegawai}
-            >
-              <option value="" disabled>
-                -- Pilih OPD --
-              </option>
-              <option value="inspektorat">Inspektorat</option>
-              <option value="sekretariat_dprd">Sekretariat DPRD</option>
-              <option value="dinas_kebudayaan_kepemudaan_dan_olahraga_serta_pariwisata">
-                Dinas Kebudayaan Kepemudaan dan Olahraga serta Pariwisata
-              </option>
-              <option value="dinas_kependudukan_dan_pencatatan_sipil">
-                Dinas Kependudukan dan Pencatatan Sipil
-              </option>
-              <option value="lainnya">lainnya</option>
-            </FormSelect>
-          )}
+          <FormSelect
+            id="namaOpd"
+            name="namaOpd"
+            label="Nama OPD"
+            value={formData.namaOpd}
+            onChange={handleChange}
+            required
+          >
+            <option value="" disabled>
+              -- Pilih OPD Lokasi Aset --
+            </option>
+            <option value="inspektorat">Inspektorat</option>
+            <option value="sekretariat_dprd">Sekretariat DPRD</option>
+            <option value="dinas_kebudayaan_kepemudaan_dan_olahraga_serta_pariwisata">
+              Dinas Kebudayaan Kepemudaan dan Olahraga serta Pariwisata
+            </option>
+            <option value="dinas_kependudukan_dan_pencatatan_sipil">
+              Dinas Kependudukan dan Pencatatan Sipil
+            </option>
+            <option value="lainnya">lainnya</option>
+          </FormSelect>
           <FormSelect
             id="layanan"
             name="layanan"
@@ -307,7 +304,7 @@ const HelpdeskComplaintForm = () => {
             onChange={handleChange}
             required
           />
-          <div className={isPegawai ? "md:col-span-1" : "md:col-span-2"}>
+          <div className="md:col-span-2">
             <Input
               id="judul"
               name="judul"
