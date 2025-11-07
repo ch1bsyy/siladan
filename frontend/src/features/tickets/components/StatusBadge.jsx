@@ -51,14 +51,22 @@ const getStatusInfo = (status) => {
   }
 };
 
-const StatusBadge = ({ status }) => {
+const StatusBadge = ({
+  status,
+  isFullWidth = false,
+  isIncreaseFont = false,
+}) => {
   const { icon: Icon, label, className } = getStatusInfo(status);
 
   return (
     <span
-      className={`inline-flex items-center gap-2 px-6 py-2 w-full justify-center rounded-full text-sm font-medium ${className}`}
+      className={`inline-flex items-center gap-2 px-6 py-2 ${
+        isFullWidth ? "w-full" : ""
+      } ${
+        isIncreaseFont ? "text-base" : "text-sm"
+      } justify-center rounded-full font-medium ${className}`}
     >
-      <Icon size={16} />
+      <Icon size={isIncreaseFont ? 20 : 16} />
       {label}
     </span>
   );

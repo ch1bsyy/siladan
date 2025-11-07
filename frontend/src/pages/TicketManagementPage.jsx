@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useMemo } from "react";
 import TicketFilters from "../features/tickets/components/TicketFilters";
 import TicketTable from "../features/tickets/components/TicketTable";
@@ -164,6 +165,22 @@ const mockAllTickets = [
     type: "Permintaan",
     status: "Selesai",
     date: "2025-10-14",
+  },
+  {
+    id: "REQ-001",
+    title: "Permintaan Instalasi Microsoft Office",
+    type: "Permintaan",
+    status: "Selesai",
+    date: "2025-10-14",
+    createdAt: "2025-10-19T09:00:00Z",
+    updatedAt: "2025-10-20T14:00:00Z",
+    pelapor: { name: "Pegawai A", email: "pegawai.a@opd.go.id" },
+    deskripsi: "Butuh instalasi Office 365 di komputer baru ruang arsip.",
+    history: [
+      { status: "Diajukan", date: "2025-10-19T09:00:00Z", by: "Pegawai A" },
+      { status: "Disetujui", date: "2025-10-19T11:00:00Z", by: "Seksi" },
+      { status: "Selesai", date: "2025-10-20T14:00:00Z", by: "Teknisi Budi" },
+    ],
   },
 ];
 

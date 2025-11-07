@@ -43,14 +43,14 @@ const TicketTable = ({ tickets }) => {
                     {ticket.title}
                   </td>
                   <td className="px-4 py-3">
-                    <StatusBadge status={ticket.status} />
+                    <StatusBadge status={ticket.status} isFullWidth />
                   </td>
                   <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">
                     {ticket.date}
                   </td>
                   <td className="px-4 py-3">
                     <Link
-                      to={`detail-ticket/${ticket.id}`}
+                      to={`/dashboard/detail-ticket/${ticket.id}`}
                       className="px-5 py-3 text-sm font-semibold text-[#053F5C] bg-[#F7AD19] rounded-md hover:bg-yellow-400 cursor-pointer"
                     >
                       Lihat Detail
