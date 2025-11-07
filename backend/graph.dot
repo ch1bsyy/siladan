@@ -1,0 +1,28 @@
+digraph {
+    A [label="Mulai: Lihat Data Mingguan (Dashboard)"];
+    B [label="Reach tinggi,\nLikes rendah?"];
+    C [label="Improve HOOK & Visual\n(Fokus Stopping Power)"];
+    D [label="Saves tinggi,\nShares rendah?"];
+    E [label="Bikin konten shareable:\ninfografis, tips singkat"];
+    F [label="Engagement tinggi,\nLink Clicks rendah?"];
+    G [label="Perkuat CTA:\nUrgensi, Link di Story, Caption tegas"];
+    H [label="Engagement rendah\nsemua metrik"];
+    I [label="Evaluasi Pilar & Format:\nCoba ganti topik/jenis konten"];
+    J [label="Post/Story Terbaik?\n(Reach/Save tinggi)"];
+    K [label="Ulangi dengan variasi:\nformat, angle, CTA"];
+    Z [label="Insight Mingguan Siap\n→ Susun Strategi Minggu Berikutnya"];
+
+    A -> B;
+    B -> C [label="Ya"];
+    B -> D [label="Tidak"];
+    D -> E [label="Ya"];
+    D -> F [label="Tidak"];
+    F -> G [label="Ya"];
+    F -> H [label="Tidak"];
+    H -> I;
+    E -> J;
+    G -> J;
+    I -> J;
+    J -> K;
+    K -> Z;
+}
