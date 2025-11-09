@@ -1,24 +1,33 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom"; // Catch data from QR
 import { useAuth } from "../../../context/AuthContext";
+import { useLoading } from "../../../context/LoadingContext";
+import toast from "react-hot-toast";
+
 import Input from "../../../components/Input";
 import FormTextArea from "../../../components/FormTextArea";
 import FormSelect from "../../../components/FormSelect";
 import FormFileUpload from "../../../components/FormFileUpload";
 import { FiSend } from "react-icons/fi";
 
+// Import Services
+import { uploadToCloudinary } from "../../../services/storageServices";
+import { createTicket } from "../services/ticketService";
+
 const ComplaintForm = () => {
   const { isAuthenticated, user } = useAuth();
+  const { showLoading, hideLoading } = useLoading();
   const [searchParams] = useSearchParams();
+
+  const fileInputRef = useRef(null);
   const isPegawai = isAuthenticated && user?.role?.name === "pegawai_opd";
 
   const [formData, setFormData] = useState({
     nama: "",
     nik: "",
-    nip: "",
-    alamat: "",
     email: "",
     telepon: "",
+    alamat: "",
     layanan: "",
     namaAset: searchParams.get("aset") || "",
     namaOpd: searchParams.get("opd") || "",
@@ -30,7 +39,7 @@ const ComplaintForm = () => {
   });
 
   useEffect(() => {
-    if (isPegawai) {
+    if (isPegawai && user) {
       setFormData((prev) => ({
         ...prev,
         nama: user.name || "",
@@ -38,7 +47,7 @@ const ComplaintForm = () => {
         alamat: user.address || "",
         email: user.email || "",
         telepon: user.phone_number || "",
-        namaOpd: user.opd?.value || "",
+        namaOpd: user.opd?.value || prev.namaOpd,
       }));
     }
   }, [isPegawai, user]);
@@ -49,13 +58,93 @@ const ComplaintForm = () => {
   };
 
   const handleFileChange = (e) => {
-    setFormData((prev) => ({ ...prev, lampiran: e.target.files[0] }));
+    const file = e.target.files[0];
+    if (file & (file.size > 5 * 1024 * 1024)) {
+      toast.error("Ukuran file maksimal 5MB");
+      e.target.value = null;
+      return;
+    }
+    setFormData((prev) => ({ ...prev, lampiran: file || null }));
   };
 
-  const handleSubmit = (e) => {
+  const clearFile = () => {
+    setFormData((prev) => ({ ...prev, lampiran: null }));
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Data Formulir", formData);
-    // Submit API Logic
+    showLoading("Mengirim laporan Anda...");
+
+    try {
+      let attachmentUrl = "";
+      if (formData.lampiran) {
+        toast.loading("Mengunggah lampiran...");
+        attachmentUrl = await uploadToCloudinary(formData.lampiran);
+        toast.dismiss();
+      }
+
+      const apiPayload = {
+        type: "incident",
+        title: formData.judul,
+        description: formData.deskripsi,
+        incident_date: formData.tanggalKejadian,
+        location: formData.lokasiKejadian,
+        asset_identifier: formData.namaAset,
+        opd_identifier: formData.namaOpd,
+        reporter_name: formData.nama,
+        reporter_nik: formData.nik,
+        reporter_email: formData.email,
+        reporter_phone: formData.telepon,
+        reporter_address: formData.alamat,
+        attachment_url: attachmentUrl,
+      };
+
+      console.log("Mengirim Payload:", apiPayload);
+      await createTicket(apiPayload);
+
+      hideLoading();
+      toast.success(
+        "Laporan berhasil dikirim! tiket Anda akan segera ditangani."
+      );
+
+      if (!isPegawai) {
+        setFormData({
+          nama: "",
+          nik: "",
+          email: "",
+          telepon: "",
+          alamat: "",
+          layanan: "",
+          namaAset: searchParams.get("aset") || "",
+          namaOpd: searchParams.get("opd") || "",
+          judul: "",
+          deskripsi: "",
+          tanggalKejadian: "",
+          lokasiKejadian: "",
+          lampiran: null,
+        });
+      } else {
+        setFormData((prev) => ({
+          ...prev,
+          layanan: "",
+          namaAset: searchParams.get("aset") || "",
+          judul: "",
+          deskripsi: "",
+          tanggalKejadian: "",
+          lokasiKejadian: "",
+          lampiran: null,
+        }));
+      }
+    } catch (error) {
+      console.error("Gagal submit tiket:", error);
+      hideLoading();
+      toast.error(
+        error.message || "Gagal mengirim laporan. Silakan coba lagi."
+      );
+    }
   };
 
   return (
@@ -248,7 +337,10 @@ const ComplaintForm = () => {
                 id="lampiran"
                 name="lampiran"
                 label="Lampiran Bukti (Opsional)"
+                file={formData.lampiran}
                 onChange={handleFileChange}
+                onClear={clearFile}
+                ref={fileInputRef}
               />
             </div>
           </div>
