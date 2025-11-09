@@ -39,7 +39,7 @@ const navigationLinks = [
     name: "Percakapan",
     to: "/dashboard/chat",
     icon: IoChatbubblesOutline,
-    permission: ["read", "ticket"],
+    permission: ["handle", "chat"],
   },
   {
     name: "Manajemen Pengguna",

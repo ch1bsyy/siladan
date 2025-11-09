@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext";
 // Layouts
 import PublicLayout from "../layout/PublicLayout";
 import DashboardLayout from "../layout/DashboardLayout";
+import ChatLayout from "../layout/ChatLayout";
 
 // Pages
 import HomePage from "../pages/HomePage";
@@ -19,6 +20,8 @@ import ProfilePage from "../pages/ProfilePage";
 import NewTicketPage from "../pages/NewTicketPage";
 import TicketManagementPage from "../pages/TicketManagementPage";
 import DashboardTicketDetailPage from "../pages/DashboardTicketDetailPage";
+import DashboardProfilePage from "../pages/DashboardProfilePage";
+import ChatPage from "../pages/ChatPage";
 
 // Guard Component for protect route
 const DashboardGuard = ({ children }) => {
@@ -104,10 +107,21 @@ const AppRoutes = () => {
           path="profile"
           element={
             <AuthGuard>
-              <ProfilePage />
+              <DashboardProfilePage />
             </AuthGuard>
           }
         />
+      </Route>
+
+      <Route
+        path="/dashboard/chat"
+        element={
+          <DashboardGuard>
+            <ChatLayout />
+          </DashboardGuard>
+        }
+      >
+        <Route index element={<ChatPage />} />
       </Route>
 
       <Route path="/login" element={<LoginPage />} />

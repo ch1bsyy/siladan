@@ -320,9 +320,9 @@ const DashboardTicketDetailPage = () => {
               </h3>
               <div className="space-y-4">
                 <FormSelect
-                  id="prioritas"
-                  name="prioritas"
-                  label="Prioritas"
+                  id="urgency"
+                  name="urgency"
+                  label="Urgency"
                   value={formData.prioritas}
                   onChange={handleChange}
                   required

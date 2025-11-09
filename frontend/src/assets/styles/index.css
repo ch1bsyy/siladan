@@ -8,6 +8,7 @@
   --color-primary-dark: #000000;
 } */
 
+/* --- Custom Input type date Styling--- */
 input[type="date"]::-webkit-calendar-picker-indicator {
   /* Default (light mode), pastikan filter tidak aktif */
   filter: invert(0);
@@ -15,4 +16,32 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
 .dark input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(1);
+}
+
+/* --- Custom Scrollbar Styling --- */
+/* Untuk Chrome, Safari, Edge */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: #429ebd;
+  border-radius: 20px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background-color: #053f5c;
+}
+
+/* Untuk Firefox */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: #429ebd transparent;
 }
