@@ -65,6 +65,12 @@ const mockAllTickets = [
       subLayanan: "Instalasi Aplikasi",
       detailLayanan: "Microsoft Office",
     },
+    assignment: {
+      priority: "Tinggi",
+      slaHours: 8,
+      assignedTo: "Teknisi Charlie (Software)",
+      internalNotes: "User butuh cepat untuk presentasi",
+    },
     history: [
       { status: "Diajukan", date: "2025-10-19T09:00:00Z", by: "Bisma Pargoy" },
     ],
@@ -85,7 +91,7 @@ const DashboardTicketDetailPage = () => {
 
   // state for assignment form
   const [formData, setFormData] = useState({
-    prioritas: "",
+    urgency: "",
     impact: "",
     teknisiId: "",
     catatanInternal: "",
@@ -323,14 +329,14 @@ const DashboardTicketDetailPage = () => {
                   id="urgency"
                   name="urgency"
                   label="Urgency"
-                  value={formData.prioritas}
+                  value={formData.urgency}
                   onChange={handleChange}
                   required
                 >
-                  <option value="">-- Tentukan Prioritas --</option>
-                  <option value="Tinggi">Tinggi</option>
-                  <option value="Sedang">Sedang</option>
-                  <option value="Rendah">Rendah</option>
+                  <option value="">-- Tentukan Urgency --</option>
+                  <option value="Tinggi">Tinggi (Sistem utama mati)</option>
+                  <option value="Sedang">Sedang (Fungsi terganggu)</option>
+                  <option value="Rendah">Rendah (Masalah kecil)</option>
                 </FormSelect>
 
                 <FormSelect
@@ -401,9 +407,27 @@ const DashboardTicketDetailPage = () => {
               </h3>
               <dl className="space-y-4">
                 <InfoRow label="Status Terkini" value={ticket.status} />
-                <InfoRow label="Prioritas" value="Tinggi" />
-                <InfoRow label="Impact" value="2 - Satu Unit" />
-                <InfoRow label="Ditugaskan ke" value="Teknisi Budi" />
+                <InfoRow
+                  label="Prioritas"
+                  value={ticket.assignment?.priority || "-"}
+                />
+                <InfoRow
+                  label="SLA"
+                  value={
+                    ticket.assignment?.slaHours
+                      ? `${ticket.assignment.slaHours} Jam Kerja`
+                      : "-"
+                  }
+                />
+                <InfoRow
+                  label="Ditugaskan ke"
+                  value={ticket.assignment?.assignedTo || "-"}
+                />
+                <InfoRow
+                  label="Catatan Internal"
+                  value={ticket.assignment?.internalNotes || "-"}
+                  isFullWidth
+                />
               </dl>
             </div>
           )}
