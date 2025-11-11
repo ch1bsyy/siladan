@@ -152,7 +152,7 @@ const DashboardTicketDetailPage = () => {
   return (
     <div className="space-y-6">
       <Link
-        to="/dashboard/tickets"
+        to="/dashboard/manage-tickets"
         className="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-[#053F5C] dark:hover:text-white"
       >
         <FiArrowLeft />

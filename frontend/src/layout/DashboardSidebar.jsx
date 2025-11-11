@@ -12,6 +12,7 @@ import {
   FiLogOut,
   FiChevronLeft,
   FiChevronRight,
+  FiActivity,
 } from "react-icons/fi";
 import { IoChatbubblesOutline } from "react-icons/io5";
 import Logo from "../assets/images/logo-siladan.png";
@@ -25,21 +26,27 @@ const navigationLinks = [
   },
   {
     name: "Manajemen Tiket",
-    to: "/dashboard/tickets",
+    to: "/dashboard/manage-tickets",
     icon: FiTag,
-    permission: ["read", "ticket"],
+    permission: ["assign", "ticket"],
   },
   {
     name: "Buat Tiket",
     to: "/dashboard/new-ticket",
     icon: FiPlus,
-    permission: ["read", "ticket"],
+    permission: ["create", "ticket"],
   },
   {
     name: "Percakapan",
     to: "/dashboard/chat",
     icon: IoChatbubblesOutline,
     permission: ["handle", "chat"],
+  },
+  {
+    name: "Pengerjaan Tiket",
+    to: "/dashboard/assigned-tickets",
+    icon: FiActivity,
+    permission: ["process", "ticket"],
   },
   {
     name: "Manajemen Pengguna",

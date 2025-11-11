@@ -5,6 +5,48 @@ import TicketChartWidget from "./TicketChartWidget";
 import QuickActionsWidget from "./QuickActionsWidget";
 import { FiInbox, FiAlertTriangle, FiCheckSquare } from "react-icons/fi";
 
+// Mock Data Tiket
+const mockTickets = [
+  {
+    id: "SILADAN-124",
+    title: "Printer tidak terdeteksi",
+    type: "Pengaduan",
+    status: "Pending",
+  },
+  {
+    id: "REQ-003",
+    title: "Permintaan Peminjaman Proyektor",
+    type: "Permintaan",
+    status: "Pending",
+  },
+  {
+    id: "SILADAN-125",
+    title: "WiFi Lambat di Aula",
+    type: "Pengaduan",
+    status: "Pending",
+  },
+  {
+    id: "REQ-004",
+    title: "Permintaan Instalasi Aplikasi X",
+    type: "Permintaan",
+    status: "Pending",
+  },
+  {
+    id: "SILADAN-126",
+    title: "Aplikasi A tidak bisa diakses",
+    type: "Pengaduan",
+    status: "Pending",
+  },
+];
+
+// Mock data Pie Chart
+const myTaskCompositionData = [
+  { name: "Insiden", value: 8 },
+  { name: "Permintaan", value: 4 },
+];
+
+const myTaskColors = ["#F7AD19", "#429EBD"];
+
 const HelpdeskDashboard = () => {
   return (
     <div className="space-y-8 dark:text-white">
@@ -33,12 +75,21 @@ const HelpdeskDashboard = () => {
       {/* Widget List & Chart */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
-          <TicketListWidget />
+          <TicketListWidget
+            title="Tiket Terbaru (Perlu Verifikasi)"
+            tickets={mockTickets}
+            ticketsLink="/dashboard/manage-tickets"
+            detailTicketLink="/dashboard/detail-manage-ticket"
+          />
         </div>
 
         <div className="lg:col-span-1 flex flex-col justify-between gap-6">
           <QuickActionsWidget />
-          <TicketChartWidget />
+          <TicketChartWidget
+            title="Komposisi Tiket Masuk"
+            data={myTaskCompositionData}
+            colors={myTaskColors}
+          />
         </div>
       </div>
     </div>

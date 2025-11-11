@@ -28,6 +28,7 @@ export const AuthProvider = ({ children }) => {
         "admin_opd",
         "bidang",
         "seksi",
+        "helpdesk",
         "teknisi",
       ];
       if (dashboardRoles.includes(userData.role.name)) {
