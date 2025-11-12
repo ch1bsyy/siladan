@@ -8,19 +8,11 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-// Mock data
-const data = [
-  { name: "Insiden", value: 8 },
-  { name: "Permintaan", value: 4 },
-];
-
-const COLORS = ["#F7AD19", "#429EBD"];
-
-const TicketChartWidget = () => {
+const TicketChartWidget = ({ title, data = [], colors }) => {
   return (
     <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-4 md:p-6 h-full">
       <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
-        Komposisi Tiket Masuk
+        {title}
       </h3>
       <div className="w-full h-[250px]">
         <ResponsiveContainer>
@@ -37,7 +29,7 @@ const TicketChartWidget = () => {
               {data.map((entry, index) => (
                 <Cell
                   key={`cell-${index}`}
-                  fill={COLORS[index % COLORS.length]}
+                  fill={colors[index % colors.length]}
                 />
               ))}
             </Pie>

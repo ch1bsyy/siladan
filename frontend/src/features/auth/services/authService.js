@@ -28,8 +28,23 @@ const mockApiData = {
       role: { id: 2, name: "teknisi", label: "Teknisi" },
       permissions: [
         { action: "read", subject: "dashboard" },
-        { action: "read", subject: "ticket" },
-        { action: "update", subject: "self_ticket" },
+        { action: "process", subject: "ticket" },
+      ],
+    },
+  },
+  "helpdesk@siladan12.go.id": {
+    token: "jwt.token.helpdesk",
+    user: {
+      id: 4,
+      name: "Chichi Helpdesk",
+      email: "helpdesk@siladan.go.id",
+      avatar: "https://i.pravatar.cc/150?u=teknisi@siladan.go.id",
+      role: { id: 5, name: "helpdesk", label: "Helpdesk" },
+      permissions: [
+        { action: "read", subject: "dashboard" },
+        { action: "create", subject: "ticket" },
+        { action: "assign", subject: "ticket" },
+        { action: "handle", subject: "chat" },
       ],
     },
   },
@@ -43,8 +58,7 @@ const mockApiData = {
       role: { id: 4, name: "seksi", label: "Seksi" },
       permissions: [
         { action: "read", subject: "dashboard" },
-        { action: "read", subject: "ticket" },
-        { action: "assign", subject: "ticket" },
+        { action: "approve", subject: "ticket" },
       ],
     },
   },

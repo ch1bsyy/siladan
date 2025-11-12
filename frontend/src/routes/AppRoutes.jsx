@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext";
 // Layouts
 import PublicLayout from "../layout/PublicLayout";
 import DashboardLayout from "../layout/DashboardLayout";
+import ChatLayout from "../layout/ChatLayout";
 
 // Pages
 import HomePage from "../pages/HomePage";
@@ -19,11 +20,16 @@ import ProfilePage from "../pages/ProfilePage";
 import NewTicketPage from "../pages/NewTicketPage";
 import TicketManagementPage from "../pages/TicketManagementPage";
 import DashboardTicketDetailPage from "../pages/DashboardTicketDetailPage";
+import DashboardProfilePage from "../pages/DashboardProfilePage";
+import ChatPage from "../pages/ChatPage";
+import AssignedTicketPage from "../pages/AssignedTicketPage";
+import AssignedTicketDetailPage from "../pages/AssignedTicketDetailPage";
 
 // Guard Component for protect route
 const DashboardGuard = ({ children }) => {
   const { isAuthenticated, user } = useAuth();
   const dashboardRoles = [
+    "helpdesk",
     "teknisi",
     "seksi",
     "bidang",
@@ -95,19 +101,35 @@ const AppRoutes = () => {
       >
         <Route index element={<DashboardPage />} />
         <Route path="new-ticket" element={<NewTicketPage />} />
-        <Route path="tickets" element={<TicketManagementPage />} />
+        <Route path="manage-tickets" element={<TicketManagementPage />} />
         <Route
-          path="detail-ticket/:ticketId"
+          path="detail-manage-ticket/:ticketId"
           element={<DashboardTicketDetailPage />}
+        />
+        <Route path="assigned-tickets" element={<AssignedTicketPage />} />
+        <Route
+          path="detail-assigned-ticket/:ticketId"
+          element={<AssignedTicketDetailPage />}
         />
         <Route
           path="profile"
           element={
             <AuthGuard>
-              <ProfilePage />
+              <DashboardProfilePage />
             </AuthGuard>
           }
         />
+      </Route>
+
+      <Route
+        path="/dashboard/chat"
+        element={
+          <DashboardGuard>
+            <ChatLayout />
+          </DashboardGuard>
+        }
+      >
+        <Route index element={<ChatPage />} />
       </Route>
 
       <Route path="/login" element={<LoginPage />} />

@@ -50,7 +50,7 @@ const TicketTable = ({ tickets }) => {
                   </td>
                   <td className="px-4 py-3">
                     <Link
-                      to={`/dashboard/detail-ticket/${ticket.id}`}
+                      to={`/dashboard/detail-manage-ticket/${ticket.id}`}
                       className="px-5 py-3 text-sm font-semibold text-[#053F5C] bg-[#F7AD19] rounded-md hover:bg-yellow-400 cursor-pointer"
                     >
                       Lihat Detail

@@ -9,7 +9,7 @@ const QuickActionsWidget = () => {
         Aksi Cepat
       </h3>
       <Link
-        to="/dashboard/complaint"
+        to="/dashboard/new-ticket"
         className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-2 px-4 py-2 rounded-lg font-semibold text-white bg-[#429EBD] hover:bg-[#053F5C] transition-colors"
       >
         <FiPlus size={18} />

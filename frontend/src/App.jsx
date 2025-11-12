@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
 import AppRoutes from "./routes/AppRoutes";
 import SplashScreen from "./components/SplashScreen";
 import { useLoading } from "./context/LoadingContext";
@@ -25,6 +26,8 @@ function App() {
 
   return (
     <>
+      <Toaster position="top-center" reverseOrder={false} />
+
       {isLoading && <Loading message={message} />}
 
       {isInitializing && showSplash ? <SplashScreen /> : <AppRoutes />}
