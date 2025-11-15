@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 /* eslint-disable no-useless-catch */
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import * as authService from "../features/auth/services/authService";
 
@@ -12,12 +12,26 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const navigate = useNavigate();
 
-  const login = async (email, password) => {
+  // Check localStorage for token
+  useEffect(() => {
+    const storedToken = localStorage.getItem("token");
+    const storedUser = localStorage.getItem("user");
+    if (storedToken && storedUser) {
+      setToken(storedToken);
+      setUser(JSON.parse(storedUser));
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  const login = async (username, password) => {
     try {
       const { token: apiToken, user: userData } = await authService.login(
-        email,
+        username,
         password
       );
+
+      localStorage.setItem("token", apiToken);
+      localStorage.setItem("user", JSON.stringify(userData));
 
       setUser(userData);
       setToken(apiToken);
@@ -36,12 +50,16 @@ export const AuthProvider = ({ children }) => {
       } else {
         navigate("/");
       }
+      return userData;
     } catch (error) {
       throw error;
     }
   };
 
   const logout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+
     setUser(null);
     setToken(null);
     setIsAuthenticated(false);

@@ -12,7 +12,7 @@ import { FiSend } from "react-icons/fi";
 
 // Import Services
 import { uploadToCloudinary } from "../../../services/storageServices";
-import { createTicket } from "../services/ticketService";
+import { createIncident, createGuestIncident } from "../services/ticketService";
 
 const ComplaintForm = () => {
   const { isAuthenticated, user } = useAuth();
@@ -20,7 +20,7 @@ const ComplaintForm = () => {
   const [searchParams] = useSearchParams();
 
   const fileInputRef = useRef(null);
-  const isPegawai = isAuthenticated && user?.role?.name === "pegawai_opd";
+  const isPegawai = isAuthenticated && user?.role === "pegawai_opd";
 
   const [formData, setFormData] = useState({
     nama: "",
@@ -42,8 +42,8 @@ const ComplaintForm = () => {
     if (isPegawai && user) {
       setFormData((prev) => ({
         ...prev,
-        nama: user.name || "",
-        nik: user.nik || "",
+        nama: user.full_name || "",
+        nik: user.nip || "",
         alamat: user.address || "",
         email: user.email || "",
         telepon: user.phone_number || "",
@@ -86,26 +86,54 @@ const ComplaintForm = () => {
         toast.dismiss();
       }
 
-      const apiPayload = {
-        type: "incident",
-        title: formData.judul,
-        description: formData.deskripsi,
-        incident_date: formData.tanggalKejadian,
-        location: formData.lokasiKejadian,
-        asset_identifier: formData.namaAset,
-        opd_identifier: formData.namaOpd,
-        reporter_name: formData.nama,
-        reporter_nik: formData.nik,
-        reporter_email: formData.email,
-        reporter_phone: formData.telepon,
-        reporter_address: formData.alamat,
-        attachment_url: attachmentUrl,
-      };
+      let response;
 
-      console.log("Mengirim Payload:", apiPayload);
-      await createTicket(apiPayload);
+      if (isPegawai) {
+        const internalPayload = {
+          title: formData.judul,
+          description: formData.deskripsi,
+          category: formData.layanan,
+          incident_location: formData.lokasiKejadian,
+          incident_date: formData.tanggalKejadian,
+          opd_id: parseInt(formData.namaOpd, 10),
+          asset_identifier: formData.namaAset,
+          attachmentUrl: attachmentUrl,
+        };
+
+        console.log("Mengirim Payload Internal:", internalPayload);
+        response = await createIncident(internalPayload);
+      } else {
+        const publicPayload = {
+          title: formData.judul,
+          description: formData.deskripsi,
+          category: formData.layanan,
+          incident_location: formData.lokasiKejadian,
+          incident_date: formData.tanggalKejadian,
+          opd_id: parseInt(formData.namaOpd, 10),
+          asset_identifier: formData.namaAset,
+          attachment_url: attachmentUrl,
+
+          reporter_name: formData.nama,
+          reporter_nik: formData.nik,
+          reporter_email: formData.email,
+          reporter_phone: formData.telepon,
+          reporter_address: formData.alamat,
+        };
+
+        console.log("Mengirim Payload Publik:", publicPayload);
+        response = await createGuestIncident(publicPayload);
+      }
 
       hideLoading();
+
+      // const newTicketId = response?.data?.id || response?.id;
+
+      // toast.success(
+      //   `Laporan berhasil dikirim! ${
+      //     newTicketId ? `No. Tiket Anda: ${newTicketId}` : ""
+      //   }`
+      // );
+
       toast.success(
         "Laporan berhasil dikirim! tiket Anda akan segera ditangani."
       );
@@ -141,9 +169,7 @@ const ComplaintForm = () => {
     } catch (error) {
       console.error("Gagal submit tiket:", error);
       hideLoading();
-      toast.error(
-        error.message || "Gagal mengirim laporan. Silakan coba lagi."
-      );
+      toast.error(`Gagal mengirim: ${error.message || "Silakan coba lagi."}`);
     }
   };
 
@@ -241,20 +267,17 @@ const ComplaintForm = () => {
               value={formData.namaOpd}
               onChange={handleChange}
               required
-              disabled={isPegawai}
             >
               <option value="" disabled>
                 -- Pilih OPD --
               </option>
-              <option value="inspektorat">Inspektorat</option>
-              <option value="sekretariat_dprd">Sekretariat DPRD</option>
-              <option value="dinas_kebudayaan_kepemudaan_dan_olahraga_serta_pariwisata">
+              <option value="1">Dinas Komunikasi dan Informatika</option>
+              <option value="2">Sekretariat DPRD</option>
+              <option value="3">
                 Dinas Kebudayaan Kepemudaan dan Olahraga serta Pariwisata
               </option>
-              <option value="dinas_kependudukan_dan_pencatatan_sipil">
-                Dinas Kependudukan dan Pencatatan Sipil
-              </option>
-              <option value="lainnya">lainnya</option>
+              <option value="4">Dinas Kependudukan dan Pencatatan Sipil</option>
+              <option value="5">lainnya</option>
             </FormSelect>
             <FormSelect
               id="layanan"
@@ -267,10 +290,10 @@ const ComplaintForm = () => {
               <option value="" disabled>
                 -- Pilih Jenis Layanan --
               </option>
-              <option value="aset_ti">Pengaduan Aset TI</option>
-              <option value="jaringan">Gangguan Jaringan</option>
-              <option value="sistem_info">Masalah Sistem Informasi</option>
-              <option value="lainnya">Lainnya</option>
+              <option value="Hardware">Pengaduan Aset TI</option>
+              <option value="Jaringan">Gangguan Jaringan</option>
+              <option value="Aplikasi">Masalah Sistem Informasi</option>
+              <option value="Lainnya">Lainnya</option>
             </FormSelect>
             <FormSelect
               id="namaAset"
