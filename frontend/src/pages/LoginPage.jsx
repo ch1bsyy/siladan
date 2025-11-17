@@ -3,10 +3,11 @@ import { useAuth } from "../context/AuthContext";
 import { useLoading } from "../context/LoadingContext";
 import Input from "../components/Input";
 import { FiUser, FiEye, FiEyeOff } from "react-icons/fi";
+import toast from "react-hot-toast";
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
-    email: "",
+    username: "",
     password: "",
     rememberMe: false,
   });
@@ -14,7 +15,6 @@ const LoginPage = () => {
   const [serverError, setServerError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const { login } = useAuth();
-
   const { isLoading, showLoading, hideLoading } = useLoading();
 
   const togglePasswordVisibility = () => {
@@ -68,11 +68,13 @@ const LoginPage = () => {
       showLoading("Autentikasi Pengguna...");
 
       try {
-        await login(formData.email, formData.password);
+        const userData = await login(formData.username, formData.password);
+        toast.success(`Login berhasil! Selamat datang, ${userData.name}`);
       } catch (err) {
         setServerError(
           err.message || "Login gagal. Periksa kembali kredensial anda."
         );
+        toast.error(err.message || "Login gagal.");
       } finally {
         hideLoading();
       }
@@ -81,7 +83,7 @@ const LoginPage = () => {
 
   const isFormValid =
     Object.values(errors).every((error) => !error) &&
-    formData.email &&
+    formData.username &&
     formData.password;
 
   return (
@@ -98,12 +100,12 @@ const LoginPage = () => {
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
           <Input
-            id="email"
-            label="Email"
-            type="email"
-            value={formData.email}
+            id="username"
+            label="Username"
+            type="text"
+            value={formData.username}
             onChange={handleChange}
-            error={errors.email}
+            error={errors.username}
             placeholder="contoh@email.com"
             rightIcon={<FiUser size={18} />}
           />

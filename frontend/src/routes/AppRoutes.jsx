@@ -46,7 +46,7 @@ const DashboardGuard = ({ children }) => {
 const RequestGuard = ({ children }) => {
   const { isAuthenticated, user } = useAuth();
 
-  const isPegawai = isAuthenticated && user?.role?.name === "pegawai_opd";
+  const isPegawai = isAuthenticated && user?.role === "pegawai_opd";
 
   if (!isPegawai) {
     return <Navigate to="/login" replace />;

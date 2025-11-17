@@ -35,10 +35,10 @@ const ProfileDropdown = () => {
         />
         <div className="text-left hidden md:block min-w-0">
           <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">
-            {user.name}
+            {user.username}
           </p>
           <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-            {user.role.label}
+            {user.role}
           </p>
         </div>
       </div>
