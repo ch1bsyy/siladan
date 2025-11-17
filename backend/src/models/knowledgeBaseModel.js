@@ -1,12 +1,14 @@
 import supabase from '../../config/database.js';
 
 export const getAllKb = async () => {
-    const { data, error } = await supabase
-        .from('o_knowledge_base')
-        .select('*');
+  try {
+    const { data, error } = await supabase.from('o_knowledge_base').select('*');
 
+    return data;
+  } catch (err) {
     if (error) throw error;
     return data;
+  }
 };
 
 export const getKbById = async (id) => {
@@ -19,7 +21,8 @@ export const getKbById = async (id) => {
 
     // Tangani jika row tidak ditemukan
     if (error) {
-      if (error.code === 'PGRST116') { // Supabase row not found
+      if (error.code === 'PGRST116') {
+        // Supabase row not found
         return null; // bisa juga return { message: 'Data tidak ditemukan' }
       } else {
         throw error; // error lain dilempar
@@ -33,22 +36,21 @@ export const getKbById = async (id) => {
   }
 };
 
-
 export const addNewKb = async (kb) => {
-    const { data, error } = await supabase
-        .from('o_knowledge_base')
-        .insert([kb])
-        .select();
-    
-    if (error) throw error;
-    return data;
+  const { data, error } = await supabase
+    .from('o_knowledge_base')
+    .insert([kb])
+    .select();
+
+  if (error) throw error;
+  return data;
 };
 
 export const updateKb = async (id, payload) => {
   const { data: updatedData, error } = await supabase
     .from('o_knowledge_base')
     .update({
-      judul_kb: payload.judul_kb
+      judul_kb: payload.judul_kb,
     })
     .eq('id_kb', id)
     .select();
@@ -57,14 +59,13 @@ export const updateKb = async (id, payload) => {
   return updatedData;
 };
 
-
 export const deleteKb = async (id_kb) => {
-    const { data, error } = await supabase
-        .from('o_knowledge_base')
-        .delete()
-        .eq('id_kb', id_kb)
-        .select();
+  const { data, error } = await supabase
+    .from('o_knowledge_base')
+    .delete()
+    .eq('id_kb', id_kb)
+    .select();
 
-    if (error) throw error;
-    return data;
+  if (error) throw error;
+  return data;
 };
