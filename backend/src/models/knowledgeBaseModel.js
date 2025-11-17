@@ -10,15 +10,29 @@ export const getAllKb = async () => {
 };
 
 export const getKbById = async (id) => {
+  try {
     const { data, error } = await supabase
-        .from('o_knowledge_base')
-        .select('*')
-        .eq('id_kb', id)
-        .single();
+      .from('o_knowledge_base')
+      .select('*')
+      .eq('id_kb', id)
+      .single(); // pastikan hanya 1 row
 
-    if (error) throw error;
-    return data;
+    // Tangani jika row tidak ditemukan
+    if (error) {
+      if (error.code === 'PGRST116') { // Supabase row not found
+        return null; // bisa juga return { message: 'Data tidak ditemukan' }
+      } else {
+        throw error; // error lain dilempar
+      }
+    }
+
+    return data; // data ditemukan
+  } catch (err) {
+    console.error('getKbById error:', err.message);
+    throw err; // lempar error ke controller
+  }
 };
+
 
 export const addNewKb = async (kb) => {
     const { data, error } = await supabase
