@@ -5,7 +5,7 @@ import MyTicketList from "../features/tracking/components/MyTicketList";
 
 const TrackTicket = () => {
   const { isAuthenticated, user } = useAuth();
-  const isPegawai = isAuthenticated && user?.role?.name === "pegawai_opd";
+  const isPegawai = isAuthenticated && user?.role === "pegawai_opd";
 
   return (
     <div className="py-12">
