@@ -1,4 +1,4 @@
-import * as knowledgeBaseModel from '../models/knowledgeBaseModel.js';
+import * as knowledgeBaseModel from "../models/knowledgeBaseModel.js";
 
 // Get ALL KB
 export const index = async (req, res) => {
@@ -15,11 +15,11 @@ export const show = async (req, res) => {
   try {
     const id = Number(req.params.id);
     if (!id)
-      return res.status(400).json({ status: false, message: 'Invalid id' });
+      return res.status(400).json({ status: false, message: "Invalid id" });
 
     const kb = await knowledgeBaseModel.getKbById(id);
     if (!kb)
-      return res.status(404).json({ status: false, message: 'Not found' });
+      return res.status(404).json({ status: false, message: "Not found" });
 
     res.status(201).json({ status: true, data: kb });
   } catch (err) {
@@ -56,7 +56,7 @@ export const update = async (req, res) => {
     const { judul_kb } = req.body;
     const updatedKb = await knowledgeBaseModel.updateKb(id, { judul_kb });
     if (!updatedKb)
-      return res.status(404).json({ status: false, message: 'Not found' });
+      return res.status(404).json({ status: false, message: "Not found" });
     res.json({ status: true, data: updatedKb });
   } catch (err) {
     res.status(500).json({ status: false, error: err.message });
@@ -69,8 +69,8 @@ export const destroy = async (req, res) => {
     const id_kb = Number(req.params.id);
     const deleted = await knowledgeBaseModel.deleteKb(id_kb);
     if (!deleted)
-      return res.status(404).json({ status: false, message: 'Not found' });
-    res.json({ status: true, message: 'Deleted successfully' });
+      return res.status(404).json({ status: false, message: "Not found" });
+    res.json({ status: true, message: "Deleted successfully" });
   } catch (err) {
     res.status(500).json({ status: false, error: err.message });
   }

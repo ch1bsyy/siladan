@@ -1,4 +1,4 @@
-import * as tiketModel from '../models/tiketModel.js';
+import * as tiketModel from "../models/tiketModel.js";
 
 export const index = async (req, res) => {
   try {
@@ -15,7 +15,7 @@ export const update = async (req, res) => {
     const { nama_tiket } = req.body;
     const updatedTiket = await tiketModel.updateTiket(id, { nama_tiket });
     if (!updatedTiket)
-      return res.status(404).json({ status: false, message: 'Not found' });
+      return res.status(404).json({ status: false, message: "Not found" });
     res.json({ status: true, data: updatedTiket });
   } catch (err) {
     res.status(500).json({ status: false, error: err.message });
@@ -27,8 +27,8 @@ export const destroy = async (req, res) => {
     const id_tiket = Number(req.params.id);
     const deleted = await tiketModel.hapusTiket(id_tiket);
     if (!deleted)
-      return res.status(404).json({ status: false, message: 'Not found' });
-    res.json({ status: true, message: 'Deleted successfully' });
+      return res.status(404).json({ status: false, message: "Not found" });
+    res.json({ status: true, message: "Deleted successfully" });
   } catch (err) {
     res.status(500).json({ status: false, error: err.message });
   }
@@ -48,11 +48,11 @@ export const show = async (req, res) => {
   try {
     const id = Number(req.params.id);
     if (!id)
-      return res.status(400).json({ status: false, message: 'Invalid id' });
+      return res.status(400).json({ status: false, message: "Invalid id" });
 
     const tiket = await tiketModel.getTiketById(id);
     if (!tiket)
-      return res.status(404).json({ status: false, message: 'Not found' });
+      return res.status(404).json({ status: false, message: "Not found" });
 
     res.json({ status: true, data: tiket });
   } catch (err) {
