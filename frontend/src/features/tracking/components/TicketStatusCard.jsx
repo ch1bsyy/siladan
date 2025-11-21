@@ -5,41 +5,47 @@ import {
   FiCheckCircle,
   FiTool,
   FiClock,
-  FiCheck,
   FiXCircle,
   FiChevronRight,
 } from "react-icons/fi";
 
 // Helper for icon and Status
 const getStatusInfo = (status) => {
-  switch (status) {
-    case "Selesai":
-      return {
-        icon: <FiCheckCircle size={20} />,
-        colorClass: "text-green-500",
-      };
-    case "Dikerjakan Teknisi":
-      return {
-        icon: <FiTool size={20} />,
-        colorClass: "text-[#429EBD] dark:text-[#9FE7F5]",
-      };
-    case "Disetujui":
-      return {
-        icon: <FiCheck size={20} />,
-        colorClass: "text-blue-500",
-      };
-    case "Ditolak":
-      return {
-        icon: <FiXCircle size={20} />,
-        colorClass: "text-red-500",
-      };
-    case "Pending":
-    default:
-      return {
-        icon: <FiClock size={20} />,
-        colorClass: "text-slate-500",
-      };
+  const safeStatus = status ? status.toLowerCase() : "";
+
+  if (
+    safeStatus.includes("selesai") ||
+    safeStatus === "closed" ||
+    safeStatus === "resolved"
+  ) {
+    return {
+      icon: <FiCheckCircle size={20} />,
+      colorClass: "text-green-500",
+      label: "Selesai",
+    };
   }
+
+  if (safeStatus.includes("teknisi") || safeStatus.includes("progress")) {
+    return {
+      icon: <FiTool size={20} />,
+      colorClass: "text-[#429EBD] dark:text-[#9FE7F5]",
+      label: "Sedang Dikerjakan",
+    };
+  }
+
+  if (safeStatus.includes("tolak") || safeStatus === "rejected") {
+    return {
+      icon: <FiXCircle size={20} />,
+      colorClass: "text-red-500",
+      label: "Ditolak",
+    };
+  }
+
+  return {
+    icon: <FiClock size={20} />,
+    colorClass: "text-slate-500",
+    label: "Pending",
+  };
 };
 
 const TicketStatusCard = ({ ticket }) => {
@@ -88,7 +94,7 @@ const TicketStatusCard = ({ ticket }) => {
             className={`flex items-center gap-3 mt-1 ${statusInfo.colorClass}`}
           >
             {statusInfo.icon}
-            <span className="font-bold text-lg">{ticket.status}</span>
+            <span className="font-bold text-lg">{statusInfo.label}</span>
           </div>
         </div>
 

@@ -6,6 +6,8 @@ import {
   FiClock,
   FiCheck,
   FiXCircle,
+  FiInbox,
+  FiHelpCircle,
 } from "react-icons/fi";
 
 const getStatusInfo = (status) => {
@@ -39,8 +41,24 @@ const getStatusInfo = (status) => {
         className:
           "bg-red-100 text-red-700 dark:bg-red-700/30 dark:text-red-300",
       };
+    case "Ditugaskan":
+      return {
+        icon: FiInbox,
+        label: "Ditugaskan",
+        className:
+          "bg-cyan-100 text-cyan-700 dark:bg-cyan-700/30 dark:text-cyan-300",
+      };
+    case "Analisa":
+      return {
+        icon: FiHelpCircle,
+        label: "Perlu Analisa",
+        className:
+          "bg-orange-100 text-orange-700 dark:bg-orange-700/30 dark:text-orange-300",
+      };
     case "Menunggu":
     case "Pending":
+    case "Menunggu Approval Bidang":
+    case "Menunggu Approval Seksi":
     default:
       return {
         icon: FiClock,

@@ -55,13 +55,13 @@ const TeknisiDashboard = () => {
           colorClass="bg-blue-500"
         />
         <StatCard
-          title="Menunggu Approval User"
+          title="Menunggu Approval Seksi"
           value="1"
           icon={FiUserCheck}
           colorClass="bg-yellow-500"
         />
         <StatCard
-          title="Menunggu Approval Atasan"
+          title="Menunggu Approval Bidang"
           value="1"
           icon={FiShield}
           colorClass="bg-orange-500"
