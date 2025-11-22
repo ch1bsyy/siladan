@@ -1,9 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useLocation } from "react-router-dom";
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
 import { useLoading } from "../context/LoadingContext";
-import { getTicketStatusByNumber } from "../features/tracking/services/trackService";
+import { useAuth } from "../context/AuthContext";
+
+import {
+  getTicketStatusByNumber,
+  getIncidentDetail,
+  getRequestDetail,
+} from "../features/tracking/services/trackService";
+
 import {
   FiCheckCircle,
   FiTool,
@@ -50,9 +57,14 @@ const getStatusInfo = (status) => {
 
 const TicketDetailPage = () => {
   const { ticketId } = useParams();
+  const location = useLocation();
+  const { isAuthenticated } = useAuth();
+
   const [ticket, setTicket] = useState(null);
   const [error, setError] = useState(null);
   const { isLoading, showLoading, hideLoading } = useLoading();
+
+  const ticketTypeFromState = location.state?.ticketType;
 
   useEffect(() => {
     const fetchTicketDetail = async () => {
@@ -62,37 +74,101 @@ const TicketDetailPage = () => {
       setError(null);
 
       try {
-        const response = await getTicketStatusByNumber(ticketId);
+        let response;
+        let mappedTicket = null;
 
-        if (response.success && response.data) {
-          const { ticket_info, timeline } = response.data;
+        // Request Pegawai
+        if (isAuthenticated && ticketTypeFromState === "Permintaan") {
+          response = await getRequestDetail(ticketId);
 
-          const mappedTicket = {
-            id: ticket_info.ticket_number,
-            title: ticket_info.title,
-            type: "Pengaduan",
-            status: ticket_info.status,
-            isRequest: false,
-            createdAt: ticket_info.created_at,
-            updatedAt: ticket_info.last_updated || ticket_info.created_at,
-            description: ticket_info.description,
+          const data = response.ticket || response;
+          const history = response.progress_updates;
+
+          mappedTicket = {
+            id: data.id || ticketId,
+            ticketNumber: data.ticket_number,
+            title: data.title,
+            type: "Permintaan",
+            status: data.status,
+            createdAt: data.created_at,
+            updatedAt: data.updated_at || data.created_at,
+            description:
+              data.description || data.reason || "Tidak ada deskripsi",
             pelapor: {
-              name: ticket_info.reporter_name || "Anonim",
-              email: ticket_info.reporter_email || "-",
+              name: data.reporter?.full_name || "User",
+              email: data.reporter?.email || "-",
             },
-            history: timeline
-              ? timeline.map((item) => ({
-                  status: item.status_change,
-                  date: item.update_time,
-                  by: "Sistem/Admin",
-                  description: item.handling_description,
+            history: history
+              ? history.map((h) => ({
+                  status: h.status_change,
+                  date: h.update_time || h.created_at,
+                  by: h.updated_by || "Sistem",
+                  description: h.handling_description,
                 }))
               : [],
           };
+          // Complaint Pegawai
+        } else if (isAuthenticated && ticketTypeFromState === "Pengaduan") {
+          response = await getIncidentDetail(ticketId);
+          const data = response.ticket || response;
+          const history = response.progress_updates;
 
+          mappedTicket = {
+            id: data.id || ticketId,
+            ticketNumber: data.ticket_number,
+            title: data.title,
+            type: "Pengaduan",
+            status: data.status,
+            createdAt: data.created_at,
+            updatedAt: data.updated_at || data.created_at,
+            description: data.description,
+            pelapor: {
+              name: data.reporter?.full_name || "User",
+              email: data.reporter?.email || "-",
+            },
+            history: history
+              ? history.map((h) => ({
+                  status: h.status_change,
+                  date: h.update_time || h.created_at,
+                  by: h.updated_by || "Sistem",
+                  description: h.handling_description,
+                }))
+              : [],
+          };
+        } else {
+          response = await getTicketStatusByNumber(ticketId);
+
+          if (response.success && response.data) {
+            const { ticket_info, timeline } = response.data;
+            mappedTicket = {
+              id: ticket_info.ticket_number,
+              ticketNumber: ticket_info.ticket_number,
+              title: ticket_info.title,
+              type: "Pengaduan",
+              status: ticket_info.status,
+              createdAt: ticket_info.created_at,
+              updatedAt: ticket_info.last_updated || ticket_info.created_at,
+              description: ticket_info.description,
+              pelapor: {
+                name: ticket_info.reporter_name || "Anonim",
+                email: ticket_info.reporter_email || "-",
+              },
+              history: timeline
+                ? timeline.map((item) => ({
+                    status: item.status_change,
+                    date: item.update_time,
+                    by: "Sistem/Admin",
+                    description: item.handling_description,
+                  }))
+                : [],
+            };
+          }
+        }
+
+        if (mappedTicket) {
           setTicket(mappedTicket);
         } else {
-          setError("Data tiket tidak ditemukan atau format salah.");
+          throw new Error("Data tiket tidak ditemukan atau format salah.");
         }
       } catch (err) {
         console.error("Error fetching ticket:", err);
@@ -103,7 +179,8 @@ const TicketDetailPage = () => {
     };
 
     fetchTicketDetail();
-  }, [ticketId, showLoading, hideLoading]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ticketId, ticketTypeFromState, isAuthenticated]);
 
   if (isLoading) {
     return null;
@@ -136,6 +213,8 @@ const TicketDetailPage = () => {
   const isRequest = ticket.type === "Permintaan";
   const applicantLabel = isRequest ? "Pemohon" : "Pelapor";
 
+  const displayId = ticket.ticketNumber || ticket.id;
+
   return (
     <div className="py-12">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -144,7 +223,7 @@ const TicketDetailPage = () => {
           className="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-[#053F5C] dark:hover:text-white mb-6"
         >
           <FiArrowLeft />
-          <span>Kembali ke Daftar Tiket</span>
+          <span>Kembali</span>
         </Link>
 
         <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl overflow-hidden border border-slate-100 dark:border-slate-700">
@@ -153,7 +232,7 @@ const TicketDetailPage = () => {
             <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
               <div>
                 <span className="inline-block px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded mb-2">
-                  {ticket.type} #{ticket.id}
+                  {ticket.type} #{displayId}
                 </span>
                 <h1 className="text-2xl md:text-3xl font-bold text-[#053F5C] dark:text-white">
                   {ticket.title}

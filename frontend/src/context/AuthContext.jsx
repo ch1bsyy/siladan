@@ -2,7 +2,7 @@
 /* eslint-disable no-useless-catch */
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import * as authService from "../features/auth/services/mockAuthService";
+import * as authService from "../features/auth/services/authService";
 
 const AuthContext = createContext(null);
 

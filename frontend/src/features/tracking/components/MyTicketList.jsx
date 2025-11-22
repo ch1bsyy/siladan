@@ -1,87 +1,103 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import TicketStatusCard from "./TicketStatusCard";
 import FormSelect from "../../../components/FormSelect";
-
-// Mock Ticket Data
-const mockMyTickets = [
-  {
-    id: "REQ-001",
-    title: "Permintaan Instalasi Microsoft Office",
-    type: "Permintaan",
-    status: "Selesai",
-    updatedAt: "2025-10-20T14:00:00Z",
-  },
-  {
-    id: "SILADAN-101",
-    title: "Jaringan Internet Lambat di Ruang Rapat",
-    type: "Pengaduan",
-    status: "Dikerjakan Teknisi",
-    updatedAt: "2025-10-25T11:00:00Z",
-  },
-  {
-    id: "SILADAN-102",
-    title: "AC di Aula Utama Mati",
-    type: "Pengaduan",
-    status: "Pending",
-    updatedAt: "2025-10-24T08:00:00Z",
-  },
-  {
-    id: "REQ-002",
-    title: "Permintaan Penambahan RAM Laptop",
-    type: "Permintaan",
-    status: "Disetujui",
-    updatedAt: "2025-10-23T15:00:00Z",
-  },
-  {
-    id: "SILADAN-103",
-    title: "Mouse Rusak",
-    type: "Pengaduan",
-    status: "Selesai",
-    updatedAt: "2025-10-22T10:00:00Z",
-  },
-];
+import { getMyIncidents, getMyRequests } from "../services/trackService";
+import { FiRefreshCw } from "react-icons/fi";
 
 // Set Filters
 const complaintStatuses = [
   "Semua",
+  "Open",
   "Pending",
-  "Diverifikasi",
-  "Dikerjakan Teknisi",
-  "Selesai",
-  "Ditolak",
+  "Verified",
+  "In Progress",
+  "Resolved",
+  "Closed",
+  "Rejected",
 ];
 
-const requestStatuses = ["Semua", "Pending", "Disetujui", "Selesai", "Ditolak"];
+const requestStatuses = [
+  "Semua",
+  "Open",
+  "Pending",
+  "Approved",
+  "In Progress",
+  "Completed",
+  "Rejected",
+];
 
 const MyTicketList = () => {
   const [activeTab, setActiveTab] = useState("pengaduan");
   const [selectedStatus, setSelectedStatus] = useState("Semua");
 
-  // hook fetch data
-  const allTickets = mockMyTickets;
+  const [tickets, setTickets] = useState([]);
+  const [isFetching, setIsFetching] = useState(false);
+  const [error, setError] = useState(null);
 
   const statusOptions =
     activeTab === "pengaduan" ? complaintStatuses : requestStatuses;
 
-  const handleTabChange = (tab) => {
-    setActiveTab(tab);
-    setSelectedStatus("Semua");
+  const fetchTickets = async () => {
+    setIsFetching(true);
+    setError(null);
+    setTickets([]);
+
+    try {
+      let response;
+      let rawData = [];
+
+      if (activeTab === "pengaduan") {
+        response = await getMyIncidents();
+        rawData = response.data || response;
+      } else {
+        response = await getMyRequests();
+        rawData = response.data || response;
+      }
+
+      const mappedTicket = Array.isArray(rawData)
+        ? rawData.map((item) => ({
+            id: item.id,
+            ticketNumber: item.ticket_number,
+            title: item.title,
+            type: activeTab === "pengaduan" ? "Pengaduan" : "Permintaan",
+            status: item.status,
+            updatedAt:
+              item.updated_at || item.created_at || new Date().toISOString(),
+          }))
+        : [];
+
+      setTickets(mappedTicket);
+    } catch (err) {
+      console.error("Error fetching tickets:", err);
+      setError("Gagal memuat data tiket. Silakan coba lagi.");
+    } finally {
+      setIsFetching(false);
+    }
   };
 
-  // Filter Logic with UseMemo
-  const displayedTickets = useMemo(() => {
-    // Filter By Type (Active Tab)
-    const ticketsByType = allTickets.filter(
-      (ticket) => ticket.type.toLowerCase() === activeTab
-    );
+  useEffect(() => {
+    setSelectedStatus("Semua");
+    fetchTickets();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
 
-    // Filter By Status (Active Filter)
-    if (selectedStatus === "Semua") {
-      return ticketsByType;
+  const handleTabChange = (tab) => {
+    if (tab !== activeTab) {
+      setActiveTab(tab);
     }
+  };
 
-    return ticketsByType.filter((ticket) => ticket.status === selectedStatus);
-  }, [allTickets, activeTab, selectedStatus]);
+  // Filter Logic
+  const displayedTickets = useMemo(() => {
+    // Filter By Status Only
+    if (selectedStatus === "Semua") {
+      return tickets;
+    }
+    // Case insensitive comparison for status
+    return tickets.filter(
+      (ticket) => ticket.status?.toLowerCase() === selectedStatus.toLowerCase()
+    );
+  }, [tickets, selectedStatus]);
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -108,31 +124,65 @@ const MyTicketList = () => {
         </button>
       </div>
 
-      <div className="mb-6 max-w-xs">
-        <FormSelect
-          id="status-filter"
-          name="status-filter"
-          label="Filter Berdasarkan Status"
-          value={selectedStatus}
-          onChange={(e) => setSelectedStatus(e.target.value)}
+      {/* Filter & Refresh */}
+      <div className="flex justify-between items-end gap-2 md:gap-0 mb-6">
+        <div className="w-full max-w-xs">
+          <FormSelect
+            id="status-filter"
+            name="status-filter"
+            label="Filter Berdasarkan Status"
+            value={selectedStatus}
+            onChange={(e) => setSelectedStatus(e.target.value)}
+          >
+            {statusOptions.map((status) => (
+              <option key={status} value={status}>
+                {status}
+              </option>
+            ))}
+          </FormSelect>
+        </div>
+        <button
+          onClick={fetchTickets}
+          className="flex items-center justify-center min-h-11 min-w-11 text-slate-600 hover:text-[#053F5C] dark:text-slate-400 dark:hover:text-white cursor-pointer transition-colors"
+          title="Refresh Data"
         >
-          {statusOptions.map((status) => (
-            <option key={status} value={status}>
-              {status}
-            </option>
-          ))}
-        </FormSelect>
+          <FiRefreshCw size={20} className={isFetching ? "animate-spin" : ""} />
+        </button>
       </div>
 
-      <div className="space-y-6">
-        {displayedTickets.length > 0 ? (
+      {/* Ticket List Content */}
+      <div className="space-y-6 min-h-[300px]">
+        {isFetching ? (
+          <div className="space-y-4 animate-pulse">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="h-32 bg-slate-200 dark:bg-slate-700 rounded-lg"
+              ></div>
+            ))}
+          </div>
+        ) : error ? (
+          <div className="text-center py-10 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+            <p className="text-red-600 dark:text-red-400 mb-2">{error}</p>
+            <button
+              onClick={fetchTickets}
+              className="text-sm md:text-base font-bold underline text-red-700 dark:text-red-300"
+            >
+              Coba Lagi
+            </button>
+          </div>
+        ) : displayedTickets.length > 0 ? (
+          // Data Found
           displayedTickets.map((ticket) => (
             <TicketStatusCard key={ticket.id} ticket={ticket} />
           ))
         ) : (
-          <p className="text-center text-slate-500 dark:text-slate-400 py-10 ">
-            Tidak ada tiket dengan status "{selectedStatus}" di tab {activeTab}.
-          </p>
+          // Empty State
+          <div className="text-center py-16 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-dashed border-slate-400 dark:border-slate-600">
+            <p className="text-slate-600 dark:text-slate-400">
+              Tidak ada tiket {activeTab} dengan status "{selectedStatus}".
+            </p>
+          </div>
         )}
       </div>
     </div>

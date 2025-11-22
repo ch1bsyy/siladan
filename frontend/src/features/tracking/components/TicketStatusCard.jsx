@@ -49,22 +49,27 @@ const getStatusInfo = (status) => {
 };
 
 const TicketStatusCard = ({ ticket }) => {
-  const isComplaint = ticket.type === "Pengaduan";
+  const typeLower = ticket.type ? ticket.type.toLowerCase() : "";
+  const isComplaint = typeLower === "Pengaduan";
+
   const badgeClass = isComplaint
-    ? "bg-[#F7AD19]/20 text-[#F7AD19]"
-    : "bg-[#429EBD]/20 text-[#429EBD]";
+    ? "bg-[#F7AD19]/20 text-[#916610] dark:text-[#F7AD19]"
+    : "bg-[#429EBD]/20 text-[#053F5C] dark:text-[#429EBD]";
 
   const statusInfo = getStatusInfo(ticket.status);
+
+  const displayId = ticket.ticketNumber || ticket.id;
 
   return (
     <Link
       to={`/track-ticket/${ticket.id}`}
+      state={{ ticketType: ticket.type }}
       className="block bg-white dark:bg-slate-800 rounded-lg shadow-lg p-5 border border-slate-200 dark:border-slate-700 transition-all duration-300 hover:shadow-xl hover:border-slate-300 dark:hover:border-[#429EBD] cursor-pointer"
     >
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
         <div>
           <span
-            className={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${badgeClass}`}
+            className={`inline-block px-4 py-2 text-xs font-semibold rounded-full ${badgeClass}`}
           >
             {ticket.type}
           </span>
@@ -78,7 +83,7 @@ const TicketStatusCard = ({ ticket }) => {
             Nomor Tiket
           </p>
           <p className="font-mono font-semibold text-slate-700 dark:text-slate-300">
-            {ticket.id}
+            {displayId}
           </p>
         </div>
       </div>
