@@ -24,6 +24,7 @@ import DashboardProfilePage from "../pages/DashboardProfilePage";
 import ChatPage from "../pages/ChatPage";
 import AssignedTicketPage from "../pages/AssignedTicketPage";
 import AssignedTicketDetailPage from "../pages/AssignedTicketDetailPage";
+import ReportPage from "../pages/ReportPage";
 
 // Guard Component for protect route
 const DashboardGuard = ({ children }) => {
@@ -111,6 +112,7 @@ const AppRoutes = () => {
           path="detail-assigned-ticket/:ticketId"
           element={<AssignedTicketDetailPage />}
         />
+        <Route path="reports" element={<ReportPage />} />
         <Route
           path="profile"
           element={

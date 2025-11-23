@@ -13,6 +13,7 @@ import {
   FiChevronLeft,
   FiChevronRight,
   FiActivity,
+  FiBarChart2,
 } from "react-icons/fi";
 import { IoChatbubblesOutline } from "react-icons/io5";
 import Logo from "../assets/images/logo-siladan.png";
@@ -46,6 +47,12 @@ const navigationLinks = [
     name: "Pengerjaan Tiket",
     to: "/dashboard/assigned-tickets",
     icon: FiActivity,
+    permission: ["process", "ticket"],
+  },
+  {
+    name: "Laporan Kinerja",
+    to: "/dashboard/reports",
+    icon: FiBarChart2,
     permission: ["process", "ticket"],
   },
   {
