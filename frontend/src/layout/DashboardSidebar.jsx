@@ -14,6 +14,7 @@ import {
   FiChevronRight,
   FiActivity,
   FiBarChart2,
+  FiBookOpen,
 } from "react-icons/fi";
 import { IoChatbubblesOutline } from "react-icons/io5";
 import Logo from "../assets/images/logo-siladan.png";
@@ -48,6 +49,12 @@ const navigationLinks = [
     to: "/dashboard/assigned-tickets",
     icon: FiActivity,
     permission: ["process", "ticket"],
+  },
+  {
+    name: "Buat Artikel Solusi",
+    to: "/dashboard/create-article",
+    icon: FiBookOpen,
+    permission: ["create", "article"],
   },
   {
     name: "Laporan Kinerja",
