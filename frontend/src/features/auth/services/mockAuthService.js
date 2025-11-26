@@ -74,6 +74,7 @@ const mockApiData = {
       permissions: [
         { action: "read", subject: "dashboard" },
         { action: "approve", subject: "article" },
+        { action: "view", subject: "report" },
       ],
     },
   },

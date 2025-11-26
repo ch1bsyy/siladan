@@ -15,6 +15,7 @@ import {
   FiActivity,
   FiBarChart2,
   FiBookOpen,
+  FiPieChart,
 } from "react-icons/fi";
 import { IoChatbubblesOutline } from "react-icons/io5";
 import Logo from "../assets/images/logo-siladan.png";
@@ -75,10 +76,10 @@ const navigationLinks = [
     permission: ["manage", "user"],
   },
   {
-    name: "Generate Laporan",
-    to: "/dashboard/reports",
-    icon: FiFileText,
-    permission: ["generate", "report"],
+    name: "Laporan OPD",
+    to: "/dashboard/opd-reports",
+    icon: FiPieChart,
+    permission: ["view", "report"],
   },
 ];
 

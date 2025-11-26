@@ -27,6 +27,7 @@ import AssignedTicketDetailPage from "../pages/AssignedTicketDetailPage";
 import ReportPage from "../pages/ReportPage";
 import CreateArticlePage from "../pages/CreateArticlePage";
 import ArticleReviewPage from "../pages/ArticleReviewPage";
+import OPDReportPage from "../pages/OPDReportPage";
 
 // Guard Component for protect route
 const DashboardGuard = ({ children }) => {
@@ -125,6 +126,7 @@ const AppRoutes = () => {
 
         {/* Reporting & User */}
         <Route path="reports" element={<ReportPage />} />
+        <Route path="opd-reports" element={<OPDReportPage />} />
         <Route
           path="profile"
           element={
