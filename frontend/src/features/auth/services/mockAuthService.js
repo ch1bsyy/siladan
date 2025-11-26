@@ -63,6 +63,20 @@ const mockApiData = {
       ],
     },
   },
+  "admin@opd.go.id": {
+    token: "jwt.token.opd",
+    user: {
+      id: 4,
+      name: "Wahhab Admin",
+      email: "admin@opd.go.id",
+      avatar: "https://i.pravatar.cc/150?u=teknisi@siladan.go.id",
+      role: { id: 4, name: "admin_opd", label: "Admin OPD" },
+      permissions: [
+        { action: "read", subject: "dashboard" },
+        { action: "approve", subject: "article" },
+      ],
+    },
+  },
   "admin@kota.go.id": {
     token: "jwt.token.admin",
     user: {

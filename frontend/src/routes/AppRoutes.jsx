@@ -26,6 +26,7 @@ import AssignedTicketPage from "../pages/AssignedTicketPage";
 import AssignedTicketDetailPage from "../pages/AssignedTicketDetailPage";
 import ReportPage from "../pages/ReportPage";
 import CreateArticlePage from "../pages/CreateArticlePage";
+import ArticleReviewPage from "../pages/ArticleReviewPage";
 
 // Guard Component for protect route
 const DashboardGuard = ({ children }) => {
@@ -102,20 +103,28 @@ const AppRoutes = () => {
         }
       >
         <Route index element={<DashboardPage />} />
+
+        {/* Ticket Management */}
         <Route path="new-ticket" element={<NewTicketPage />} />
         <Route path="manage-tickets" element={<TicketManagementPage />} />
         <Route
           path="detail-manage-ticket/:ticketId"
           element={<DashboardTicketDetailPage />}
         />
+
+        {/* Technician Work */}
         <Route path="assigned-tickets" element={<AssignedTicketPage />} />
         <Route
           path="detail-assigned-ticket/:ticketId"
           element={<AssignedTicketDetailPage />}
         />
-        <Route path="reports" element={<ReportPage />} />
-        <Route path="create-article" element={<CreateArticlePage />} />
 
+        {/* Knowledge Base */}
+        <Route path="create-article" element={<CreateArticlePage />} />
+        <Route path="review-articles" element={<ArticleReviewPage />} />
+
+        {/* Reporting & User */}
+        <Route path="reports" element={<ReportPage />} />
         <Route
           path="profile"
           element={

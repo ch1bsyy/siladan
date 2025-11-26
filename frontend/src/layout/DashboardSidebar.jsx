@@ -57,6 +57,12 @@ const navigationLinks = [
     permission: ["create", "article"],
   },
   {
+    name: "Review Artikel",
+    to: "/dashboard/review-articles",
+    icon: FiFileText,
+    permission: ["approve", "article"],
+  },
+  {
     name: "Laporan Kinerja",
     to: "/dashboard/reports",
     icon: FiBarChart2,
@@ -121,7 +127,7 @@ const DashboardSidebar = () => {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-2 py-4 overflow-y-auto">
+      <nav className="flex-1 space-y-2 py-4 overflow-y-auto scrollbar-thin">
         {accessibleLinks.map((link) => (
           <SidebarItem
             key={link.name}
