@@ -75,6 +75,7 @@ const mockApiData = {
         { action: "read", subject: "dashboard" },
         { action: "approve", subject: "article" },
         { action: "view", subject: "report" },
+        { action: "assign", subject: "ticket" },
       ],
     },
   },
