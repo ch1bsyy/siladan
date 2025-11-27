@@ -23,7 +23,7 @@ const DashboardPage = () => {
         Selamat Datang, {user?.name}!
       </h1>
 
-      {hasPermission(["assign", "ticket"]) && <HelpdeskDashboard />}
+      {hasPermission(["manage", "ticket"]) && <HelpdeskDashboard />}
 
       {hasPermission(["process", "ticket"]) && <TeknisiDashboard />}
 

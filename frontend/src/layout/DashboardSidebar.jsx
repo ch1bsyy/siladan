@@ -17,6 +17,7 @@ import {
   FiBookOpen,
   FiPieChart,
 } from "react-icons/fi";
+import { SlCalender } from "react-icons/sl";
 import { IoChatbubblesOutline } from "react-icons/io5";
 import Logo from "../assets/images/logo-siladan.png";
 
@@ -68,6 +69,12 @@ const navigationLinks = [
     to: "/dashboard/reports",
     icon: FiBarChart2,
     permission: ["process", "ticket"],
+  },
+  {
+    name: "Atur Operasional",
+    to: "/dashboard/settings/operational",
+    icon: SlCalender,
+    permission: ["manage", "settings"],
   },
   {
     name: "Manajemen Pengguna",
