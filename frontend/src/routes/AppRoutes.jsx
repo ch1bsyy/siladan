@@ -30,6 +30,7 @@ import ArticleReviewPage from "../pages/ArticleReviewPage";
 import OPDReportPage from "../pages/OPDReportPage";
 import OperationalSettingsPage from "../pages/OperationalSettingsPage";
 import SLAManagementPage from "../pages/SLAManagementPage";
+import UserManagementPage from "../pages/UserManagementPage";
 
 // Guard Component for protect route
 const DashboardGuard = ({ children }) => {
@@ -137,6 +138,7 @@ const AppRoutes = () => {
             </AuthGuard>
           }
         />
+        <Route path="users" element={<UserManagementPage />} />
 
         <Route
           path="settings/operational"

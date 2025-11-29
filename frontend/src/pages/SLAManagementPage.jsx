@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { FiEdit2, FiInfo } from "react-icons/fi";
-import { TfiTimer } from "react-icons/tfi";
 import EditSLAModal from "../features/settings/components/EditSLAModal";
 import toast from "react-hot-toast";
 
@@ -80,11 +79,10 @@ const SLAManagementPage = () => {
   };
 
   return (
-    <div className="space-y-6 pb-20">
+    <div className="space-y-8 pb-20">
       {/* HEADER */}
       <div>
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
-          <TfiTimer className="text-[#053F5C] dark:text-[#429EBD]" size={32} />
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
           Pengaturan Target Penyelesaian (SLA)
         </h1>
         <p className="mt-2 text-slate-600 dark:text-slate-400 max-w-3xl leading-relaxed">

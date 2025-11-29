@@ -18,15 +18,28 @@ const DashboardPage = () => {
   const { user, hasPermission } = useAuth();
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">
-        Selamat Datang, {user?.name}!
-      </h1>
+    <div className="space-y-8 pb-10">
+      <div className="border-b border-slate-200 dark:border-slate-700 pb-4">
+        <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">
+          Selamat Datang, {user?.name}!
+        </h1>
+      </div>
+    
+      {/* 2. Section Helpdesk (Triase & Manajemen) */}
+      {hasPermission(["manage", "ticket"]) && (
+        <section id="area-manajemen">
+          <HelpdeskDashboard />
+        </section>
+      )}
 
-      {hasPermission(["manage", "ticket"]) && <HelpdeskDashboard />}
+      {/* 3. Section Teknisi (Eksekusi) */}
+      {hasPermission(["process", "ticket"]) && (
+        <section id="area-pengerjaan">
+          <TeknisiDashboard />
+        </section>
+      )}
 
-      {hasPermission(["process", "ticket"]) && <TeknisiDashboard />}
-
+      {/* 4. Section Admin Kota */}
       {hasPermission(["manage", "all"]) && <AdminKotaDashboard />}
     </div>
   );

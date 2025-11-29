@@ -84,7 +84,7 @@ const navigationLinks = [
     permission: ["manage", "settings"],
   },
   {
-    name: "Manajemen Pengguna",
+    name: "Kelola Pengguna",
     to: "/dashboard/users",
     icon: FiUsers,
     permission: ["manage", "user"],

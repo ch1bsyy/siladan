@@ -50,20 +50,6 @@ const mockApiData = {
       ],
     },
   },
-  "seksi@siladan.go.id": {
-    token: "jwt.token.seksi",
-    user: {
-      id: 4,
-      name: "Doni Seksi",
-      email: "seksi@siladan.go.id",
-      avatar: "https://i.pravatar.cc/150?u=teknisi@siladan.go.id",
-      role: { id: 4, name: "seksi", label: "Seksi" },
-      permissions: [
-        { action: "read", subject: "dashboard" },
-        { action: "approve", subject: "ticket" },
-      ],
-    },
-  },
   "admin@opd.go.id": {
     token: "jwt.token.opd",
     user: {
@@ -78,6 +64,7 @@ const mockApiData = {
         { action: "view", subject: "report" },
         { action: "assign", subject: "ticket" },
         { action: "manage", subject: "settings" },
+        { action: "manage", subject: "user" },
       ],
     },
   },
