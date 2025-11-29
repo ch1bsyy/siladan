@@ -17,6 +17,7 @@ import {
   FiBookOpen,
   FiPieChart,
 } from "react-icons/fi";
+import { TfiTimer } from "react-icons/tfi";
 import { SlCalender } from "react-icons/sl";
 import { IoChatbubblesOutline } from "react-icons/io5";
 import Logo from "../assets/images/logo-siladan.png";
@@ -77,11 +78,18 @@ const navigationLinks = [
     permission: ["manage", "settings"],
   },
   {
+    name: "Atur SLA",
+    to: "/dashboard/settings/sla",
+    icon: TfiTimer,
+    permission: ["manage", "settings"],
+  },
+  {
     name: "Manajemen Pengguna",
     to: "/dashboard/users",
     icon: FiUsers,
     permission: ["manage", "user"],
   },
+
   {
     name: "Laporan OPD",
     to: "/dashboard/opd-reports",

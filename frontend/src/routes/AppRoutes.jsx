@@ -29,6 +29,7 @@ import CreateArticlePage from "../pages/CreateArticlePage";
 import ArticleReviewPage from "../pages/ArticleReviewPage";
 import OPDReportPage from "../pages/OPDReportPage";
 import OperationalSettingsPage from "../pages/OperationalSettingsPage";
+import SLAManagementPage from "../pages/SLAManagementPage";
 
 // Guard Component for protect route
 const DashboardGuard = ({ children }) => {
@@ -141,6 +142,7 @@ const AppRoutes = () => {
           path="settings/operational"
           element={<OperationalSettingsPage />}
         />
+        <Route path="settings/sla" element={<SLAManagementPage />} />
       </Route>
 
       <Route
