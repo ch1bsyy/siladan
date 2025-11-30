@@ -16,6 +16,7 @@ import {
   FiBarChart2,
   FiBookOpen,
   FiPieChart,
+  FiLayers,
 } from "react-icons/fi";
 import { TfiTimer } from "react-icons/tfi";
 import { SlCalender } from "react-icons/sl";
@@ -88,6 +89,12 @@ const navigationLinks = [
     to: "/dashboard/users",
     icon: FiUsers,
     permission: ["manage", "user"],
+  },
+  {
+    name: "Katalog Layanan",
+    to: "/dashboard/catalog",
+    icon: FiLayers,
+    permission: ["manage", "settings"],
   },
 
   {

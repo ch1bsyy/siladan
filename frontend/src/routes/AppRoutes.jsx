@@ -31,6 +31,7 @@ import OPDReportPage from "../pages/OPDReportPage";
 import OperationalSettingsPage from "../pages/OperationalSettingsPage";
 import SLAManagementPage from "../pages/SLAManagementPage";
 import UserManagementPage from "../pages/UserManagementPage";
+import ServiceCatalogPage from "../pages/ServiceCatalogPage";
 
 // Guard Component for protect route
 const DashboardGuard = ({ children }) => {
@@ -145,6 +146,7 @@ const AppRoutes = () => {
           element={<OperationalSettingsPage />}
         />
         <Route path="settings/sla" element={<SLAManagementPage />} />
+        <Route path="catalog" element={<ServiceCatalogPage />} />
       </Route>
 
       <Route
