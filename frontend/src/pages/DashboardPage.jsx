@@ -2,6 +2,7 @@ import React from "react";
 import { useAuth } from "../context/AuthContext";
 import HelpdeskDashboard from "../features/dashboard/components/HelpdeskDashboard";
 import TeknisiDashboard from "../features/dashboard/components/TeknisiDashboard";
+import AdminOPDDashboard from "../features/dashboard/components/DashboardAdminOPD";
 
 const AdminKotaDashboard = () => (
   <div className="p-6 bg-white dark:bg-slate-800 rounded-lg shadow-lg">
@@ -24,7 +25,7 @@ const DashboardPage = () => {
           Selamat Datang, {user?.name}!
         </h1>
       </div>
-    
+
       {/* 2. Section Helpdesk (Triase & Manajemen) */}
       {hasPermission(["manage", "ticket"]) && (
         <section id="area-manajemen">
@@ -39,7 +40,14 @@ const DashboardPage = () => {
         </section>
       )}
 
-      {/* 4. Section Admin Kota */}
+      {/* 4. Section OPD (Pengaturan OPD) */}
+      {hasPermission(["manage", "settings"]) && (
+        <section id="area-admin-opd">
+          <AdminOPDDashboard />
+        </section>
+      )}
+
+      {/* 5. Section Admin Kota */}
       {hasPermission(["manage", "all"]) && <AdminKotaDashboard />}
     </div>
   );
