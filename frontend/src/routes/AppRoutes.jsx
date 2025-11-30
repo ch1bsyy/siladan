@@ -32,6 +32,7 @@ import OperationalSettingsPage from "../pages/OperationalSettingsPage";
 import SLAManagementPage from "../pages/SLAManagementPage";
 import UserManagementPage from "../pages/UserManagementPage";
 import ServiceCatalogPage from "../pages/ServiceCatalogPage";
+import WarRoomPage from "../pages/WarroomPage";
 
 // Guard Component for protect route
 const DashboardGuard = ({ children }) => {
@@ -98,6 +99,15 @@ const AppRoutes = () => {
           }
         />
       </Route>
+
+      <Route
+        path="/dashboard/war-room/:incidentId"
+        element={
+          <DashboardGuard>
+            <WarRoomPage />
+          </DashboardGuard>
+        }
+      />
 
       <Route
         path="/dashboard"
