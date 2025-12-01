@@ -2,6 +2,7 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiSearch, FiSend, FiFilePlus, FiInfo, FiX } from "react-icons/fi";
+import { io } from "socket.io-client";
 import Input from "../components/Input";
 
 // --- Mock Data (Ganti dengan API call) ---
@@ -76,6 +77,8 @@ const ChatPage = () => {
   const [selectedId, setSelectedId] = useState(mockConversations[0].id);
   const [newMessage, setNewMessage] = useState("");
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
+  const [socket, setSocket] = useState(null);
+  const [isConnected, setIsConnected] = useState(false);
 
   const navigate = useNavigate();
 
@@ -93,6 +96,42 @@ const ChatPage = () => {
     [selectedId]
   );
 
+  // Initialize Socket.IO connection
+  useEffect(() => {
+    const socketInstance = io("http://localhost:3000", {
+      transports: ["websocket", "polling"],
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionAttempts: 5,
+    });
+
+    socketInstance.on("connect", () => {
+      console.log("Socket.IO connected:", socketInstance.id);
+      setIsConnected(true);
+    });
+
+    socketInstance.on("disconnect", () => {
+      console.log("Socket.IO disconnected");
+      setIsConnected(false);
+    });
+
+    socketInstance.on("connect_error", (error) => {
+      console.error("Socket.IO connection error:", error);
+    });
+
+    // Example: Listen for incoming messages
+    socketInstance.on("message", (data) => {
+      console.log("Received message from server:", data);
+    });
+
+    setSocket(socketInstance);
+
+    // Cleanup on unmount
+    return () => {
+      socketInstance.disconnect();
+    };
+  }, []);
+
   // Auto-scroll down when a new message arrives or the chat is changed
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -102,6 +141,16 @@ const ChatPage = () => {
     e.preventDefault();
     if (newMessage.trim() === "") return null;
     console.log("Mengirim pesan:", newMessage);
+    
+    // Send message via Socket.IO if connected
+    if (socket && isConnected) {
+      socket.emit("message", {
+        text: newMessage,
+        conversationId: selectedId,
+        timestamp: new Date().toISOString(),
+      });
+    }
+    
     // API Logic
     setNewMessage("");
   };
@@ -158,7 +207,9 @@ const ChatPage = () => {
                 <h3 className="font-semibold text-slate-900 dark:text-white truncate">
                   {activeUser.name}
                 </h3>
-                <p className="text-xs text-green-500">Online</p>
+                <p className={`text-xs ${isConnected ? 'text-green-500' : 'text-slate-400'}`}>
+                  {isConnected ? 'Online' : 'Offline'}
+                </p>
               </div>
             </div>
 

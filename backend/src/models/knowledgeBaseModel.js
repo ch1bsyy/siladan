@@ -3,30 +3,12 @@
 import supabase from "../../config/database.js";
 
 export const getAllKb = async () => {
-  // Ambil semua knowledge base
-  const { data: kbData, error: kbError } = await supabase
+  const { data, error } = await supabase
     .from("o_knowledge_base")
     .select("*");
 
-  if (kbError) throw kbError;
-
-  // Ambil semua kategori
-  const { data: kategoriData, error: kategoriError } = await supabase
-    .from("m_kategori_kb")
-    .select("id_kategori_kb, kategori_kb");
-
-  if (kategoriError) throw kategoriError;
-
-  // Manual join: gabungkan data
-  const result = kbData.map(kb => {
-    const kategori = kategoriData.find(k => k.id_kategori_kb === kb.id_kategori_kb);
-    return {
-      ...kb,
-      kategori_kb: kategori?.kategori_kb || null
-    };
-  });
-
-  return result;
+  if (error) throw error;
+  return data;
 };
 
 export const getKbById = async (id) => {
