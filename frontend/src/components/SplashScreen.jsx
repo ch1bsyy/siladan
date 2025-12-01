@@ -12,7 +12,7 @@ function SplashScreen() {
         <motion.img
           src={Logo}
           alt="Siladan Logo"
-          className="w-40 h-40 md:w-56 md:h-56 object-contain drop-shadow-2xl"
+          className="w-45 h-45 md:w-56 md:h-56 object-contain drop-shadow-2xl"
           initial={{ scale: 0, rotate: -180, opacity: 0 }}
           animate={{ scale: 1, rotate: 0, opacity: 1 }}
           transition={{
@@ -32,12 +32,12 @@ function SplashScreen() {
             easing: "ease-out",
           }}
         >
-          Siladan
+          SILADAN
         </motion.h1>
 
         {/* Description */}
         <motion.p
-          className="px-6 md:px-0 text-base md:text-lg text-gray-200 max-w-md leading-relaxed"
+          className="px-6 md:px-0 text-base md:text-lg text-gray-200 max-w-xl leading-relaxed"
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{
@@ -46,7 +46,8 @@ function SplashScreen() {
             easing: "ease-out",
           }}
         >
-          Sistem Informasi Layanan dan Pengaduan TI Pemerintah
+          Portal layanan resmi untuk pengaduan aset dan permintaan layanan
+          pemerintahan dengan sistem pemantauan real-time.
         </motion.p>
       </div>
 

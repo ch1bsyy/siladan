@@ -8,13 +8,13 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const TicketChartWidget = ({ title, data = [], colors }) => {
+const TicketChartWidget = ({ title, data = [], colors, height }) => {
   return (
     <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-4 md:p-6 h-full">
       <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
         {title}
       </h3>
-      <div className="w-full h-[250px]">
+      <div className={`w-full h-[${height}]`}>
         <ResponsiveContainer>
           <PieChart>
             <Pie

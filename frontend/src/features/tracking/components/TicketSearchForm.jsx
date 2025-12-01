@@ -3,6 +3,7 @@ import Input from "../../../components/Input";
 import { FiSearch } from "react-icons/fi";
 import TicketStatusCard from "./TicketStatusCard";
 import { useLoading } from "../../../context/LoadingContext";
+import { getTicketStatusByNumber } from "../services/trackService";
 
 const TicketSearchForm = () => {
   const [ticketNumber, setTicketNumber] = useState("");
@@ -11,38 +12,47 @@ const TicketSearchForm = () => {
 
   const { isLoading, showLoading, hideLoading } = useLoading();
 
-  const handleSearch = (e) => {
+  const handleSearch = async (e) => {
     e.preventDefault();
+
+    if (!ticketNumber.trim()) {
+      setError("Mohon masukkan nomor tiket.");
+      return;
+    }
+
     showLoading("Mencari tiket Anda. Harap tunggu...");
     setError("");
     setFoundTicket(null);
 
-    // --- SEARCHING LOGIC (SIMULATION) ---
-    // Call API:
-    // z.B. api.get(`/tickets/search?number=${ticketNumber}&email=${email}`)
-    setTimeout(() => {
-      // Simulation success
-      if (ticketNumber === "SILADAN-123") {
-        setFoundTicket({
-          id: "SILADAN-123",
-          title: "Printer di Ruang A Rusak",
+    try {
+      const response = await getTicketStatusByNumber(ticketNumber);
+
+      if (response.success && response.data) {
+        const { ticket_info, timeline } = response.data;
+        console.log("Response", response.data);
+
+        const mappedTicket = {
+          id: ticket_info.ticket_number,
+          title: ticket_info.title,
           type: "Pengaduan",
-          status: "Sedang Diproses",
-          updatedAt: "2025-10-25T10:30:00Z",
-          history: [
-            { status: "Diajukan", date: "2025-10-24T09:00:00Z" },
-            { status: "Diverifikasi Seksi", date: "2025-10-24T11:00:00Z" },
-            { status: "Sedang Diproses", date: "2025-10-25T10:30:00Z" },
-          ],
-        });
+          status: ticket_info.status,
+          updatedAt: ticket_info.last_updated || ticket_info.created_at,
+          timeline: timeline,
+        };
+
+        setFoundTicket(mappedTicket);
       } else {
-        // Simulation failed
-        setError(
-          "Tiket tidak ditemukan. Periksa kembali nomor tiket dan email Anda."
-        );
+        setError("Data tiket tidak valid.");
       }
+    } catch (err) {
+      console.error(err);
+      setError(
+        err.message ||
+          "Tiket tidak ditemukan. Periksa kembali nomor tiket Anda."
+      );
+    } finally {
       hideLoading();
-    }, 1500);
+    }
   };
 
   return (
@@ -56,7 +66,7 @@ const TicketSearchForm = () => {
           label="Nomor Ticket"
           value={ticketNumber}
           onChange={(e) => setTicketNumber(e.target.value)}
-          placeholder="Contoh: SILADAN-123"
+          placeholder="Contoh: INC-2025-1234"
         />
         <button
           type="submit"
@@ -69,7 +79,12 @@ const TicketSearchForm = () => {
       </form>
 
       <div className="mt-8">
-        {error && <p className="text-center text-red-500">{error}</p>}
+        {error && (
+          <div className="p-4 bg-red-100 text-red-700 rounded-lg text-center border border-red-200">
+            {error}
+          </div>
+        )}
+
         {foundTicket && (
           <div>
             <h3 className="text-lg font-semibold text-center text-slate-800 dark:text-slate-200 mb-4">

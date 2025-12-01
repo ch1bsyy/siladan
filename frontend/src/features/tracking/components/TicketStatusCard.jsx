@@ -5,60 +5,71 @@ import {
   FiCheckCircle,
   FiTool,
   FiClock,
-  FiCheck,
   FiXCircle,
   FiChevronRight,
 } from "react-icons/fi";
 
 // Helper for icon and Status
 const getStatusInfo = (status) => {
-  switch (status) {
-    case "Selesai":
-      return {
-        icon: <FiCheckCircle size={20} />,
-        colorClass: "text-green-500",
-      };
-    case "Dikerjakan Teknisi":
-      return {
-        icon: <FiTool size={20} />,
-        colorClass: "text-[#429EBD] dark:text-[#9FE7F5]",
-      };
-    case "Disetujui":
-      return {
-        icon: <FiCheck size={20} />,
-        colorClass: "text-blue-500",
-      };
-    case "Ditolak":
-      return {
-        icon: <FiXCircle size={20} />,
-        colorClass: "text-red-500",
-      };
-    case "Pending":
-    default:
-      return {
-        icon: <FiClock size={20} />,
-        colorClass: "text-slate-500",
-      };
+  const safeStatus = status ? status.toLowerCase() : "";
+
+  if (
+    safeStatus.includes("selesai") ||
+    safeStatus === "closed" ||
+    safeStatus === "resolved"
+  ) {
+    return {
+      icon: <FiCheckCircle size={20} />,
+      colorClass: "text-green-500",
+      label: "Selesai",
+    };
   }
+
+  if (safeStatus.includes("teknisi") || safeStatus.includes("progress")) {
+    return {
+      icon: <FiTool size={20} />,
+      colorClass: "text-[#429EBD] dark:text-[#9FE7F5]",
+      label: "Sedang Dikerjakan",
+    };
+  }
+
+  if (safeStatus.includes("tolak") || safeStatus === "rejected") {
+    return {
+      icon: <FiXCircle size={20} />,
+      colorClass: "text-red-500",
+      label: "Ditolak",
+    };
+  }
+
+  return {
+    icon: <FiClock size={20} />,
+    colorClass: "text-slate-500",
+    label: "Pending",
+  };
 };
 
 const TicketStatusCard = ({ ticket }) => {
-  const isComplaint = ticket.type === "Pengaduan";
+  const typeLower = ticket.type ? ticket.type.toLowerCase() : "";
+  const isComplaint = typeLower === "Pengaduan";
+
   const badgeClass = isComplaint
-    ? "bg-[#F7AD19]/20 text-[#F7AD19]"
-    : "bg-[#429EBD]/20 text-[#429EBD]";
+    ? "bg-[#F7AD19]/20 text-[#916610] dark:text-[#F7AD19]"
+    : "bg-[#429EBD]/20 text-[#053F5C] dark:text-[#429EBD]";
 
   const statusInfo = getStatusInfo(ticket.status);
+
+  const displayId = ticket.ticketNumber || ticket.id;
 
   return (
     <Link
       to={`/track-ticket/${ticket.id}`}
+      state={{ ticketType: ticket.type }}
       className="block bg-white dark:bg-slate-800 rounded-lg shadow-lg p-5 border border-slate-200 dark:border-slate-700 transition-all duration-300 hover:shadow-xl hover:border-slate-300 dark:hover:border-[#429EBD] cursor-pointer"
     >
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
         <div>
           <span
-            className={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${badgeClass}`}
+            className={`inline-block px-4 py-2 text-xs font-semibold rounded-full ${badgeClass}`}
           >
             {ticket.type}
           </span>
@@ -72,7 +83,7 @@ const TicketStatusCard = ({ ticket }) => {
             Nomor Tiket
           </p>
           <p className="font-mono font-semibold text-slate-700 dark:text-slate-300">
-            {ticket.id}
+            {displayId}
           </p>
         </div>
       </div>
@@ -88,7 +99,7 @@ const TicketStatusCard = ({ ticket }) => {
             className={`flex items-center gap-3 mt-1 ${statusInfo.colorClass}`}
           >
             {statusInfo.icon}
-            <span className="font-bold text-lg">{ticket.status}</span>
+            <span className="font-bold text-lg">{statusInfo.label}</span>
           </div>
         </div>
 

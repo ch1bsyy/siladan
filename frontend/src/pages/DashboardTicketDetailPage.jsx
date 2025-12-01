@@ -2,21 +2,30 @@ import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { format } from "date-fns";
 import { useLoading } from "../context/LoadingContext";
-import { FiArrowLeft, FiSend, FiTrash2, FiDownload } from "react-icons/fi";
+import {
+  FiArrowLeft,
+  FiSend,
+  FiTrash2,
+  FiDownload,
+  FiRefreshCw,
+} from "react-icons/fi";
+import toast from "react-hot-toast";
 
 import StatusBadge from "../features/tickets/components/StatusBadge";
-import Input from "../components/Input";
+// import Input from "../components/Input";
 import FormSelect from "../components/FormSelect";
 import FormTextArea from "../components/FormTextArea";
+import ReassignModal from "../features/tickets/components/ReassignModal";
 
 // Mock Data
 const mockAllTickets = [
   {
     id: "TK-0010",
     type: "Pengaduan",
-    status: "Menunggu",
+    status: "Diproses",
+    priority: "High",
     createdAt: "2025-10-15T09:00:00Z",
-    updatedAt: "2025-10-15T09:00:00Z",
+    updatedAt: "2025-10-16T10:00:00Z",
     pelapor: {
       name: "Warga Masyarakat A",
       nik: "3578000111222",
@@ -26,15 +35,23 @@ const mockAllTickets = [
     },
     details: {
       judul: "Jaringan Server Down di Ruang Rapat",
-      deskripsi:
-        "Jaringan server di ruang rapat utama mati total sejak pagi ini. Semua PC tidak bisa konek ke server file. Mohon segera diperbaiki karena akan digunakan untuk rapat paripurna.",
+      deskripsi: "Jaringan server di ruang rapat utama mati total.",
       lampiran: [{ name: "screenshot-error.png", url: "#" }],
       lokasiKejadian: "Gedung A, Lantai 2, Ruang Rapat",
       tanggalKejadian: "2025-10-15",
       namaOpdAset: "Sekretariat DPRD",
       namaAset: "Jaringan",
     },
+    assignment: {
+      assignedTo: "Teknisi Budi",
+      slaHours: 4,
+    },
     history: [
+      {
+        status: "Diproses",
+        date: "2025-10-15T10:00:00Z",
+        by: "Teknisi Budi",
+      },
       {
         status: "Diajukan",
         date: "2025-10-15T09:00:00Z",
@@ -89,7 +106,9 @@ const DashboardTicketDetailPage = () => {
   const { isLoading, showLoading, hideLoading } = useLoading();
   const [loadingComplete, setLoadingComplete] = useState(false);
 
-  // state for assignment form
+  const [isReassignOpen, setIsReassignOpen] = useState(false);
+
+  // state for assignment form (new ticket)
   const [formData, setFormData] = useState({
     urgency: "",
     impact: "",
@@ -102,11 +121,13 @@ const DashboardTicketDetailPage = () => {
     showLoading("Memuat detail tiket...");
     setLoadingComplete(false);
     const foundTicket = mockAllTickets.find((t) => t.id === ticketId);
+
     setTimeout(() => {
       setTicket(foundTicket);
       hideLoading();
       setLoadingComplete(true);
     }, 500);
+
     return () => hideLoading();
   }, [ticketId, showLoading, hideLoading]);
 
@@ -120,6 +141,38 @@ const DashboardTicketDetailPage = () => {
     // API Logic: PATCH /api/tickets/:id/assign { ...formData }
     // if success, fetch data again
     alert("Tiket berhasil Ditugaskan!");
+    setTicket((prev) => ({
+      ...prev,
+      status: "Ditugaskan",
+      assignment: { ...prev.assignment, assignedTo: "Teknisi Terpilih" },
+    }));
+  };
+
+  // Handle Reassign
+  const handleReassignConfirm = (data) => {
+    console.log("Reassign Data:", data);
+
+    // Simulasi Update State
+    setTicket((prev) => ({
+      ...prev,
+      assignment: {
+        ...prev.assignment,
+        assignedTo: "Teknisi Baru (ID: " + data.newTechnicianId + ")",
+      },
+      priority: data.newPriority || prev.priority,
+      history: [
+        {
+          status: "Dialihkan",
+          date: new Date().toISOString(),
+          by: "Admin OPD (System)",
+          note: `Dialihkan karena: ${data.reason}`,
+        },
+        ...prev.history,
+      ],
+    }));
+
+    setIsReassignOpen(false);
+    toast.success("Tugas berhasil dialihkan ke teknisi baru!");
   };
 
   const handleReject = () => {
@@ -146,11 +199,15 @@ const DashboardTicketDetailPage = () => {
   // check if ticket "New" (pending) for display form
   const isNewTicket =
     ticket.status === "Menunggu" || ticket.status === "Pending";
+  const isOngoing =
+    ticket.status === "Diproses" ||
+    ticket.status === "Ditugaskan" ||
+    ticket.status === "Overdue";
   const isRequest = ticket.type === "Permintaan";
   const applicantLabel = isRequest ? "Pemohon" : "Pelapor";
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-20">
       <Link
         to="/dashboard/manage-tickets"
         className="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-[#053F5C] dark:hover:text-white"
@@ -188,8 +245,17 @@ const DashboardTicketDetailPage = () => {
             </div>
           </div>
           {/* Badge Status */}
-          <div className="flex-shrink-0">
+          <div className="flex flex-col items-end gap-3">
             <StatusBadge status={ticket.status} isFullWidth isIncreaseFont />
+
+            {isOngoing && (
+              <button
+                onClick={() => setIsReassignOpen(true)}
+                className="flex items-center min-h-11 min-w-11 gap-2 px-4 py-2 bg-orange-100 text-orange-700 hover:bg-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:hover:bg-orange-900/50 rounded-lg text-sm md:text-base font-bold transition-colors shadow-sm cursor-pointer"
+              >
+                <FiRefreshCw size={18} /> Alihkan Teknisi
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -315,14 +381,46 @@ const DashboardTicketDetailPage = () => {
         </div>
 
         {/* Right Column */}
-        <div className="lg:col-span-1">
-          {isNewTicket ? (
+        <div className="lg:col-span-1 space-y-6">
+          {ticket.assignment?.assignedTo && (
+            <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-6 sticky top-24">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
+                Informasi Penugasan
+              </h3>
+              <dl className="space-y-4">
+                <InfoRow label="Status Terkini" value={ticket.status} />
+                <InfoRow
+                  label="Prioritas"
+                  value={ticket.assignment?.priority || "-"}
+                />
+                <InfoRow
+                  label="SLA"
+                  value={
+                    ticket.assignment?.slaHours
+                      ? `${ticket.assignment.slaHours} Jam Kerja`
+                      : "-"
+                  }
+                />
+                <InfoRow
+                  label="Ditugaskan ke"
+                  value={ticket.assignment?.assignedTo || "-"}
+                />
+                <InfoRow
+                  label="Catatan Internal"
+                  value={ticket.assignment?.internalNotes || "-"}
+                  isFullWidth
+                />
+              </dl>
+            </div>
+          )}
+
+          {isNewTicket && (
             <form
               onSubmit={handleAssignSubmit}
               className="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-6 sticky top-24"
             >
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
-                Panel Aksi
+                Panel Penugasan
               </h3>
               <div className="space-y-4">
                 <FormSelect
@@ -399,40 +497,17 @@ const DashboardTicketDetailPage = () => {
                 </div>
               </div>
             </form>
-          ) : (
-            // If ticket on process
-            <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-6 sticky top-24">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
-                Informasi Penugasan
-              </h3>
-              <dl className="space-y-4">
-                <InfoRow label="Status Terkini" value={ticket.status} />
-                <InfoRow
-                  label="Prioritas"
-                  value={ticket.assignment?.priority || "-"}
-                />
-                <InfoRow
-                  label="SLA"
-                  value={
-                    ticket.assignment?.slaHours
-                      ? `${ticket.assignment.slaHours} Jam Kerja`
-                      : "-"
-                  }
-                />
-                <InfoRow
-                  label="Ditugaskan ke"
-                  value={ticket.assignment?.assignedTo || "-"}
-                />
-                <InfoRow
-                  label="Catatan Internal"
-                  value={ticket.assignment?.internalNotes || "-"}
-                  isFullWidth
-                />
-              </dl>
-            </div>
           )}
         </div>
       </div>
+
+      {/* Modal */}
+      <ReassignModal
+        isOpen={isReassignOpen}
+        onClose={() => setIsReassignOpen(false)}
+        currentTechName={ticket.assignment?.assignedTo}
+        onConfirm={handleReassignConfirm}
+      />
     </div>
   );
 };

@@ -3,7 +3,12 @@ import StatCard from "./StatCard";
 import TicketListWidget from "./TicketListWidget";
 import TicketChartWidget from "./TicketChartWidget";
 import QuickActionsWidget from "./QuickActionsWidget";
-import { FiInbox, FiAlertTriangle, FiCheckSquare } from "react-icons/fi";
+import {
+  FiInbox,
+  FiAlertTriangle,
+  FiCheckSquare,
+  FiShield,
+} from "react-icons/fi";
 
 // Mock Data Tiket
 const mockTickets = [
@@ -50,6 +55,13 @@ const myTaskColors = ["#F7AD19", "#429EBD"];
 const HelpdeskDashboard = () => {
   return (
     <div className="space-y-8 dark:text-white">
+      {/* Header Section */}
+      <div>
+        <h2 className="flex items-center gap-2 text-xl font-bold text-[#053F5C] dark:text-[#9FE7F5]">
+          <FiShield size={20} /> <span>Area Manajemen & Verifikasi Tiket</span>
+        </h2>
+      </div>
+
       {/* Stats Card */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <StatCard
@@ -87,6 +99,7 @@ const HelpdeskDashboard = () => {
           <QuickActionsWidget />
           <TicketChartWidget
             title="Komposisi Tiket Masuk"
+            height="250px"
             data={myTaskCompositionData}
             colors={myTaskColors}
           />
