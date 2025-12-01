@@ -13,7 +13,14 @@ import {
   FiChevronLeft,
   FiChevronRight,
   FiActivity,
+  FiBarChart2,
+  FiBookOpen,
+  FiPieChart,
+  FiLayers,
+  FiTrendingUp,
 } from "react-icons/fi";
+import { TfiTimer } from "react-icons/tfi";
+import { SlCalender } from "react-icons/sl";
 import { IoChatbubblesOutline } from "react-icons/io5";
 import Logo from "../assets/images/logo-siladan.png";
 
@@ -49,16 +56,58 @@ const navigationLinks = [
     permission: ["process", "ticket"],
   },
   {
-    name: "Manajemen Pengguna",
+    name: "Buat Artikel Solusi",
+    to: "/dashboard/create-article",
+    icon: FiBookOpen,
+    permission: ["create", "article"],
+  },
+  {
+    name: "Review Artikel",
+    to: "/dashboard/review-articles",
+    icon: FiFileText,
+    permission: ["approve", "article"],
+  },
+  {
+    name: "Laporan Kinerja",
+    to: "/dashboard/reports",
+    icon: FiBarChart2,
+    permission: ["process", "ticket"],
+  },
+  {
+    name: "Atur Operasional",
+    to: "/dashboard/settings/operational",
+    icon: SlCalender,
+    permission: ["manage", "settings"],
+  },
+  {
+    name: "Atur SLA",
+    to: "/dashboard/settings/sla",
+    icon: TfiTimer,
+    permission: ["manage", "settings"],
+  },
+  {
+    name: "Kelola Pengguna",
     to: "/dashboard/users",
     icon: FiUsers,
     permission: ["manage", "user"],
   },
   {
-    name: "Generate Laporan",
-    to: "/dashboard/reports",
-    icon: FiFileText,
-    permission: ["generate", "report"],
+    name: "Katalog Layanan",
+    to: "/dashboard/catalog",
+    icon: FiLayers,
+    permission: ["manage", "settings"],
+  },
+  {
+    name: "Laporan OPD",
+    to: "/dashboard/opd-reports",
+    icon: FiPieChart,
+    permission: ["view", "report"],
+  },
+  {
+    name: "Laporan Kota",
+    to: "/dashboard/city-reports",
+    icon: FiTrendingUp,
+    permission: ["manage", "all"],
   },
 ];
 
@@ -107,7 +156,7 @@ const DashboardSidebar = () => {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-2 py-4 overflow-y-auto">
+      <nav className="flex-1 space-y-2 py-4 overflow-y-auto scrollbar-thin">
         {accessibleLinks.map((link) => (
           <SidebarItem
             key={link.name}

@@ -24,6 +24,16 @@ import DashboardProfilePage from "../pages/DashboardProfilePage";
 import ChatPage from "../pages/ChatPage";
 import AssignedTicketPage from "../pages/AssignedTicketPage";
 import AssignedTicketDetailPage from "../pages/AssignedTicketDetailPage";
+import ReportPage from "../pages/ReportPage";
+import CreateArticlePage from "../pages/CreateArticlePage";
+import ArticleReviewPage from "../pages/ArticleReviewPage";
+import OPDReportPage from "../pages/OPDReportPage";
+import OperationalSettingsPage from "../pages/OperationalSettingsPage";
+import SLAManagementPage from "../pages/SLAManagementPage";
+import UserManagementPage from "../pages/UserManagementPage";
+import ServiceCatalogPage from "../pages/ServiceCatalogPage";
+import WarRoomPage from "../pages/WarroomPage";
+import CityReportPage from "../pages/CityReportPage";
 
 // Guard Component for protect route
 const DashboardGuard = ({ children }) => {
@@ -92,6 +102,15 @@ const AppRoutes = () => {
       </Route>
 
       <Route
+        path="/dashboard/war-room/:incidentId"
+        element={
+          <DashboardGuard>
+            <WarRoomPage />
+          </DashboardGuard>
+        }
+      />
+
+      <Route
         path="/dashboard"
         element={
           <DashboardGuard>
@@ -100,17 +119,30 @@ const AppRoutes = () => {
         }
       >
         <Route index element={<DashboardPage />} />
+
+        {/* Ticket Management */}
         <Route path="new-ticket" element={<NewTicketPage />} />
         <Route path="manage-tickets" element={<TicketManagementPage />} />
         <Route
           path="detail-manage-ticket/:ticketId"
           element={<DashboardTicketDetailPage />}
         />
+
+        {/* Technician Work */}
         <Route path="assigned-tickets" element={<AssignedTicketPage />} />
         <Route
           path="detail-assigned-ticket/:ticketId"
           element={<AssignedTicketDetailPage />}
         />
+
+        {/* Knowledge Base */}
+        <Route path="create-article" element={<CreateArticlePage />} />
+        <Route path="review-articles" element={<ArticleReviewPage />} />
+
+        {/* Reporting & User */}
+        <Route path="reports" element={<ReportPage />} />
+        <Route path="opd-reports" element={<OPDReportPage />} />
+        <Route path="city-reports" element={<CityReportPage />} />
         <Route
           path="profile"
           element={
@@ -119,6 +151,14 @@ const AppRoutes = () => {
             </AuthGuard>
           }
         />
+        <Route path="users" element={<UserManagementPage />} />
+
+        <Route
+          path="settings/operational"
+          element={<OperationalSettingsPage />}
+        />
+        <Route path="settings/sla" element={<SLAManagementPage />} />
+        <Route path="catalog" element={<ServiceCatalogPage />} />
       </Route>
 
       <Route

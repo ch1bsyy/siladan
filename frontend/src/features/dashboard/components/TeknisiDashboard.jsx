@@ -47,6 +47,13 @@ const myTaskColors = ["#F7AD19", "#429EBD", "#82ca9d"];
 const TeknisiDashboard = () => {
   return (
     <div className="space-y-8 dark:text-white">
+      {/* Header Section */}
+      <div>
+        <h2 className="flex items-center gap-2 text-xl font-bold text-[#053F5C] dark:text-[#9FE7F5]">
+          <FiTool size={20} /> <span>Area Pengerjaan Tiket</span>
+        </h2>
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <StatCard
           title="Tugas Baru"
@@ -55,13 +62,13 @@ const TeknisiDashboard = () => {
           colorClass="bg-blue-500"
         />
         <StatCard
-          title="Menunggu Approval User"
+          title="Menunggu Approval Seksi"
           value="1"
           icon={FiUserCheck}
           colorClass="bg-yellow-500"
         />
         <StatCard
-          title="Menunggu Approval Atasan"
+          title="Menunggu Approval Bidang"
           value="1"
           icon={FiShield}
           colorClass="bg-orange-500"
@@ -95,6 +102,7 @@ const TeknisiDashboard = () => {
         <div className="lg:col-span-1">
           <TicketChartWidget
             title="Komposisi Tugas Saya"
+            height="250px"
             data={myTaskCompositionData}
             colors={myTaskColors}
           />

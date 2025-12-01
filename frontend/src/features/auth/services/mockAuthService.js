@@ -29,6 +29,7 @@ const mockApiData = {
       permissions: [
         { action: "read", subject: "dashboard" },
         { action: "process", subject: "ticket" },
+        { action: "create", subject: "article" },
       ],
     },
   },
@@ -43,22 +44,27 @@ const mockApiData = {
       permissions: [
         { action: "read", subject: "dashboard" },
         { action: "create", subject: "ticket" },
+        { action: "manage", subject: "ticket" },
         { action: "assign", subject: "ticket" },
         { action: "handle", subject: "chat" },
       ],
     },
   },
-  "seksi@siladan.go.id": {
-    token: "jwt.token.seksi",
+  "admin@opd.go.id": {
+    token: "jwt.token.opd",
     user: {
       id: 4,
-      name: "Doni Seksi",
-      email: "seksi@siladan.go.id",
+      name: "Wahhab Admin",
+      email: "admin@opd.go.id",
       avatar: "https://i.pravatar.cc/150?u=teknisi@siladan.go.id",
-      role: { id: 4, name: "seksi", label: "Seksi" },
+      role: { id: 4, name: "admin_opd", label: "Admin OPD" },
       permissions: [
         { action: "read", subject: "dashboard" },
-        { action: "approve", subject: "ticket" },
+        { action: "approve", subject: "article" },
+        { action: "view", subject: "report" },
+        { action: "assign", subject: "ticket" },
+        { action: "manage", subject: "settings" },
+        { action: "manage", subject: "user" },
       ],
     },
   },
@@ -70,7 +76,11 @@ const mockApiData = {
       email: "admin@kota.go.id",
       avatar: "https://i.pravatar.cc/150?u=admin@kota.go.id",
       role: { id: 3, name: "admin_kota", label: "Admin Kota" },
-      permissions: [{ action: "manage", subject: "all" }],
+      permissions: [
+        { action: "read", subject: "dashboard" },
+        { action: "assign", subject: "ticket" },
+        { action: "manage", subject: "all" },
+      ],
     },
   },
 };
