@@ -76,7 +76,11 @@ const mockApiData = {
       email: "admin@kota.go.id",
       avatar: "https://i.pravatar.cc/150?u=admin@kota.go.id",
       role: { id: 3, name: "admin_kota", label: "Admin Kota" },
-      permissions: [{ action: "manage", subject: "all" }],
+      permissions: [
+        { action: "read", subject: "dashboard" },
+        { action: "assign", subject: "ticket" },
+        { action: "manage", subject: "all" },
+      ],
     },
   },
 };

@@ -33,6 +33,7 @@ import SLAManagementPage from "../pages/SLAManagementPage";
 import UserManagementPage from "../pages/UserManagementPage";
 import ServiceCatalogPage from "../pages/ServiceCatalogPage";
 import WarRoomPage from "../pages/WarroomPage";
+import CityReportPage from "../pages/CityReportPage";
 
 // Guard Component for protect route
 const DashboardGuard = ({ children }) => {
@@ -141,6 +142,7 @@ const AppRoutes = () => {
         {/* Reporting & User */}
         <Route path="reports" element={<ReportPage />} />
         <Route path="opd-reports" element={<OPDReportPage />} />
+        <Route path="city-reports" element={<CityReportPage />} />
         <Route
           path="profile"
           element={

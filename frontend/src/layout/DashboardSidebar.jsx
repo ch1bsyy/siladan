@@ -17,6 +17,7 @@ import {
   FiBookOpen,
   FiPieChart,
   FiLayers,
+  FiTrendingUp,
 } from "react-icons/fi";
 import { TfiTimer } from "react-icons/tfi";
 import { SlCalender } from "react-icons/sl";
@@ -96,12 +97,17 @@ const navigationLinks = [
     icon: FiLayers,
     permission: ["manage", "settings"],
   },
-
   {
     name: "Laporan OPD",
     to: "/dashboard/opd-reports",
     icon: FiPieChart,
     permission: ["view", "report"],
+  },
+  {
+    name: "Laporan Kota",
+    to: "/dashboard/city-reports",
+    icon: FiTrendingUp,
+    permission: ["manage", "all"],
   },
 ];
 

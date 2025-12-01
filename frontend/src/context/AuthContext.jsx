@@ -73,11 +73,11 @@ export const AuthProvider = ({ children }) => {
     const [action, subject] = permission;
 
     // Admin with permission 'manage:all' can do anything
-    if (
-      user.permissions.some((p) => p.action === "manage" && p.subject === "all")
-    ) {
-      return true;
-    }
+    // if (
+    // user.permissions.some((p) => p.action === "manage" && p.subject === "all")
+    // ) {
+    //   return true;
+    // }
 
     // check permission
     return user.permissions.some(
