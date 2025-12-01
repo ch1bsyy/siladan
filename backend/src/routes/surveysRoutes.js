@@ -6,3 +6,4 @@ const router = express.Router();
 router.get("/", knowledgeBaseController.index);
 
 export default router;
+// test
