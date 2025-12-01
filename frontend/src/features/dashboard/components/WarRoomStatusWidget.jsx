@@ -14,11 +14,11 @@ const WarRoomStatusWidget = () => {
         <div className="absolute -right-10 -top-10 bg-white/10 w-40 h-40 rounded-full blur-2xl"></div>
 
         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col md:flex-row items-center gap-4">
             <div className="p-3 bg-white/20 rounded-full animate-bounce">
               <FiAlertTriangle size={32} className="text-white" />
             </div>
-            <div>
+            <div className="flex">
               <h2 className="text-2xl font-black tracking-wider uppercase">
                 Major Incident Active
               </h2>
@@ -48,11 +48,11 @@ const WarRoomStatusWidget = () => {
       <div className="absolute -right-5 -bottom-10 bg-white/10 w-32 h-32 rounded-full blur-xl"></div>
 
       <div className="flex items-center justify-between relative z-10">
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col md:flex-row items-center gap-4">
           <div className="p-3 bg-white/20 rounded-full">
             <GoShieldCheck size={32} className="text-white" />
           </div>
-          <div>
+          <div className="text-center md:text-left">
             <h2 className="text-xl font-bold">Operasional Kota Normal</h2>
             <p className="text-green-100 text-sm">
               Tidak ada insiden kritis terdeteksi saat ini.

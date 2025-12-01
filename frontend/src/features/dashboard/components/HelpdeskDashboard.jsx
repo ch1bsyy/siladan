@@ -99,6 +99,7 @@ const HelpdeskDashboard = () => {
           <QuickActionsWidget />
           <TicketChartWidget
             title="Komposisi Tiket Masuk"
+            height="250px"
             data={myTaskCompositionData}
             colors={myTaskColors}
           />

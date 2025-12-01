@@ -102,6 +102,7 @@ const TeknisiDashboard = () => {
         <div className="lg:col-span-1">
           <TicketChartWidget
             title="Komposisi Tugas Saya"
+            height="250px"
             data={myTaskCompositionData}
             colors={myTaskColors}
           />

@@ -69,7 +69,7 @@ const AdminKotaDashboard = () => {
             </h3>
 
             <div className="flex-1 space-y-6">
-              <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-700/30 rounded-lg border border-slate-100 dark:border-slate-700">
+              <div className="flex flex-col md:flex-row justify-between items-center p-3 bg-slate-50 dark:bg-slate-700/30 rounded-lg border border-slate-100 dark:border-slate-700">
                 <div className="flex items-center gap-3">
                   <div className="relative">
                     <div className="w-3 h-3 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
@@ -79,43 +79,43 @@ const AdminKotaDashboard = () => {
                     Data Center Utama
                   </span>
                 </div>
-                <span className="text-xs font-bold text-green-700 bg-green-100 px-2 py-1 rounded">
+                <span className="text-xs font-bold mt-2 md:mt-0 text-green-700 bg-green-100 px-2 py-1 rounded">
                   ONLINE
                 </span>
               </div>
 
-              <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-700/30 rounded-lg border border-slate-100 dark:border-slate-700">
+              <div className="flex flex-col md:flex-row justify-between items-center p-3 bg-slate-50 dark:bg-slate-700/30 rounded-lg border border-slate-100 dark:border-slate-700">
                 <div className="flex items-center gap-3">
                   <div className="w-3 h-3 rounded-full bg-green-500"></div>
                   <span className="text-sm font-medium dark:text-slate-300">
                     Jaringan FO Backbone
                   </span>
                 </div>
-                <span className="text-xs font-bold text-green-700 bg-green-100 px-2 py-1 rounded">
+                <span className="text-xs mt-2 md:mt-0 font-bold text-green-700 bg-green-100 px-2 py-1 rounded">
                   STABLE
                 </span>
               </div>
 
-              <div className="flex justify-between items-center p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-100 dark:border-yellow-800">
+              <div className="flex flex-col md:flex-row justify-between items-center p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-100 dark:border-yellow-800">
                 <div className="flex items-center gap-3">
                   <div className="w-3 h-3 rounded-full bg-yellow-500 animate-pulse"></div>
                   <span className="text-sm font-medium dark:text-slate-300">
                     Server Email (Zimbra)
                   </span>
                 </div>
-                <span className="text-xs font-bold text-yellow-700 bg-yellow-100 px-2 py-1 rounded">
+                <span className="text-xs mt-2 md:mt-0 font-bold text-yellow-700 bg-yellow-100 px-2 py-1 rounded">
                   HIGH LOAD
                 </span>
               </div>
 
-              <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-700/30 rounded-lg border border-slate-100 dark:border-slate-700">
+              <div className="flex flex-col md:flex-row justify-between items-center p-3 bg-slate-50 dark:bg-slate-700/30 rounded-lg border border-slate-100 dark:border-slate-700">
                 <div className="flex items-center gap-3">
                   <div className="w-3 h-3 rounded-full bg-green-500"></div>
                   <span className="text-sm font-medium dark:text-slate-300">
                     Portal SSO
                   </span>
                 </div>
-                <span className="text-xs font-bold text-green-700 bg-green-100 px-2 py-1 rounded">
+                <span className="text-xs mt-2 md:mt-0 font-bold text-green-700 bg-green-100 px-2 py-1 rounded">
                   ONLINE
                 </span>
               </div>

@@ -113,6 +113,7 @@ const AdminOPDDashboard = () => {
         <div className="lg:col-span-1">
           <TicketChartWidget
             title="Sebaran Kategori Masalah"
+            height="350px"
             data={ticketCategoryData}
             colors={categoryColors}
           />
