@@ -81,6 +81,12 @@ const navigationLinks = [
     permission: ["manage", "operational"],
   },
   {
+    name: "Kalender & Jadwal",
+    to: "/dashboard/calendar-info",
+    icon: SlCalender,
+    permission: ["read", "operational"],
+  },
+  {
     name: "Atur SLA",
     to: "/dashboard/settings/sla",
     icon: TfiTimer,
@@ -163,7 +169,7 @@ const DashboardSidebar = () => {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-2 py-4 overflow-y-auto scrollbar-thin">
+      <nav className="flex-1 space-y-2 py-4 overflow-y-auto overflow-x-hidden scrollbar-thin">
         {accessibleLinks.map((link) => (
           <SidebarItem
             key={link.name}

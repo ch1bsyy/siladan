@@ -35,6 +35,7 @@ import ServiceCatalogPage from "../pages/ServiceCatalogPage";
 import WarRoomPage from "../pages/WarroomPage";
 import CityReportPage from "../pages/CityReportPage";
 import FAQManagementPage from "../pages/FAQManagementPage";
+import CalendarInfoPage from "../pages/CalendarInfoPage";
 
 // Guard Component for protect route
 const DashboardGuard = ({ children }) => {
@@ -135,6 +136,8 @@ const AppRoutes = () => {
           path="detail-assigned-ticket/:ticketId"
           element={<AssignedTicketDetailPage />}
         />
+
+        <Route path="calendar-info" element={<CalendarInfoPage />} />
 
         {/* Knowledge Base */}
         <Route path="create-article" element={<CreateArticlePage />} />
