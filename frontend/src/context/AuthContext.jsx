@@ -45,7 +45,7 @@ export const AuthProvider = ({ children }) => {
         "helpdesk",
         "teknisi",
       ];
-      if (dashboardRoles.includes(userData.role.name)) {
+      if (dashboardRoles.includes(userData.role?.name)) {
         navigate("/dashboard");
       } else {
         navigate("/");

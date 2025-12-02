@@ -17,7 +17,7 @@ const DashboardPage = () => {
       </div>
 
       {/* 2. Section Helpdesk (Triase & Manajemen) */}
-      {hasPermission(["manage", "ticket"]) && (
+      {hasPermission(["manage", "tickets"]) && (
         <section id="area-manajemen">
           <HelpdeskDashboard />
         </section>
@@ -31,14 +31,14 @@ const DashboardPage = () => {
       )}
 
       {/* 4. Section OPD (Pengaturan OPD) */}
-      {hasPermission(["manage", "settings"]) && (
+      {hasPermission(["reassign", "ticket"]) && (
         <section id="area-admin-opd">
           <AdminOPDDashboard />
         </section>
       )}
 
       {/* 5. Section Admin Kota */}
-      {hasPermission(["manage", "all"]) && <AdminKotaDashboard />}
+      {hasPermission(["read", "city_report"]) && <AdminKotaDashboard />}
     </div>
   );
 };

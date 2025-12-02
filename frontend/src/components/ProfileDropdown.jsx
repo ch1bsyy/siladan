@@ -38,7 +38,7 @@ const ProfileDropdown = () => {
             {user.username}
           </p>
           <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-            {user.role}
+            {user.role?.name || user.role}
           </p>
         </div>
       </div>

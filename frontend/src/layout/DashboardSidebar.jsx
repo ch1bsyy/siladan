@@ -18,6 +18,7 @@ import {
   FiPieChart,
   FiLayers,
   FiTrendingUp,
+  FiHelpCircle,
 } from "react-icons/fi";
 import { TfiTimer } from "react-icons/tfi";
 import { SlCalender } from "react-icons/sl";
@@ -35,13 +36,13 @@ const navigationLinks = [
     name: "Manajemen Tiket",
     to: "/dashboard/manage-tickets",
     icon: FiTag,
-    permission: ["assign", "ticket"],
+    permission: ["assign", "tickets"],
   },
   {
     name: "Buat Tiket",
     to: "/dashboard/new-ticket",
     icon: FiPlus,
-    permission: ["create", "ticket"],
+    permission: ["create", "tickets"],
   },
   {
     name: "Percakapan",
@@ -71,19 +72,19 @@ const navigationLinks = [
     name: "Laporan Kinerja",
     to: "/dashboard/reports",
     icon: FiBarChart2,
-    permission: ["process", "ticket"],
+    permission: ["read", "performance_report"],
   },
   {
     name: "Atur Operasional",
     to: "/dashboard/settings/operational",
     icon: SlCalender,
-    permission: ["manage", "settings"],
+    permission: ["manage", "operational"],
   },
   {
     name: "Atur SLA",
     to: "/dashboard/settings/sla",
     icon: TfiTimer,
-    permission: ["manage", "settings"],
+    permission: ["manage", "sla"],
   },
   {
     name: "Kelola Pengguna",
@@ -95,19 +96,25 @@ const navigationLinks = [
     name: "Katalog Layanan",
     to: "/dashboard/catalog",
     icon: FiLayers,
-    permission: ["manage", "settings"],
+    permission: ["manage", "catalog"],
+  },
+  {
+    name: "Kelola FAQ",
+    to: "/dashboard/faq",
+    icon: FiHelpCircle,
+    permission: ["manage", "faq"],
   },
   {
     name: "Laporan OPD",
     to: "/dashboard/opd-reports",
     icon: FiPieChart,
-    permission: ["view", "report"],
+    permission: ["read", "opd_report"],
   },
   {
     name: "Laporan Kota",
     to: "/dashboard/city-reports",
     icon: FiTrendingUp,
-    permission: ["manage", "all"],
+    permission: ["read", "city_report"],
   },
 ];
 

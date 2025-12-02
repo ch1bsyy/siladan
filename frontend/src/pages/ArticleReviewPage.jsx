@@ -403,10 +403,10 @@ const ArticleReviewPage = () => {
                       Publik (Masyarakat & Pegawai)
                     </option>
                     <option value="internal_opd">
-                      Internal Pemerintah (Semua OPD)
+                      Internal Pemerintah (Khusus OPD)
                     </option>
                     <option value="internal_teknis">
-                      Internal Teknisi Saja
+                      Internal Teknisi Saja (Unit)
                     </option>
                   </FormSelect>
                 </div>

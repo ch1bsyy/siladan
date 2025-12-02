@@ -18,21 +18,6 @@ const mockApiData = {
       permissions: [],
     },
   },
-  "teknisi@siladan.go.id": {
-    token: "jwt.token.teknisi",
-    user: {
-      id: 2,
-      name: "Ani Teknisi",
-      email: "teknisi@siladan.go.id",
-      avatar: "https://i.pravatar.cc/150?u=teknisi@siladan.go.id",
-      role: { id: 2, name: "teknisi", label: "Teknisi" },
-      permissions: [
-        { action: "read", subject: "dashboard" },
-        { action: "process", subject: "ticket" },
-        { action: "create", subject: "article" },
-      ],
-    },
-  },
   "helpdesk@siladan12.go.id": {
     token: "jwt.token.helpdesk",
     user: {
@@ -50,6 +35,22 @@ const mockApiData = {
       ],
     },
   },
+  "teknisi@siladan.go.id": {
+    token: "jwt.token.teknisi",
+    user: {
+      id: 2,
+      name: "Ani Teknisi",
+      email: "teknisi@siladan.go.id",
+      avatar: "https://i.pravatar.cc/150?u=teknisi@siladan.go.id",
+      role: { id: 2, name: "teknisi", label: "Teknisi" },
+      permissions: [
+        { action: "read", subject: "dashboard" },
+        { action: "process", subject: "ticket" },
+        { action: "create", subject: "article" },
+        { action: "read", subject: "performance_report" },
+      ],
+    },
+  },
   "admin@opd.go.id": {
     token: "jwt.token.opd",
     user: {
@@ -61,10 +62,14 @@ const mockApiData = {
       permissions: [
         { action: "read", subject: "dashboard" },
         { action: "approve", subject: "article" },
-        { action: "view", subject: "report" },
-        { action: "assign", subject: "ticket" },
-        { action: "manage", subject: "settings" },
+        { action: "manage", subject: "operational" },
+        { action: "manage", subject: "sla" },
         { action: "manage", subject: "user" },
+        { action: "manage", subject: "catalog" },
+        { action: "manage", subject: "faq" },
+        { action: "read", subject: "opd_report" },
+        { action: "assign", subject: "tickets" },
+        { action: "reassign", subject: "ticket" },
       ],
     },
   },
@@ -78,8 +83,7 @@ const mockApiData = {
       role: { id: 3, name: "admin_kota", label: "Admin Kota" },
       permissions: [
         { action: "read", subject: "dashboard" },
-        { action: "assign", subject: "ticket" },
-        { action: "manage", subject: "all" },
+        { action: "read", subject: "city_report" },
       ],
     },
   },

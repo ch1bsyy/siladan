@@ -24,7 +24,7 @@ const ComplaintForm = () => {
   const [createdTicketId, setCreatedTicketId] = useState("");
 
   const fileInputRef = useRef(null);
-  const isPegawai = isAuthenticated && user?.role === "pegawai_opd";
+  const isPegawai = isAuthenticated && user?.role?.name === "pegawai_opd";
 
   const [formData, setFormData] = useState({
     nama: "",

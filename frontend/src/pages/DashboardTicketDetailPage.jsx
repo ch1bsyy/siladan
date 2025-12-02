@@ -16,6 +16,7 @@ import StatusBadge from "../features/tickets/components/StatusBadge";
 import FormSelect from "../components/FormSelect";
 import FormTextArea from "../components/FormTextArea";
 import ReassignModal from "../features/tickets/components/ReassignModal";
+import { useAuth } from "../context/AuthContext";
 
 // Mock Data
 const mockAllTickets = [
@@ -107,6 +108,7 @@ const DashboardTicketDetailPage = () => {
   const [loadingComplete, setLoadingComplete] = useState(false);
 
   const [isReassignOpen, setIsReassignOpen] = useState(false);
+  const { hasPermission } = useAuth();
 
   // state for assignment form (new ticket)
   const [formData, setFormData] = useState({
@@ -248,7 +250,7 @@ const DashboardTicketDetailPage = () => {
           <div className="flex flex-col items-end gap-3">
             <StatusBadge status={ticket.status} isFullWidth isIncreaseFont />
 
-            {isOngoing && (
+            {hasPermission(["reassign", "ticket"]) && isOngoing && (
               <button
                 onClick={() => setIsReassignOpen(true)}
                 className="flex items-center min-h-11 min-w-11 gap-2 px-4 py-2 bg-orange-100 text-orange-700 hover:bg-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:hover:bg-orange-900/50 rounded-lg text-sm md:text-base font-bold transition-colors shadow-sm cursor-pointer"

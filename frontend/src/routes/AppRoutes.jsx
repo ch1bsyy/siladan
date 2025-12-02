@@ -34,6 +34,7 @@ import UserManagementPage from "../pages/UserManagementPage";
 import ServiceCatalogPage from "../pages/ServiceCatalogPage";
 import WarRoomPage from "../pages/WarroomPage";
 import CityReportPage from "../pages/CityReportPage";
+import FAQManagementPage from "../pages/FAQManagementPage";
 
 // Guard Component for protect route
 const DashboardGuard = ({ children }) => {
@@ -56,7 +57,7 @@ const DashboardGuard = ({ children }) => {
 const RequestGuard = ({ children }) => {
   const { isAuthenticated, user } = useAuth();
 
-  const isPegawai = isAuthenticated && user?.role === "pegawai_opd";
+  const isPegawai = isAuthenticated && user?.role?.name === "pegawai_opd";
 
   if (!isPegawai) {
     return <Navigate to="/login" replace />;
@@ -159,6 +160,7 @@ const AppRoutes = () => {
         />
         <Route path="settings/sla" element={<SLAManagementPage />} />
         <Route path="catalog" element={<ServiceCatalogPage />} />
+        <Route path="faq" element={<FAQManagementPage />} />
       </Route>
 
       <Route

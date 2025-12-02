@@ -107,7 +107,7 @@ const ProfilePictureCard = () => {
       {/* Role */}
 
       <p className="mt-2 text-sm md:text-base text-slate-500 dark:text-slate-400">
-        {user?.role?.label || "Role Pengguna"}
+        {user?.role?.name || "Role Pengguna"}
       </p>
     </div>
   );
