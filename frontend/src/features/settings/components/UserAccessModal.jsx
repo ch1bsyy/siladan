@@ -174,8 +174,8 @@ const UserAccessModal = ({ isOpen, onClose, user, onSave }) => {
               <span className="block text-sm md:text-base font-bold text-slate-800 dark:text-white">
                 Status Akun
               </span>
-              <span className="text-xs md:text-sm text-slate-500">
-                Non-aktifkan akun jika staf cuti panjang atau keluar.
+              <span className="text-xs md:text-sm text-slate-500 dark:text-slate-400">
+                Non-aktifkan akun jika staf cuti atau keluar.
               </span>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">

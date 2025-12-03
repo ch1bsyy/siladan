@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import TicketStatusCard from "./TicketStatusCard";
 import FormSelect from "../../../components/FormSelect";
 import { getMyIncidents, getMyRequests } from "../services/trackService";
-import { FiRefreshCw } from "react-icons/fi";
+import { FiSearch, FiRefreshCw } from "react-icons/fi";
 
 // Set Filters
 const complaintStatuses = [
@@ -29,6 +29,8 @@ const requestStatuses = [
 const MyTicketList = () => {
   const [activeTab, setActiveTab] = useState("pengaduan");
   const [selectedStatus, setSelectedStatus] = useState("Semua");
+
+  const [searchQuery, setSearchQuery] = useState("");
 
   const [tickets, setTickets] = useState([]);
   const [isFetching, setIsFetching] = useState(false);
@@ -77,6 +79,7 @@ const MyTicketList = () => {
 
   useEffect(() => {
     setSelectedStatus("Semua");
+    setSearchQuery("");
     fetchTickets();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
@@ -89,15 +92,27 @@ const MyTicketList = () => {
 
   // Filter Logic
   const displayedTickets = useMemo(() => {
-    // Filter By Status Only
-    if (selectedStatus === "Semua") {
-      return tickets;
-    }
-    // Case insensitive comparison for status
-    return tickets.filter(
-      (ticket) => ticket.status?.toLowerCase() === selectedStatus.toLowerCase()
-    );
-  }, [tickets, selectedStatus]);
+    return tickets.filter((ticket) => {
+      // 1. Filter by Status
+      const matchStatus =
+        selectedStatus === "Semua" ||
+        ticket.status?.toLowerCase() === selectedStatus.toLowerCase();
+
+      // 2. Filter by Ticket Number Or Title
+      const query = searchQuery.toLowerCase();
+
+      const ticketNum = ticket.ticketNumber
+        ? ticket.ticketNumber.toLowerCase()
+        : "";
+
+      const ticketTitle = ticket.title ? ticket.title.toLowerCase() : "";
+
+      const matchSearch =
+        ticketNum.includes(query) || ticketTitle.includes(query);
+
+      return matchStatus && matchSearch;
+    });
+  }, [tickets, selectedStatus, searchQuery]);
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -124,26 +139,54 @@ const MyTicketList = () => {
         </button>
       </div>
 
-      {/* Filter & Refresh */}
-      <div className="flex justify-between items-end gap-2 md:gap-0 mb-6">
-        <div className="w-full max-w-xs">
-          <FormSelect
-            id="status-filter"
-            name="status-filter"
-            label="Filter Berdasarkan Status"
-            value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-          >
-            {statusOptions.map((status) => (
-              <option key={status} value={status}>
-                {status}
-              </option>
-            ))}
-          </FormSelect>
+      {/* Filter, Search, and Refresh */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
+        <div className="flex flex-col md:flex-row gap-4 w-full">
+          {/* Input Search */}
+          <div className="w-full md:max-w-sm relative">
+            <label
+              htmlFor="search"
+              className="block text-base font-medium text-slate-700 dark:text-slate-300 mb-1"
+            >
+              Cari Tiket
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <FiSearch className="text-slate-400" />
+              </div>
+              <input
+                id="search"
+                type="text"
+                placeholder="Masukkan judul atau nomor tiket..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full min-h-11 min-w-11 pl-10 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#053F5C] dark:focus:ring-[#9FE7F5] text-slate-900 dark:text-white transition-colors"
+              />
+            </div>
+          </div>
+
+          {/* Dropdown Status */}
+          <div className="w-full md:max-w-40">
+            <FormSelect
+              id="status-filter"
+              name="status-filter"
+              label="Filter Status"
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+            >
+              {statusOptions.map((status) => (
+                <option key={status} value={status}>
+                  {status}
+                </option>
+              ))}
+            </FormSelect>
+          </div>
         </div>
+
+        {/* Tombol Refresh */}
         <button
           onClick={fetchTickets}
-          className="flex items-center justify-center min-h-11 min-w-11 text-slate-600 hover:text-[#053F5C] dark:text-slate-400 dark:hover:text-white cursor-pointer transition-colors"
+          className="flex-shrink-0 flex items-center justify-center min-h-[42px] min-w-[42px] mb-[1px] text-slate-600 hover:text-[#053F5C] dark:text-slate-400 dark:hover:text-white cursor-pointer transition-colors bg-slate-100 dark:bg-slate-700 rounded-lg md:bg-transparent md:dark:bg-transparent"
           title="Refresh Data"
         >
           <FiRefreshCw size={20} className={isFetching ? "animate-spin" : ""} />
