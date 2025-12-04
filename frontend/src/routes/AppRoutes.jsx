@@ -38,6 +38,7 @@ import CityReportPage from "../pages/CityReportPage";
 import FAQManagementPage from "../pages/FAQManagementPage";
 import CalendarInfoPage from "../pages/CalendarInfoPage";
 import TechnicianKBPage from "../pages/TechnicianKBPage";
+import NotificationsPage from "../pages/NotificationsPage";
 
 // Guard Component for protect route
 const DashboardGuard = ({ children }) => {
@@ -96,6 +97,15 @@ const AppRoutes = () => {
           }
         />
         <Route path="/help" element={<HelpCenterPage />} />
+        <Route
+          path="/notifications"
+          element={
+            <AuthGuard>
+              <NotificationsPage />
+            </AuthGuard>
+          }
+        />
+
         <Route
           path="/profile"
           element={
@@ -160,6 +170,7 @@ const AppRoutes = () => {
           }
         />
         <Route path="users" element={<UserManagementPage />} />
+        <Route path="notifications" element={<NotificationsPage />} />
 
         <Route
           path="settings/operational"
