@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import React, { useState } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import {
   FiGrid,
@@ -19,6 +19,7 @@ import {
   FiLayers,
   FiTrendingUp,
   FiHelpCircle,
+  FiBook,
 } from "react-icons/fi";
 import { TfiTimer } from "react-icons/tfi";
 import { SlCalender } from "react-icons/sl";
@@ -67,6 +68,12 @@ const navigationLinks = [
     to: "/dashboard/review-articles",
     icon: FiFileText,
     permission: ["approve", "article"],
+  },
+  {
+    name: "Pusat Informasi",
+    to: "/dashboard/knowledge-base",
+    icon: FiBook,
+    permission: ["read", "knowledge-base"],
   },
   {
     name: "Laporan Kinerja",

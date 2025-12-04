@@ -13,9 +13,6 @@ import {
 } from "react-icons/fi";
 import { LuAppWindow } from "react-icons/lu";
 
-/* ==========================================
-   MOCK DATA (Diperkaya untuk Modal)
-   ========================================== */
 const categories = [
   {
     id: 1,
@@ -131,9 +128,7 @@ const popularArticles = [
   },
 ];
 
-/* ==========================================
-   INTERNAL COMPONENT: ARTICLE MODAL
-   ========================================== */
+// Article Modal
 const ArticleDetailModal = ({ isOpen, onClose, article }) => {
   if (!isOpen || !article) return null;
 
@@ -214,9 +209,7 @@ const ArticleDetailModal = ({ isOpen, onClose, article }) => {
   );
 };
 
-/* ==========================================
-   MAIN COMPONENT
-   ========================================== */
+// Main Component
 const KnowledgeBaseGrid = () => {
   const [selectedArticle, setSelectedArticle] = useState(null);
 
@@ -233,7 +226,7 @@ const KnowledgeBaseGrid = () => {
           </p>
         </div>
 
-        {/* Grid Kategori */}
+        {/* Grid Category */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
           {categories.map((cat) => (
             <div
@@ -252,7 +245,7 @@ const KnowledgeBaseGrid = () => {
           ))}
         </div>
 
-        {/* Artikel Populer List */}
+        {/* Artikel List */}
         <div className="max-w-4xl mx-auto">
           <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
             <FiFileText className="text-[#F7AD19]" /> Artikel Terbaru Minggu Ini

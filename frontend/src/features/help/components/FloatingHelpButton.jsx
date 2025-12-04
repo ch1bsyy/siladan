@@ -9,9 +9,7 @@ import {
 } from "react-icons/fi";
 import { FaWhatsapp } from "react-icons/fa";
 
-/* ==========================================
-   INTERNAL COMPONENT: CHAT WIDGET
-   ========================================== */
+/* INTERNAL COMPONENT: CHAT WIDGET */
 const ChatWidget = ({ onClose }) => {
   const [messages, setMessages] = useState([
     {
@@ -27,7 +25,7 @@ const ChatWidget = ({ onClose }) => {
   const [inputText, setInputText] = useState("");
   const messagesEndRef = useRef(null);
 
-  // Auto-scroll ke pesan terakhir
+  // Auto-scroll to last message
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -49,7 +47,7 @@ const ChatWidget = ({ onClose }) => {
     setMessages((prev) => [...prev, newUserMsg]);
     setInputText("");
 
-    // Simulasi Auto-reply
+    // Simulation Auto-reply
     setTimeout(() => {
       setMessages((prev) => [
         ...prev,
@@ -139,9 +137,7 @@ const ChatWidget = ({ onClose }) => {
   );
 };
 
-/* ==========================================
-   MAIN COMPONENT
-   ========================================== */
+/* MAIN COMPONENT */
 const FloatingHelpButton = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -151,17 +147,16 @@ const FloatingHelpButton = () => {
   };
 
   const handleLiveChat = () => {
-    setIsOpen(false); // Tutup menu speed dial
-    setIsChatOpen(true); // Buka widget chat
+    setIsOpen(false);
+    setIsChatOpen(true);
   };
 
   return (
     <>
-      {/* Widget Chat (Muncul jika state isChatOpen true) */}
       {isChatOpen && <ChatWidget onClose={() => setIsChatOpen(false)} />}
 
       <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
-        {/* Menu Options (Hanya muncul jika Chat Widget tertutup dan Menu terbuka) */}
+        {/* Menu Options */}
         {isOpen && !isChatOpen && (
           <div className="flex flex-col gap-3 animate-fade-in-up">
             {/* WhatsApp */}
@@ -188,7 +183,7 @@ const FloatingHelpButton = () => {
           </div>
         )}
 
-        {/* Main Trigger Button (Disembunyikan jika chat terbuka agar tidak menumpuk) */}
+        {/* Main Trigger Button */}
         {!isChatOpen && (
           <button
             onClick={() => setIsOpen(!isOpen)}

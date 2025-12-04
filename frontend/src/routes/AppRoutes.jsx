@@ -37,6 +37,7 @@ import WarRoomPage from "../pages/WarroomPage";
 import CityReportPage from "../pages/CityReportPage";
 import FAQManagementPage from "../pages/FAQManagementPage";
 import CalendarInfoPage from "../pages/CalendarInfoPage";
+import TechnicianKBPage from "../pages/TechnicianKBPage";
 
 // Guard Component for protect route
 const DashboardGuard = ({ children }) => {
@@ -144,6 +145,7 @@ const AppRoutes = () => {
         {/* Knowledge Base */}
         <Route path="create-article" element={<CreateArticlePage />} />
         <Route path="review-articles" element={<ArticleReviewPage />} />
+        <Route path="knowledge-base" element={<TechnicianKBPage />} />
 
         {/* Reporting & User */}
         <Route path="reports" element={<ReportPage />} />
