@@ -16,6 +16,7 @@ import ComplaintPage from "../pages/ComplaintPage";
 import RequestPage from "../pages/RequestPage";
 import TrackTicket from "../pages/TrackTicket";
 import TicketDetailPage from "../pages/TicketDetailPage";
+import HelpCenterPage from "../pages/HelpCenterPage";
 import ProfilePage from "../pages/ProfilePage";
 import NewTicketPage from "../pages/NewTicketPage";
 import TicketManagementPage from "../pages/TicketManagementPage";
@@ -93,6 +94,7 @@ const AppRoutes = () => {
             </RequestGuard>
           }
         />
+        <Route path="/help" element={<HelpCenterPage />} />
         <Route
           path="/profile"
           element={

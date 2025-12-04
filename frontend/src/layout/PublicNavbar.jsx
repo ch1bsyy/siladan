@@ -19,7 +19,7 @@ const PublicNavbar = () => {
     { name: "Tentang Kami", path: "/about" },
     { name: "Pengaduan", path: "/complaint" },
     { name: "Lacak Tiket", path: "/track-ticket" },
-    { name: "Pusat Informasi", path: "/knowledge-base" },
+    { name: "Pusat Informasi", path: "/help" },
   ];
 
   if (isPegawai) {
