@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, Link, useLocation } from "react-router-dom";
+import { useParams, Link, useLocation, useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
 import { useLoading } from "../context/LoadingContext";
@@ -58,11 +58,12 @@ const getStatusInfo = (status) => {
 const TicketDetailPage = () => {
   const { ticketId } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
 
   const [ticket, setTicket] = useState(null);
   const [error, setError] = useState(null);
-  const { isLoading, showLoading, hideLoading } = useLoading();
+  const { showLoading, hideLoading } = useLoading();
 
   const ticketTypeFromState = location.state?.ticketType;
 
@@ -182,9 +183,15 @@ const TicketDetailPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ticketId, ticketTypeFromState, isAuthenticated]);
 
-  if (isLoading) {
-    return null;
-  }
+  // if (isLoading) {
+  //   return null;
+  // }
+
+  const handleRatingClick = () => {
+    if (ticket) {
+      navigate(`/ticket-rating/${ticket.ticketNumber || ticket.id}`);
+    }
+  };
 
   if (!ticket) {
     return (
@@ -209,11 +216,14 @@ const TicketDetailPage = () => {
   }
 
   const statusInfo = getStatusInfo(ticket.status);
-
   const isRequest = ticket.type === "Permintaan";
   const applicantLabel = isRequest ? "Pemohon" : "Pelapor";
 
   const displayId = ticket.ticketNumber || ticket.id;
+
+  const isFinished =
+    ticket.status?.toLowerCase().includes("selesai") ||
+    ticket.status === "Closed";
 
   return (
     <div className="py-12">
@@ -354,6 +364,23 @@ const TicketDetailPage = () => {
                     <button className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-bold text-white bg-[#F7AD19] hover:bg-yellow-500 text-sm shadow-lg transition-all transform hover:-translate-y-1 cursor-pointer">
                       <FiMessageSquare size={18} />
                       <span>Beri Ulasan</span>
+                    </button>
+                  </div>
+                )}
+                {isFinished && (
+                  <div className="pt-6 mt-8 border-t border-slate-200 dark:border-slate-700">
+                    <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-4 rounded-xl text-center mb-4">
+                      <p className="text-xs text-green-700 dark:text-green-400 font-medium">
+                        Masalah terselesaikan? Bantu kami dengan memberi
+                        penilaian.
+                      </p>
+                    </div>
+                    <button
+                      onClick={handleRatingClick}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-bold text-white bg-[#F7AD19] hover:bg-yellow-500 text-sm shadow-lg transition-all transform hover:-translate-y-1 cursor-pointer"
+                    >
+                      <FiMessageSquare size={18} />
+                      <span>Beri Ulasan & Rating</span>
                     </button>
                   </div>
                 )}

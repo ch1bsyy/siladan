@@ -5,20 +5,44 @@ import { FiSearch } from "react-icons/fi";
 
 const STATUS_CONFIG = {
   helpdesk: {
-    common: ["Pending", "Diproses", "Selesai", "Ditolak"],
-    pengaduan: ["Pending", "Diproses", "Selesai", "Ditolak"],
-    permintaan: ["Pending", "Diproses", "Selesai", "Ditolak"],
+    common: [
+      "Baru Masuk",
+      "Ditugaskan",
+      "Sedang Dikerjakan",
+      "Selesai",
+      "Ditolak",
+    ],
+    pengaduan: [
+      "Baru Masuk",
+      "Ditugaskan",
+      "Sedang Dikerjakan",
+      "Selesai",
+      "Ditolak",
+    ],
+    permintaan: [
+      "Baru Masuk",
+      "Ditugaskan", // Assigned (Verification)
+      "Perlu Analisa", // In Progress (Analysis)
+      "Menunggu Aprv. Seksi", // Pending Approval (Seksi)
+      "Menunggu Aprv. Bidang", // Pending Approval (Bidang)
+      "Disetujui", // In Progress (Ready to Execute)
+      "Revisi / Ditolak Atasan", // Assigned (Revision)
+      "Sedang Dikerjakan", // In Progress (Execution)
+      "Selesai",
+      "Ditolak",
+    ],
   },
   teknisi: {
-    common: ["Ditugaskan", "Diproses", "Selesai"],
-    pengaduan: ["Ditugaskan", "Diproses", "Pending", "Selesai"],
+    common: ["Ditugaskan", "Sedang Dikerjakan", "Selesai"],
+    pengaduan: ["Ditugaskan", "Sedang Dikerjakan", "Selesai"],
     permintaan: [
       "Ditugaskan",
       "Perlu Analisa",
-      "Menunggu Approval Seksi",
-      "Menunggu Approval Bidang",
+      // "Menunggu Approval Seksi",
+      // "Menunggu Approval Bidang",
+      "Menunggu Approval", // General waiting
       "Disetujui",
-      "Diproses",
+      "Sedang Dikerjakan",
       "Selesai",
     ],
   },
@@ -31,6 +55,10 @@ const TicketFilters = ({
 }) => {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("Semua");
+
+  useEffect(() => {
+    setStatus("Semua");
+  }, [type]);
 
   const roleConfig = STATUS_CONFIG[role] || STATUS_CONFIG.helpdesk;
   const currentStatusOptions = roleConfig[type] || roleConfig.common;

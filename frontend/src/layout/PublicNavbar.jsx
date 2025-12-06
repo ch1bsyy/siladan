@@ -16,14 +16,14 @@ const PublicNavbar = () => {
 
   const baseNavLinks = [
     { name: "Beranda", path: "/" },
-    { name: "Tentang Kami", path: "/about" },
+    // { name: "Tentang Kami", path: "/about" },
     { name: "Pengaduan", path: "/complaint" },
     { name: "Lacak Tiket", path: "/track-ticket" },
     { name: "Pusat Informasi", path: "/help" },
   ];
 
   if (isPegawai) {
-    baseNavLinks.splice(3, 0, { name: "Permintaan", path: "/request" });
+    baseNavLinks.splice(2, 0, { name: "Permintaan", path: "/request" });
   }
 
   const handleLogout = () => {

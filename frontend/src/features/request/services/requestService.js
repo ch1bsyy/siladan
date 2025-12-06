@@ -18,13 +18,13 @@ export const getServiceCatalog = async (opdId) => {
       },
       params: {
         opd_id: opdId,
-        is_active: "true",
+        is_active: true,
       },
     });
-    if (!response.data || !Array.isArray(response.data.catalogs)) {
+    if (!response.data || !Array.isArray(response.data.data)) {
       throw new Error("Format respon katalog tidak valid");
     }
-    return response.data.catalogs;
+    return response.data.data;
   } catch (error) {
     throw new Error(
       error.response?.data?.message || "Gagal mengambil katalog layanan"

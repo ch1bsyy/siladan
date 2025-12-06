@@ -1,220 +1,140 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import TicketFilters from "../features/tickets/components/TicketFilters";
 import TicketTable from "../features/tickets/components/TicketTable";
 import Pagination from "../components/Pagination";
-
-const mockAllTickets = [
-  {
-    id: "TK-0010",
-    title: "Jaringan Server Down di Ruang Rapat",
-    type: "Pengaduan",
-    status: "Diproses",
-    date: "2025-10-15",
-  },
-  {
-    id: "TK-0015",
-    title: "Instalasi Lambat di Microsoft Office",
-    type: "Permintaan",
-    status: "Selesai",
-    date: "2025-10-13",
-  },
-  {
-    id: "TK-0018",
-    title: "Jaringan Lambat",
-    type: "Pengaduan",
-    status: "Menunggu",
-    date: "2025-10-25",
-  },
-  {
-    id: "TK-0019",
-    title: "Permintaan Aset Baru",
-    type: "Permintaan",
-    status: "Selesai",
-    date: "2025-10-14",
-  },
-  {
-    id: "TK-0020",
-    title: "Mouse Rusak",
-    type: "Pengaduan",
-    status: "Menunggu",
-    date: "2025-10-26",
-  },
-  {
-    id: "TK-0110",
-    title: "Jaringan Server Down di Ruang Rapat",
-    type: "Pengaduan",
-    status: "Diproses",
-    date: "2025-10-15",
-  },
-  {
-    id: "TK-0115",
-    title: "Instalasi Lambat di Microsoft Office",
-    type: "Permintaan",
-    status: "Selesai",
-    date: "2025-10-13",
-  },
-  {
-    id: "TK-0118",
-    title: "Jaringan Lambat",
-    type: "Pengaduan",
-    status: "Menunggu",
-    date: "2025-10-25",
-  },
-  {
-    id: "TK-0119",
-    title: "Permintaan Aset Baru",
-    type: "Permintaan",
-    status: "Selesai",
-    date: "2025-10-14",
-  },
-  {
-    id: "TK-0120",
-    title: "Mouse Rusak",
-    type: "Pengaduan",
-    status: "Menunggu",
-    date: "2025-10-26",
-  },
-  {
-    id: "TK-1110",
-    title: "Jaringan Server Down di Ruang Rapat",
-    type: "Pengaduan",
-    status: "Diproses",
-    date: "2025-10-15",
-  },
-  {
-    id: "TK-1115",
-    title: "Instalasi Lambat di Microsoft Office",
-    type: "Permintaan",
-    status: "Selesai",
-    date: "2025-10-13",
-  },
-  {
-    id: "TK-1118",
-    title: "Jaringan Lambat",
-    type: "Pengaduan",
-    status: "Menunggu",
-    date: "2025-10-25",
-  },
-  {
-    id: "TK-1119",
-    title: "Permintaan Aset Baru",
-    type: "Permintaan",
-    status: "Selesai",
-    date: "2025-10-14",
-  },
-  {
-    id: "TK-1120",
-    title: "Mouse Rusak",
-    type: "Pengaduan",
-    status: "Menunggu",
-    date: "2025-10-26",
-  },
-  {
-    id: "TK-1114",
-    title: "Jaringan Lambat",
-    type: "Pengaduan",
-    status: "Menunggu",
-    date: "2025-10-25",
-  },
-  {
-    id: "TK-1112",
-    title: "Permintaan Aset Baru",
-    type: "Permintaan",
-    status: "Selesai",
-    date: "2025-10-14",
-  },
-  {
-    id: "TK-1121",
-    title: "Mouse Rusak",
-    type: "Pengaduan",
-    status: "Menunggu",
-    date: "2025-10-26",
-  },
-  {
-    id: "TK-002",
-    title: "Permintaan Aset Baru",
-    type: "Permintaan",
-    status: "Selesai",
-    date: "2025-10-14",
-  },
-  {
-    id: "TK-003",
-    title: "Permintaan Aset Baru",
-    type: "Permintaan",
-    status: "Selesai",
-    date: "2025-10-14",
-  },
-  {
-    id: "TK-004",
-    title: "Permintaan Aset Baru",
-    type: "Permintaan",
-    status: "Selesai",
-    date: "2025-10-14",
-  },
-  {
-    id: "TK-0005",
-    title: "Permintaan Aset Baru",
-    type: "Permintaan",
-    status: "Selesai",
-    date: "2025-10-14",
-  },
-  {
-    id: "TK-1002",
-    title: "Permintaan Aset Baru",
-    type: "Permintaan",
-    status: "Selesai",
-    date: "2025-10-14",
-  },
-  {
-    id: "REQ-001",
-    title: "Permintaan Instalasi Microsoft Office",
-    type: "Permintaan",
-    status: "Selesai",
-    date: "2025-10-14",
-    createdAt: "2025-10-19T09:00:00Z",
-    updatedAt: "2025-10-20T14:00:00Z",
-    pelapor: { name: "Pegawai A", email: "pegawai.a@opd.go.id" },
-    deskripsi: "Butuh instalasi Office 365 di komputer baru ruang arsip.",
-    history: [
-      { status: "Diajukan", date: "2025-10-19T09:00:00Z", by: "Pegawai A" },
-      { status: "Disetujui", date: "2025-10-19T11:00:00Z", by: "Seksi" },
-      { status: "Selesai", date: "2025-10-20T14:00:00Z", by: "Teknisi Budi" },
-    ],
-  },
-];
+import { useAuth } from "../context/AuthContext";
+// import { useLoading } from "../context/LoadingContext";
+import {
+  getIncidents,
+  getRequests,
+} from "../features/tickets/services/ticketService";
+import toast from "react-hot-toast";
 
 const TicketManagementPage = () => {
+  const { user } = useAuth();
+  // const { showLoading, hideLoading } = useLoading();
+
   const [activeTab, setActiveTab] = useState("pengaduan");
+  const [tickets, setTickets] = useState([]);
+
   const [filters, setFilters] = useState({ search: "", status: "Semua" });
   const [currentPage, setCurrentPage] = useState(1);
-  const ticketsPerPage = 10;
+  const [paginationInfo, setPaginationInfo] = useState({
+    totalItems: 0,
+    totalPages: 1,
+    itemsPerPage: 10,
+  });
 
-  // Filter by state logic
-  const filteredTickets = useMemo(() => {
-    return mockAllTickets
-      .filter((ticket) => {
-        // Filter by tab
-        return ticket.type.toLowerCase() === activeTab;
-      })
-      .filter((ticket) => {
-        // Filter by status
-        return filters.status === "Semua" || ticket.status === filters.status;
-      })
-      .filter((ticket) => {
-        const searchLower = filters.search.toLowerCase();
-        return (
-          ticket.title.toLowerCase().includes(searchLower) ||
-          ticket.id.toLowerCase().includes(searchLower)
-        );
-      });
-  }, [activeTab, filters, mockAllTickets]);
+  // // Filter by state logic
+  // const filteredTickets = useMemo(() => {
+  //   return mockAllTickets
+  //     .filter((ticket) => {
+  //       // Filter by tab
+  //       return ticket.type.toLowerCase() === activeTab;
+  //     })
+  //     .filter((ticket) => {
+  //       // Filter by status
+  //       return filters.status === "Semua" || ticket.status === filters.status;
+  //     })
+  //     .filter((ticket) => {
+  //       const searchLower = filters.search.toLowerCase();
+  //       return (
+  //         ticket.title.toLowerCase().includes(searchLower) ||
+  //         ticket.id.toLowerCase().includes(searchLower)
+  //       );
+  //     });
+  // }, [activeTab, filters, mockAllTickets]);
 
-  // Pagination Logic
-  const paginatedTickets = filteredTickets.slice(
-    (currentPage - 1) * ticketsPerPage,
-    currentPage * ticketsPerPage
-  );
+  // Mapping Status
+  const mapStatusToApi = (uiStatus) => {
+    if (uiStatus === "Semua") return "";
+
+    const statusMap = {
+      "Baru Masuk": "open",
+      Ditugaskan: "assigned",
+      "Revisi / Ditolak Atasan": "assigned",
+
+      "Sedang Dikerjakan": "in_progress",
+      "Perlu Analisa": "in_progress",
+      Disetujui: "in_progress",
+      "Menunggu Aprv. Seksi": "pending_approval",
+      "Menunggu Aprv. Bidang": "pending_approval",
+
+      Selesai: "resolved",
+      Ditolak: "rejected",
+    };
+
+    return statusMap[uiStatus] || "";
+  };
+
+  // const paginatedTickets = filteredTickets.slice(
+  //   (currentPage - 1) * ticketsPerPage,
+  //   currentPage * ticketsPerPage
+  // );
+
+  // --- FETCH DATA ---
+  const fetchTickets = async () => {
+    // if (!user?.opd_id) return;
+
+    // showLoading("Memuat data tiket...");
+    try {
+      const apiParams = {
+        page: currentPage,
+        limit: paginationInfo.itemsPerPage,
+        search: filters.search,
+        opd_id: user?.opd?.id || user?.opd_id,
+        status: mapStatusToApi(filters.status),
+      };
+
+      let response;
+      if (activeTab === "pengaduan") {
+        response = await getIncidents(apiParams);
+      } else {
+        response = await getRequests(apiParams);
+      }
+
+      const { data, pagination } = response;
+
+      // Transformation data API into format Table
+      const mappedTickets = data.map((item) => ({
+        id: item.ticket_number,
+        dbId: item.id,
+        title: item.title,
+        status: item.status,
+        stage: item.stage,
+        date: item.created_at ? item.created_at.split("T")[0] : "-",
+        type: activeTab === "pengaduan" ? "Pengaduan" : "Permintaan",
+      }));
+
+      setTickets(mappedTickets);
+
+      // Update Pagination State
+      if (pagination) {
+        setPaginationInfo((prev) => ({
+          ...prev,
+          totalItems: pagination.total_items || 0,
+          totalPages: pagination.total_pages || 1,
+        }));
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(error.message || "Gagal memuat tiket");
+      setTickets([]);
+    }
+    // finally {
+    //   // hideLoading();
+    // }
+  };
+
+  // Trigger Fetch when dependencies change
+  useEffect(() => {
+    fetchTickets();
+  }, [activeTab, filters, currentPage, user]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters, activeTab]);
 
   return (
     <div className="space-y-6 dark:text-white">
@@ -241,17 +161,21 @@ const TicketManagementPage = () => {
       </div>
 
       {/* Filter */}
-      <TicketFilters onFilterChange={setFilters} />
+      <TicketFilters
+        onFilterChange={setFilters}
+        type={activeTab}
+        role={user?.role?.name || "helpdesk"}
+      />
 
       {/* Table Tickets */}
-      <TicketTable tickets={paginatedTickets} />
+      <TicketTable tickets={tickets} />
 
       {/* Pagination */}
       <div className="max-w-5xl">
         <Pagination
           currentPage={currentPage}
-          totalItems={filteredTickets.length}
-          itemsPerPage={ticketsPerPage}
+          totalItems={paginationInfo.totalItems}
+          itemsPerPage={paginationInfo.itemsPerPage}
           onPageChange={setCurrentPage}
         />
       </div>

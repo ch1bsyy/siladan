@@ -25,12 +25,14 @@ const RequestForm = () => {
 
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [createdTicketId, setCreatedTicketId] = useState("");
+  const [isAssetRequired, setIsAssetRequired] = useState(false);
 
   const [formData, setFormData] = useState({
     serviceCatalogId: "",
     subCatalogId: "",
     serviceItemId: "",
     serviceDetailLabel: "",
+    assetName: "",
     judul: "",
     deskripsi: "",
     tanggalPermintaan: new Date().toISOString().split("T")[0],
@@ -43,6 +45,18 @@ const RequestForm = () => {
   const [layananOptions, setLayananOptions] = useState([]);
   const [subLayananOptions, setSubLayananOptions] = useState([]);
   const [detailLayananOptions, setDetailLayananOptions] = useState([]);
+
+  // Mock Asset Options (hardcode)
+  const assetOptions = [
+    { id: "printer", label: "Printer" },
+    { id: "laptop", label: "Laptop" },
+    { id: "pc", label: "Personal Computer (PC)" },
+    { id: "ac", label: "AC" },
+    { id: "projector", label: "Proyektor" },
+    { id: "scanner", label: "Scanner" },
+    { id: "network_device", label: "Perangkat Jaringan (Router/Switch)" },
+    { id: "lainnya", label: "Lainnya" },
+  ];
 
   // Take Catalog Data from API
   useEffect(() => {
@@ -61,7 +75,7 @@ const RequestForm = () => {
 
         const level1Options = catalogs.map((cat) => ({
           id: cat.id,
-          label: cat.catalog_name,
+          label: cat.name,
         }));
         setLayananOptions(level1Options);
       } catch (error) {
@@ -79,20 +93,22 @@ const RequestForm = () => {
       const selectedCatalog = catalogOptions.find(
         (cat) => cat.id.toString() === formData.serviceCatalogId
       );
-      if (selectedCatalog && selectedCatalog.sub_layanan) {
-        options = selectedCatalog.sub_layanan.map((sub) => ({
+      if (selectedCatalog && selectedCatalog.children) {
+        options = selectedCatalog.children.map((sub) => ({
           id: sub.id,
-          label: sub.sub_catalog_name,
+          label: sub.name,
         }));
       }
     }
     setSubLayananOptions(options);
     setDetailLayananOptions([]);
+    setIsAssetRequired(false);
     setFormData((prev) => ({
       ...prev,
       subCatalogId: "",
       serviceItemId: "",
       serviceDetailLabel: "",
+      assetName: "",
     }));
   }, [formData.serviceCatalogId]);
 
@@ -103,22 +119,25 @@ const RequestForm = () => {
       const selectedCatalog = catalogOptions.find(
         (cat) => cat.id.toString() === formData.serviceCatalogId
       );
-      const selectedSub = selectedCatalog?.sub_layanan.find(
+      const selectedSub = selectedCatalog?.children.find(
         (sub) => sub.id.toString() === formData.subCatalogId
       );
 
-      if (selectedSub && selectedSub.service_items) {
-        options = selectedSub.service_items.map((item) => ({
+      if (selectedSub && selectedSub.children) {
+        options = selectedSub.children.map((item) => ({
           id: item.id,
-          label: item.item_name,
+          label: item.name,
+          needAsset: item.needAsset,
         }));
       }
     }
     setDetailLayananOptions(options);
+    setIsAssetRequired(false);
     setFormData((prev) => ({
       ...prev,
       serviceItemId: "",
       serviceDetailLabel: "",
+      assetName: "",
     }));
   }, [formData.subCatalogId]);
 
@@ -132,10 +151,15 @@ const RequestForm = () => {
       (opt) => opt.id.toString() === selectedId
     );
 
+    // Cekif this item need asset
+    const needsAsset = selectedOption?.needAsset === true;
+    setIsAssetRequired(needsAsset);
+
     setFormData((prev) => ({
       ...prev,
       serviceItemId: selectedId,
       serviceDetailLabel: selectedOption ? selectedOption.label : "",
+      assetName: needsAsset ? prev.assetName : "", // reset asset if doesnt have
     }));
   };
 
@@ -169,13 +193,18 @@ const RequestForm = () => {
       const apiPayload = {
         title: formData.judul,
         description: formData.deskripsi,
-        service_item_id: parseInt(formData.serviceItemId, 10),
+        service_item_id: formData.serviceItemId,
         service_detail: {
           permintaan: formData.serviceDetailLabel,
         },
         requested_date: formData.tanggalPermintaan,
         attachment_url: attachmentUrl || null,
       };
+
+      // Tambahkan asset_identifier jika dibutuhkan
+      if (isAssetRequired) {
+        apiPayload.asset_identifier = formData.assetName;
+      }
 
       console.log("Mengirim Payload Permintaan:", apiPayload);
 
@@ -193,11 +222,14 @@ const RequestForm = () => {
         serviceCatalogId: "",
         subCatalogId: "",
         serviceItemId: "",
+        serviceDetailLabel: "",
+        assetName: "",
         judul: "",
         deskripsi: "",
         tanggalPermintaan: new Date().toISOString().split("T")[0],
         lampiran: null,
       });
+      setIsAssetRequired(false);
       clearFile();
     } catch (error) {
       console.error("Gagal submit permintaan:", error);
@@ -272,7 +304,7 @@ const RequestForm = () => {
               Detail Permintaan Layanan
             </h3>
             <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-              {/* Cascading Dropdowns */}
+              {/* Level 1: Katalog */}
               <FormSelect
                 id="layanan"
                 name="serviceCatalogId"
@@ -291,6 +323,7 @@ const RequestForm = () => {
                 ))}
               </FormSelect>
 
+              {/* Level 2: Sub Layanan */}
               <FormSelect
                 id="subLayanan"
                 name="subCatalogId"
@@ -310,7 +343,8 @@ const RequestForm = () => {
                 ))}
               </FormSelect>
 
-              <div className="md:col-span-2">
+              {/* Level 3: Service Item */}
+              <div className={isAssetRequired ? "" : "md:col-span-2"}>
                 <FormSelect
                   id="detailLayanan"
                   name="serviceItemId"
@@ -330,6 +364,29 @@ const RequestForm = () => {
                   ))}
                 </FormSelect>
               </div>
+
+              {/* Kondisional Aset Dropdown */}
+              {isAssetRequired && (
+                <div className="animate-fade-in-up">
+                  <FormSelect
+                    id="assetName"
+                    name="assetName"
+                    label="Pilih Aset Terkait"
+                    value={formData.assetName}
+                    onChange={handleChange}
+                    required={isAssetRequired}
+                  >
+                    <option value="" disabled>
+                      -- Pilih Aset --
+                    </option>
+                    {assetOptions.map((asset) => (
+                      <option key={asset.id} value={asset.id}>
+                        {asset.label}
+                      </option>
+                    ))}
+                  </FormSelect>
+                </div>
+              )}
 
               <Input
                 id="judul"

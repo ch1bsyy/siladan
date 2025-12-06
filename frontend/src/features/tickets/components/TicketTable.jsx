@@ -43,7 +43,11 @@ const TicketTable = ({ tickets }) => {
                     {ticket.title}
                   </td>
                   <td className="px-4 py-3">
-                    <StatusBadge status={ticket.status} isFullWidth />
+                    <StatusBadge
+                      status={ticket.status}
+                      stage={ticket.stage}
+                      isFullWidth
+                    />
                   </td>
                   <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">
                     {ticket.date}

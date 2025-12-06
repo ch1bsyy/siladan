@@ -11,7 +11,7 @@ import ChatLayout from "../layout/ChatLayout";
 import HomePage from "../pages/HomePage";
 import DashboardPage from "../pages/DashboardPage";
 import LoginPage from "../pages/LoginPage";
-import AboutPage from "../pages/AboutPage";
+// import AboutPage from "../pages/AboutPage";
 import ComplaintPage from "../pages/ComplaintPage";
 import RequestPage from "../pages/RequestPage";
 import TrackTicket from "../pages/TrackTicket";
@@ -39,6 +39,7 @@ import FAQManagementPage from "../pages/FAQManagementPage";
 import CalendarInfoPage from "../pages/CalendarInfoPage";
 import TechnicianKBPage from "../pages/TechnicianKBPage";
 import NotificationsPage from "../pages/NotificationsPage";
+import TicketRatingPage from "../pages/TicketRatingPage";
 
 // Guard Component for protect route
 const DashboardGuard = ({ children }) => {
@@ -84,7 +85,7 @@ const AppRoutes = () => {
     <Routes>
       <Route element={<PublicLayout />}>
         <Route path="/" element={<HomePage />} />
-        <Route path="/about" element={<AboutPage />} />
+        {/* <Route path="/about" element={<AboutPage />} /> */}
         <Route path="/complaint" element={<ComplaintPage />} />
         <Route path="/track-ticket" element={<TrackTicket />} />
         <Route path="/track-ticket/:ticketId" element={<TicketDetailPage />} />
@@ -97,6 +98,7 @@ const AppRoutes = () => {
           }
         />
         <Route path="/help" element={<HelpCenterPage />} />
+        <Route path="/ticket-rating/:ticketId" element={<TicketRatingPage />} />
         <Route
           path="/notifications"
           element={
