@@ -19,15 +19,14 @@ const UserDataDisplay = () => {
   if (!user) return null;
 
   return (
-    <div className="bg-white dark:bg-slate-800 shadow-lg rounded-lg p-6">
+    <div className="bg-white dark:bg-slate-800 shadow-lg rounded-lg p-8.5">
       <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 border-b border-slate-200 dark:border-slate-700 pb-3">
         Data Pengguna
       </h3>
       <dl className="divide-y divide-slate-200 dark:divide-slate-700">
         <DataRow label="Email" value={user.email} />
-        <DataRow label="No. Telepon" value={user.phone_number} />
-        <DataRow label="NIK" value={user.nik} />
-        <DataRow label="Nama OPD" value={user.opd?.name} />
+        <DataRow label="No. Telepon" value={user.phone} />
+        <DataRow label="NIK" value={user.nik || user.nip} />
         <DataRow label="Alamat" value={user.address} />
       </dl>
     </div>

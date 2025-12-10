@@ -1,14 +1,32 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Link } from "react-router-dom";
-import { FiSettings, FiLogOut } from "react-icons/fi";
+import { FiSettings, FiLogOut, FiUser } from "react-icons/fi";
+import { getCurrentUser } from "../features/auth/services/authService";
 
 const ProfileDropdown = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { user, logout } = useAuth();
   const dropdownRef = useRef(null);
 
-  // Hook for close dropdown if clicked outside component
+  const [profile, setProfile] = useState(user || {});
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const response = await getCurrentUser();
+        if (response?.user) {
+          setProfile(response.user);
+        }
+      } catch (error) {
+        console.error("Gagal memuat avatar profil:", error);
+      }
+    };
+
+    fetchUserProfile();
+  }, [user]);
+
+  // Close Dropdown Logic
   useEffect(() => {
     const handleCLickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -19,6 +37,37 @@ const ProfileDropdown = () => {
     return () => document.removeEventListener("mousedown", handleCLickOutside);
   }, []);
 
+  // Helper render avatar
+  const renderAvatar = () => {
+    const avatarSrc = profile.avatar_url || user.avatar;
+
+    if (avatarSrc) {
+      return (
+        <img
+          src={avatarSrc}
+          alt="Foto Profil"
+          className="w-11 h-11 rounded-full object-cover border-2 border-slate-300 dark:border-slate-600 flex-shrink-0"
+        />
+      );
+    }
+
+    return (
+      <div className="w-11 h-11 rounded-full bg-[#053F5C] text-white flex items-center justify-center font-bold text-lg border-2 border-slate-300 dark:border-slate-600 flex-shrink-0">
+        {profile.username ? (
+          profile.username.charAt(0).toUpperCase()
+        ) : (
+          <FiUser />
+        )}
+      </div>
+    );
+  };
+
+  const getRoleName = (roleData) => {
+    if (!roleData) return "User";
+    if (typeof roleData === "string") return roleData;
+    return roleData.name || roleData.label || "User";
+  };
+
   if (!user) return null;
 
   return (
@@ -28,17 +77,14 @@ const ProfileDropdown = () => {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center space-x-3 px-3 py-2 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors cursor-pointer"
       >
-        <img
-          src={user.avatar}
-          alt="Foto Profil"
-          className="w-11 h-11 rounded-full object-cover border-2 border-slate-300 dark:border-slate-600 flex-shrink-0"
-        />
+        {renderAvatar()}
+
         <div className="text-left hidden md:block min-w-0">
           <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">
-            {user.username}
+            {profile.username || user.username}
           </p>
           <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-            {user.role?.name || user.role}
+            {getRoleName(profile.role || user.role)}
           </p>
         </div>
       </div>

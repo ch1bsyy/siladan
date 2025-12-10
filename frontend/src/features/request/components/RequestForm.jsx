@@ -16,6 +16,7 @@ import {
   createServiceRequest,
 } from "../services/requestService";
 import { uploadToCloudinary } from "../../../services/storageServices";
+import { CLOUDINARY_FOLDER_TICKET } from "../../../config";
 
 const RequestForm = () => {
   const { user } = useAuth();
@@ -186,7 +187,10 @@ const RequestForm = () => {
       let attachmentUrl = "";
       if (formData.lampiran) {
         toast.loading("Mengunggah lampiran");
-        attachmentUrl = await uploadToCloudinary(formData.lampiran);
+        attachmentUrl = await uploadToCloudinary(
+          formData.lampiran,
+          CLOUDINARY_FOLDER_TICKET
+        );
         toast.dismiss();
       }
 

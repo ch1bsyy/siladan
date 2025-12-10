@@ -12,7 +12,7 @@ const DashboardPage = () => {
     <div className="space-y-8 pb-10">
       <div className="border-b border-slate-200 dark:border-slate-700 pb-4">
         <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">
-          Selamat Datang, {user?.name}!
+          Selamat Datang, {user?.username || user?.name}!
         </h1>
       </div>
 
@@ -24,7 +24,7 @@ const DashboardPage = () => {
       )}
 
       {/* 3. Section Teknisi (Eksekusi) */}
-      {hasPermission(["process", "ticket"]) && (
+      {hasPermission(["update_progress", "tickets"]) && (
         <section id="area-pengerjaan">
           <TeknisiDashboard />
         </section>

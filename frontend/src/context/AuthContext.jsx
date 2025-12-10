@@ -1,5 +1,4 @@
 /* eslint-disable react-refresh/only-export-components */
-/* eslint-disable no-useless-catch */
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import * as authService from "../features/auth/services/authService";
@@ -7,35 +6,91 @@ import * as authService from "../features/auth/services/authService";
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState(() => {
+    const storedUser = localStorage.getItem("user");
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
+  const [token, setToken] = useState(localStorage.getItem("token"));
+
+  const [isAuthenticated, setIsAuthenticated] = useState(
+    !!localStorage.getItem("token")
+  );
+
   const navigate = useNavigate();
 
   // Check localStorage for token
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
-    const storedUser = localStorage.getItem("user");
-    if (storedToken && storedUser) {
+    if (storedToken) {
       setToken(storedToken);
-      setUser(JSON.parse(storedUser));
       setIsAuthenticated(true);
+
+      // refreshProfile();
     }
   }, []);
 
+  const refreshProfile = async () => {
+    try {
+      const response = await authService.getCurrentUser();
+
+      const freshUser = response.user || response.data?.user || response;
+
+      if (freshUser) {
+        setUser((prevUser) => {
+          const mergedUser = {
+            ...prevUser,
+            ...freshUser,
+          };
+
+          if (!freshUser.permissions && prevUser?.permissions) {
+            mergedUser.permissions = prevUser.permissions;
+          }
+
+          localStorage.setItem("user", JSON.stringify(mergedUser));
+          return mergedUser;
+        });
+
+        return freshUser;
+      }
+    } catch (error) {
+      console.error("Gagal refresh profil:", error);
+      if (error.response && error.response.status === 401) {
+        logout();
+      }
+    }
+  };
+
   const login = async (username, password) => {
     try {
-      const { token: apiToken, user: userData } = await authService.login(
+      const { token: apiToken, user: loginData } = await authService.login(
         username,
         password
       );
 
       localStorage.setItem("token", apiToken);
-      localStorage.setItem("user", JSON.stringify(userData));
-
-      setUser(userData);
       setToken(apiToken);
       setIsAuthenticated(true);
+
+      let profileData = {};
+      try {
+        const response = await authService.getCurrentUser();
+        profileData = response.user || response;
+      } catch (error) {
+        console.warn(
+          "Gagal ambil avatar saat login, menggunakan data login saja",
+          error
+        );
+      }
+
+      const finalUser = {
+        ...loginData,
+        ...profileData,
+        permissions: loginData.permissions,
+        role: loginData.role,
+      };
+
+      setUser(finalUser);
+      localStorage.setItem("user", JSON.stringify(finalUser));
 
       const dashboardRoles = [
         "admin_kota",
@@ -45,13 +100,18 @@ export const AuthProvider = ({ children }) => {
         "helpdesk",
         "teknisi",
       ];
-      if (dashboardRoles.includes(userData.role?.name)) {
+
+      const roleName = finalUser.role?.name || finalUser.role;
+
+      if (dashboardRoles.includes(roleName)) {
         navigate("/dashboard");
       } else {
         navigate("/");
       }
-      return userData;
+      return finalUser;
     } catch (error) {
+      setToken(null);
+      localStorage.removeItem("token");
       throw error;
     }
   };
@@ -68,16 +128,10 @@ export const AuthProvider = ({ children }) => {
 
   //RBAC
   const hasPermission = (permission) => {
-    if (!user || !user.permissions) return false;
+    if (!user || !user.permissions || !Array.isArray(user.permissions))
+      return false;
 
     const [action, subject] = permission;
-
-    // Admin with permission 'manage:all' can do anything
-    // if (
-    // user.permissions.some((p) => p.action === "manage" && p.subject === "all")
-    // ) {
-    //   return true;
-    // }
 
     // check permission
     return user.permissions.some(
@@ -85,7 +139,15 @@ export const AuthProvider = ({ children }) => {
     );
   };
 
-  const value = { user, isAuthenticated, token, login, logout, hasPermission };
+  const value = {
+    user,
+    isAuthenticated,
+    token,
+    login,
+    logout,
+    hasPermission,
+    refreshProfile,
+  };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

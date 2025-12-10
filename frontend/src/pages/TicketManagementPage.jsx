@@ -95,6 +95,7 @@ const TicketManagementPage = () => {
       }
 
       const { data, pagination } = response;
+      console.log("response", response);
 
       // Transformation data API into format Table
       const mappedTickets = data.map((item) => ({

@@ -27,7 +27,7 @@ const TicketListWidget = ({
           tickets.map((ticket) => (
             <li key={ticket.id}>
               <Link
-                to={`${detailTicketLink}/${ticket.id}`}
+                to={`${detailTicketLink}/${ticket.dbId || ticket.id}`}
                 className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-700/50 rounded-md transition-colors hover:bg-slate-200 dark:hover:bg-slate-700"
               >
                 <div>

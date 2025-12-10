@@ -13,6 +13,7 @@ import { FiSend } from "react-icons/fi";
 
 // Import Services
 import { uploadToCloudinary } from "../../../services/storageServices";
+import { CLOUDINARY_FOLDER_TICKET } from "../../../config";
 import { createIncident, createGuestIncident } from "../services/ticketService";
 
 const ComplaintForm = () => {
@@ -86,7 +87,7 @@ const ComplaintForm = () => {
       let attachmentUrl = "";
       if (formData.lampiran) {
         toast.loading("Mengunggah lampiran...");
-        attachmentUrl = await uploadToCloudinary(formData.lampiran);
+        attachmentUrl = await uploadToCloudinary(formData.lampiran, CLOUDINARY_FOLDER_TICKET);
         toast.dismiss();
       }
 

@@ -20,6 +20,7 @@ import {
   FiTrendingUp,
   FiHelpCircle,
   FiBook,
+  FiUser,
 } from "react-icons/fi";
 import { TfiTimer } from "react-icons/tfi";
 import { SlCalender } from "react-icons/sl";
@@ -55,13 +56,13 @@ const navigationLinks = [
     name: "Pengerjaan Tiket",
     to: "/dashboard/assigned-tickets",
     icon: FiActivity,
-    permission: ["process", "ticket"],
+    permission: ["update_progress", "tickets"],
   },
   {
     name: "Buat Artikel Solusi",
     to: "/dashboard/create-article",
     icon: FiBookOpen,
-    permission: ["create", "article"],
+    permission: ["create", "kb"],
   },
   {
     name: "Review Artikel",
@@ -73,13 +74,14 @@ const navigationLinks = [
     name: "Pusat Informasi",
     to: "/dashboard/knowledge-base",
     icon: FiBook,
-    permission: ["read", "knowledge-base"],
+    permission: ["read", "kb"],
   },
   {
     name: "Laporan Kinerja",
     to: "/dashboard/reports",
     icon: FiBarChart2,
-    permission: ["read", "performance_report"],
+    permission: ["read", "reports"],
+    // performance_report
   },
   {
     name: "Atur Operasional",
@@ -97,25 +99,25 @@ const navigationLinks = [
     name: "Atur SLA",
     to: "/dashboard/settings/sla",
     icon: TfiTimer,
-    permission: ["manage", "sla"],
+    permission: ["manage", "opd"],
   },
   {
     name: "Kelola Pengguna",
     to: "/dashboard/users",
     icon: FiUsers,
-    permission: ["manage", "user"],
+    permission: ["manage", "users"],
   },
   {
     name: "Katalog Layanan",
     to: "/dashboard/catalog",
     icon: FiLayers,
-    permission: ["manage", "catalog"],
+    permission: ["manage", "opd"],
   },
   {
     name: "Kelola FAQ",
     to: "/dashboard/faq",
     icon: FiHelpCircle,
-    permission: ["manage", "faq"],
+    permission: ["manage", "opd"],
   },
   {
     name: "Laporan OPD",
@@ -145,6 +147,19 @@ const DashboardSidebar = () => {
     logout();
     navigate("/login");
   };
+
+  const getAvatarSrc = () => {
+    if (!user) return null;
+    return user.avatar_url || user.avatar;
+  };
+
+  const getRoleName = (roleData) => {
+    if (!roleData) return "User";
+    if (typeof roleData === "string") return roleData;
+    return roleData.name || roleData.label || "User";
+  };
+
+  const avatarSrc = getAvatarSrc();
 
   return (
     <aside
@@ -205,17 +220,24 @@ const DashboardSidebar = () => {
         >
           {!isCollapsed && (
             <div className="min-w-0 flex-1 flex items-center gap-3">
-              <img
-                src={user.avatar}
-                alt="Foto Profil"
-                className="w-11 h-11 rounded-full object-cover border-2 border-slate-300 dark:border-slate-600 flex-shrink-0"
-              />
+              {avatarSrc ? (
+                <img
+                  src={avatarSrc}
+                  alt="Foto Profil"
+                  className="w-11 h-11 rounded-full object-cover border-2 border-slate-300 dark:border-slate-600 flex-shrink-0"
+                />
+              ) : (
+                <div className="w-11 h-11 rounded-full bg-[#053F5C] text-white flex items-center justify-center font-bold text-lg border-2 border-slate-300 dark:border-slate-600 flex-shrink-0">
+                  <FiUser size={20} />
+                </div>
+              )}
+
               <div>
                 <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">
-                  {user?.name}
+                  {user?.username || "Guest"}
                 </p>
                 <p className="truncate text-xs text-slate-500 dark:text-slate-400">
-                  {user?.role?.label}
+                  {getRoleName(user?.role)}
                 </p>
               </div>
             </div>

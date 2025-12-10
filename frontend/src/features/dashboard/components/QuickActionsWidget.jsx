@@ -5,7 +5,7 @@ import { FiPlus } from "react-icons/fi";
 const QuickActionsWidget = () => {
   return (
     <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-6">
-      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
+      <h3 className="text-lg text-center font-semibold text-slate-900 dark:text-white mb-4">
         Aksi Cepat
       </h3>
       <Link

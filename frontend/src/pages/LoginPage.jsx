@@ -69,7 +69,11 @@ const LoginPage = () => {
 
       try {
         const userData = await login(formData.username, formData.password);
-        toast.success(`Login berhasil! Selamat datang, ${userData.name}`);
+        toast.success(
+          `Login berhasil! Selamat datang, ${
+            userData.username || userData.name
+          }`
+        );
       } catch (err) {
         setServerError(
           err.message || "Login gagal. Periksa kembali kredensial anda."

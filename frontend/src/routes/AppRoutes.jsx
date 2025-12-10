@@ -53,7 +53,10 @@ const DashboardGuard = ({ children }) => {
     "admin_kota",
   ];
 
-  if (!isAuthenticated || !dashboardRoles.includes(user?.role?.name)) {
+  if (
+    !isAuthenticated ||
+    !dashboardRoles.includes(user?.role?.name || user?.role)
+  ) {
     return <Navigate to="/login" replace />;
   }
   return children;

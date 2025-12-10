@@ -1,6 +1,9 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
-import { format } from "date-fns";
+import { useParams, Link, useLocation } from "react-router-dom";
+import { format, isValid } from "date-fns";
+import { id as localeId } from "date-fns/locale";
 import { useLoading } from "../context/LoadingContext";
 import {
   FiArrowLeft,
@@ -14,140 +17,221 @@ import toast from "react-hot-toast";
 import StatusBadge from "../features/tickets/components/StatusBadge";
 // import Input from "../components/Input";
 import FormSelect from "../components/FormSelect";
-import FormTextArea from "../components/FormTextArea";
+// import FormTextArea from "../components/FormTextArea";
 import ReassignModal from "../features/tickets/components/ReassignModal";
 import { useAuth } from "../context/AuthContext";
 
-// Mock Data
-const mockAllTickets = [
-  {
-    id: "TK-0010",
-    type: "Pengaduan",
-    status: "Diproses",
-    priority: "High",
-    createdAt: "2025-10-15T09:00:00Z",
-    updatedAt: "2025-10-16T10:00:00Z",
-    pelapor: {
-      name: "Warga Masyarakat A",
-      nik: "3578000111222",
-      email: "warga@mail.com",
-      phone: "08123456789",
-      address: "Jl. Pahlawan No. 1, Surabaya",
-    },
-    details: {
-      judul: "Jaringan Server Down di Ruang Rapat",
-      deskripsi: "Jaringan server di ruang rapat utama mati total.",
-      lampiran: [{ name: "screenshot-error.png", url: "#" }],
-      lokasiKejadian: "Gedung A, Lantai 2, Ruang Rapat",
-      tanggalKejadian: "2025-10-15",
-      namaOpdAset: "Sekretariat DPRD",
-      namaAset: "Jaringan",
-    },
-    assignment: {
-      assignedTo: "Teknisi Budi",
-      slaHours: 4,
-    },
-    history: [
-      {
-        status: "Diproses",
-        date: "2025-10-15T10:00:00Z",
-        by: "Teknisi Budi",
-      },
-      {
-        status: "Diajukan",
-        date: "2025-10-15T09:00:00Z",
-        by: "Warga Masyarakat A",
-      },
-    ],
-  },
-  {
-    id: "REQ-001",
-    type: "Permintaan",
-    status: "Diproses",
-    createdAt: "2025-10-19T09:00:00Z",
-    updatedAt: "2025-10-19T09:00:00Z",
-    pelapor: {
-      name: "Bisma Pargoy",
-      nik: "1471070904020021",
-      email: "pegawai@opd.go.id",
-      phone: "+62895...",
-      address: "Rungkut Asri Timur, Surabaya",
-    },
-    opd: { name: "Sekretariat DPRD" },
-    details: {
-      judul: "Permintaan Instalasi Microsoft Office",
-      deskripsi: "Butuh instalasi Office 365 di komputer baru ruang arsip.",
-      lampiran: [],
-      tanggalPermintaan: "2025-10-19",
-      katalogLayanan: "Software",
-      subLayanan: "Instalasi Aplikasi",
-      detailLayanan: "Microsoft Office",
-    },
-    assignment: {
-      priority: "Tinggi",
-      slaHours: 8,
-      assignedTo: "Teknisi Charlie (Software)",
-      internalNotes: "User butuh cepat untuk presentasi",
-    },
-    history: [
-      { status: "Diajukan", date: "2025-10-19T09:00:00Z", by: "Bisma Pargoy" },
-    ],
-  },
-];
+import {
+  getIncidentDetail,
+  getRequestDetail,
+  getTechniciansByOpd,
+  classifyTicket,
+  updateTicket,
+} from "../features/tickets/services/ticketService";
 
-const mockTeknisi = [
-  { id: 1, name: "Teknisi Budi (Jaringan)" },
-  { id: 2, name: "Teknisi Ani (Hardware)" },
-  { id: 3, name: "Teknisi Charlie (Software)" },
-];
+// Helper Date Formatter (Handle null/invalid date)
+const formatDateSafe = (dateString, formatStr = "dd MMMM yyyy, HH:mm") => {
+  if (!dateString) return "-";
+  const date = new Date(dateString);
+  return isValid(date) ? format(date, formatStr, { locale: localeId }) : "-";
+};
 
 const DashboardTicketDetailPage = () => {
   const { ticketId } = useParams();
-  const [ticket, setTicket] = useState(null);
-  const { isLoading, showLoading, hideLoading } = useLoading();
-  const [loadingComplete, setLoadingComplete] = useState(false);
-
-  const [isReassignOpen, setIsReassignOpen] = useState(false);
+  const location = useLocation();
   const { hasPermission } = useAuth();
+  const { isLoading, showLoading, hideLoading } = useLoading();
+
+  const [ticket, setTicket] = useState(null);
+  const [loadingComplete, setLoadingComplete] = useState(false);
+  const [isReassignOpen, setIsReassignOpen] = useState(false);
+  const [technicians, setTechnicians] = useState([]);
 
   // state for assignment form (new ticket)
   const [formData, setFormData] = useState({
     urgency: "",
     impact: "",
     teknisiId: "",
-    catatanInternal: "",
+    // catatanInternal: "",
   });
 
-  // Simulation Fetch Data
-  useEffect(() => {
-    showLoading("Memuat detail tiket...");
-    setLoadingComplete(false);
-    const foundTicket = mockAllTickets.find((t) => t.id === ticketId);
+  // Fetch Data
+  const fetchDetail = async () => {
+    if (!ticketId || isNaN(ticketId)) {
+      setLoadingComplete(true);
+      return;
+    }
 
-    setTimeout(() => {
-      setTicket(foundTicket);
+    showLoading("Memuat detail tiket...");
+    try {
+      let response;
+      const type = location.state?.ticketType;
+
+      if (type === "Permintaan") {
+        response = await getRequestDetail(ticketId);
+      } else if (type === "Pengaduan") {
+        response = await getIncidentDetail(ticketId);
+      } else {
+        // fallback
+        try {
+          response = await getIncidentDetail(ticketId);
+        } catch (err) {
+          response = await getRequestDetail(ticketId);
+        }
+      }
+
+      const ticketData = response.ticket || response.data || response || {};
+      const attachmentsData = response.attachments || [];
+      const historyData = response.progress_updates || [];
+
+      let lampiranList = [];
+
+      if (ticketData.reporter_attachment_url) {
+        lampiranList.push({
+          name: "Bukti Lampiran",
+          url: ticketData.reporter_attachment_url,
+        });
+      }
+
+      if (attachmentsData.length > 0) {
+        const mappedAttachments = attachmentsData.map((att) => ({
+          name: att.file_name || "Lampiran Tambahan",
+          url: att.file_url || "#",
+        }));
+        lampiranList = [...lampiranList, ...mappedAttachments];
+      }
+
+      // Mapping API Data into State Component
+      const mappedTicket = {
+        id: ticketData.ticket_number,
+        dbId: ticketData.id,
+        type:
+          ticketData.type === "incident" || ticketData.type === "Pengaduan"
+            ? "Pengaduan"
+            : "Permintaan",
+        status: ticketData.status,
+        stage: ticketData.stage,
+        priority: ticketData.priority,
+        category: ticketData.category,
+        createdAt: ticketData.created_at,
+        updatedAt: ticketData.updated_at,
+
+        pelapor: {
+          name:
+            ticketData.reporter?.full_name ||
+            ticketData.reporter_name ||
+            "Tidak diketahui",
+          nik: ticketData.reporter?.nip || ticketData.reporter_nip || "-",
+          email: ticketData.reporter?.email || ticketData.reporter_email || "-",
+          phone: ticketData.reporter?.phone || ticketData.reporter_phone || "-",
+          address:
+            ticketData.reporter?.address || ticketData.reporter_address || "-",
+
+          opd_name:
+            ticketData.reporter?.opd?.name || ticketData.opd?.name || "-",
+        },
+
+        opd: ticketData.opd,
+
+        details: {
+          judul: ticketData.title,
+          deskripsi: ticketData.description,
+          lampiran: lampiranList,
+          lokasiKejadian: ticketData.incident_location || "-",
+          tanggalKejadian: ticketData.incident_date,
+          tanggalPermintaan: ticketData.requested_date,
+          katalogLayanan: ticketData.service_catalog?.name || "-",
+          detailLayanan: ticketData.service_item?.name || "-",
+          namaAset:
+            ticketData.asset_name_reported ||
+            ticketData.asset_identifier ||
+            "-",
+        },
+
+        assignment: {
+          assignedTo: ticketData.technician?.full_name,
+          slaDue: ticketData.sla_due,
+          priority: ticketData.priority,
+        },
+
+        history: historyData.map((h) => ({
+          status: h.status_change,
+          date: h.update_time,
+          by: h.updated_by_user?.full_name || "System",
+          note: h.handling_description,
+        })),
+      };
+
+      setTicket(mappedTicket);
+    } catch (error) {
+      console.error("Fetch Detail Error:", error);
+      toast.error("Gagal memuat detail tiket. Tiket mungkin tidak ditemukan.");
+    } finally {
       hideLoading();
       setLoadingComplete(true);
-    }, 500);
+    }
+  };
 
-    return () => hideLoading();
-  }, [ticketId, showLoading, hideLoading]);
+  useEffect(() => {
+    fetchDetail();
+  }, [ticketId, location.state]);
+
+  // fetch technicians
+  useEffect(() => {
+    if (ticket?.opd?.id) {
+      const loadTechnicians = async () => {
+        const techs = await getTechniciansByOpd(ticket.opd.id);
+        setTechnicians(techs || []);
+      };
+      loadTechnicians();
+    }
+  }, [ticket]);
 
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleAssignSubmit = (e) => {
+  const handleAssignSubmit = async (e) => {
     e.preventDefault();
-    console.log("Menugaskan Tiket:", formData);
-    // API Logic: PATCH /api/tickets/:id/assign { ...formData }
-    // if success, fetch data again
-    alert("Tiket berhasil Ditugaskan!");
-    setTicket((prev) => ({
-      ...prev,
-      status: "Ditugaskan",
-      assignment: { ...prev.assignment, assignedTo: "Teknisi Terpilih" },
-    }));
+
+    if (!formData.urgency || !formData.impact || !formData.teknisiId) {
+      toast.error("Harap lengkapi Urgency, Impact, dan Pilih Teknisi.");
+      return;
+    }
+
+    showLoading("Memproses Verifikasi...");
+
+    try {
+      // classify
+      const classifyPayload = {
+        urgency: parseInt(formData.urgency),
+        impact: parseInt(formData.impact),
+      };
+
+      await classifyTicket(ticket.dbId, ticket.type, classifyPayload);
+
+      //update ticket
+      const updatePayload = {
+        status: "assigned",
+        stage: "verification",
+        assigned_to: parseInt(formData.teknisiId),
+      };
+
+      console.log("Mengirim Payload Update:", updatePayload);
+      await updateTicket(ticket.dbId, ticket.type, updatePayload);
+
+      toast.success("Tiket berhasil diverifikasi & ditugaskan!");
+
+      // Refresh Data
+      await fetchDetail();
+    } catch (error) {
+      console.error("Assign Error:", error);
+      toast.error(
+        `Gagal menugaskan: ${error.response?.data?.message || error.message}`
+      );
+    } finally {
+      hideLoading();
+    }
   };
 
   // Handle Reassign
@@ -191,22 +275,29 @@ const DashboardTicketDetailPage = () => {
   if (!ticket && loadingComplete) {
     return (
       <div className="text-center py-20 dark:text-white">
-        Tiket tidak ditemukan
+        <h2 className="text-xl font-bold">Tiket Tidak Ditemukan</h2>
+        <p className="text-slate-500">
+          Mohon periksa kembali link atau ID tiket Anda.
+        </p>
+        <Link
+          to="/dashboard/manage-tickets"
+          className="text-blue-500 hover:underline mt-4 block"
+        >
+          Kembali ke List
+        </Link>
       </div>
     );
   }
 
   if (!ticket) return null;
 
-  // check if ticket "New" (pending) for display form
-  const isNewTicket =
-    ticket.status === "Menunggu" || ticket.status === "Pending";
-  const isOngoing =
-    ticket.status === "Diproses" ||
-    ticket.status === "Ditugaskan" ||
-    ticket.status === "Overdue";
   const isRequest = ticket.type === "Permintaan";
   const applicantLabel = isRequest ? "Pemohon" : "Pelapor";
+
+  // Logic UI Status
+  const isNewTicket =
+    ticket.status === "open" || ticket.status === "pending_approval";
+  const isOngoing = ["assigned", "in_progress"].includes(ticket.status);
 
   return (
     <div className="space-y-6 pb-20">
@@ -241,7 +332,7 @@ const DashboardTicketDetailPage = () => {
               <span>
                 Dibuat:{" "}
                 <strong className="text-slate-800 dark:text-slate-200">
-                  {format(new Date(ticket.createdAt), "dd MMM yyyy, HH:mm")}
+                  {formatDateSafe(ticket.createdAt, "dd MMM yyyy, HH:mm")}
                 </strong>
               </span>
             </div>
@@ -363,114 +454,140 @@ const DashboardTicketDetailPage = () => {
             <h2 className="text-lg font-semibold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-700 pb-3 mb-4">
               Riwayat Status
             </h2>
-            <ol className="relative border-l border-slate-200 dark:border-slate-700 ml-2">
-              {ticket.history.map((item, index) => (
-                <li key={index} className="mb-6 ml-4">
-                  <div className="absolute w-3 h-3 bg-slate-200 rounded-full -left-1.5 border border-white dark:border-slate-800 dark:bg-slate-600"></div>
-                  <time className="text-sm font-medium text-slate-500 dark:text-slate-400">
-                    {format(new Date(item.date), "dd MMMM yyyy, HH:mm")}
-                  </time>
-                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                    {item.status}
-                  </h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-300">
-                    Oleh: {item.by}
-                  </p>
-                </li>
-              ))}
-            </ol>
+            {ticket.history.length > 0 ? (
+              <ol className="relative border-l border-slate-200 dark:border-slate-700 ml-2">
+                {ticket.history.map((item, index) => (
+                  <li key={index} className="mb-6 ml-4">
+                    <div className="absolute w-3 h-3 bg-slate-200 rounded-full -left-1.5 border border-white dark:border-slate-800 dark:bg-slate-600"></div>
+                    <time className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                      {formatDateSafe(item.date)}
+                    </time>
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                      {item.status.replace(/_/g, " ")}
+                    </h3>
+                    <p className="text-sm text-slate-600 dark:text-slate-300">
+                      Oleh: {item.by}
+                    </p>
+                    {item.note && (
+                      <p className="text-sm text-slate-600 italic mt-2 bg-slate-50 dark:bg-slate-700/50 p-3 rounded border-l-2 border-slate-300 dark:border-slate-600">
+                        "{item.note}"
+                      </p>
+                    )}
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <p className="text-slate-500 italic text-center py-4">
+                Belum ada riwayat status.
+              </p>
+            )}
           </div>
         </div>
 
         {/* Right Column */}
         <div className="lg:col-span-1 space-y-6">
-          {ticket.assignment?.assignedTo && (
-            <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-6 sticky top-24">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
+          {ticket.assignment?.assignedTo ? (
+            <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-6 sticky top-24 border border-slate-100 dark:border-slate-700">
+              <h3 className="font-bold text-lg mb-4 text-slate-800 dark:text-white">
                 Informasi Penugasan
               </h3>
               <dl className="space-y-4">
-                <InfoRow label="Status Terkini" value={ticket.status} />
+                <InfoRow label="Teknisi" value={ticket.assignment.assignedTo} />
                 <InfoRow
                   label="Prioritas"
-                  value={ticket.assignment?.priority || "-"}
-                />
-                <InfoRow
-                  label="SLA"
                   value={
-                    ticket.assignment?.slaHours
-                      ? `${ticket.assignment.slaHours} Jam Kerja`
-                      : "-"
+                    <span
+                      className={`inline-block px-2 py-1 rounded text-xs font-bold uppercase ${
+                        ticket.priority === "high"
+                          ? "bg-red-100 text-red-700"
+                          : ticket.priority === "medium"
+                          ? "bg-yellow-100 text-yellow-700"
+                          : "bg-green-100 text-green-700"
+                      }`}
+                    >
+                      {ticket.priority || "-"}
+                    </span>
                   }
                 />
                 <InfoRow
-                  label="Ditugaskan ke"
-                  value={ticket.assignment?.assignedTo || "-"}
-                />
-                <InfoRow
-                  label="Catatan Internal"
-                  value={ticket.assignment?.internalNotes || "-"}
-                  isFullWidth
+                  label="Batas SLA"
+                  value={formatDateSafe(ticket.assignment.slaDue)}
                 />
               </dl>
             </div>
-          )}
-
-          {isNewTicket && (
-            <form
-              onSubmit={handleAssignSubmit}
-              className="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-6 sticky top-24"
-            >
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
-                Panel Penugasan
-              </h3>
-              <div className="space-y-4">
-                <FormSelect
-                  id="urgency"
-                  name="urgency"
-                  label="Urgency"
-                  value={formData.urgency}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="">-- Tentukan Urgency --</option>
-                  <option value="Tinggi">Tinggi (Sistem utama mati)</option>
-                  <option value="Sedang">Sedang (Fungsi terganggu)</option>
-                  <option value="Rendah">Rendah (Masalah kecil)</option>
-                </FormSelect>
-
-                <FormSelect
-                  id="impact"
-                  name="impact"
-                  label="Impact"
-                  value={formData.impact}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="">-- Tentukan Impact --</option>
-                  <option value="1">1 - Satu Pengguna</option>
-                  <option value="2">2 - Satu Unit</option>
-                  <option value="3">3 - Satu OPD</option>
-                  <option value="4">4 - Seluruh Kota</option>
-                </FormSelect>
-
-                <FormSelect
-                  id="teknisiId"
-                  name="teknisiId"
-                  label="Tugaskan ke Teknisi"
-                  value={formData.teknisiId}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="">-- Pilih Teknisi --</option>
-                  {mockTeknisi.map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.name}
+          ) : (
+            isNewTicket && (
+              <form
+                onSubmit={handleAssignSubmit}
+                className="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-6 sticky top-24"
+              >
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
+                  Panel Penugasan
+                </h3>
+                <div className="space-y-4">
+                  <FormSelect
+                    id="urgency"
+                    name="urgency"
+                    label="Urgency"
+                    value={formData.urgency}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="">-- Tentukan Urgency --</option>
+                    <option value="6">Tinggi (Sistem utama mati / VIP)</option>
+                    <option value="4">
+                      Sedang (Fungsi terganggu / Lambat)
                     </option>
-                  ))}
-                </FormSelect>
+                    <option value="2">Rendah (Masalah kecil / Kosmetik)</option>
+                  </FormSelect>
 
-                <FormTextArea
+                  <FormSelect
+                    id="impact"
+                    name="impact"
+                    label="Impact"
+                    value={formData.impact}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="">-- Tentukan Impact --</option>
+                    <option value="1">1 - Satu Pengguna</option>
+                    <option value="2">2 - Satu Unit / Bidang</option>
+                    <option value="3">3 - Satu OPD</option>
+                  </FormSelect>
+
+                  {/* Helper Text Preview Skor (Opsional) */}
+                  {formData.urgency && formData.impact && (
+                    <div className="text-sm md:text-base mt-2 p-2 bg-slate-100 dark:bg-slate-700 dark:text-slate-300 rounded text-slate-600">
+                      Estimasi Skor:{" "}
+                      <strong>{formData.urgency * formData.impact} </strong>(
+                      {formData.urgency * formData.impact > 15
+                        ? "Critical 🔴"
+                        : formData.urgency * formData.impact > 10
+                        ? "High 🟠"
+                        : formData.urgency * formData.impact > 5
+                        ? "Medium 🟡"
+                        : "Low 🟢"}
+                      )
+                    </div>
+                  )}
+
+                  <FormSelect
+                    id="teknisiId"
+                    name="teknisiId"
+                    label="Tugaskan ke Teknisi"
+                    value={formData.teknisiId}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="">-- Pilih Teknisi --</option>
+                    {technicians.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.username}
+                      </option>
+                    ))}
+                  </FormSelect>
+
+                  {/* <FormTextArea
                   id="catatanInternal"
                   name="catatanInternal"
                   label="Catatan Internal (opsional)"
@@ -478,27 +595,28 @@ const DashboardTicketDetailPage = () => {
                   rows={4}
                   value={formData.catatanInternal}
                   onChange={handleChange}
-                />
+                /> */}
 
-                <div className="flex flex-col gap-2 pt-2">
-                  <button
-                    type="submit"
-                    className="flex min-h-[44px] items-center justify-center gap-2 px-4 py-2 rounded-lg font-semibold text-white bg-[#429EBD] hover:bg-[#053F5C]"
-                  >
-                    <FiSend size={18} />
-                    <span>Verifikasi Tiket</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleReject}
-                    className="flex min-h-[44px] items-center justify-center gap-2 px-4 py-2 rounded-lg font-semibold text-red-600 dark:text-red-500 bg-red-100 dark:bg-red-500/10 hover:bg-red-200"
-                  >
-                    <FiTrash2 size={18} />
-                    <span>Tolak Tiket</span>
-                  </button>
+                  <div className="flex flex-col gap-2 pt-2">
+                    <button
+                      type="submit"
+                      className="flex min-h-[44px] items-center justify-center gap-2 px-4 py-2 rounded-lg font-semibold text-white bg-[#429EBD] hover:bg-[#053F5C]"
+                    >
+                      <FiSend size={18} />
+                      <span>Verifikasi Tiket</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleReject}
+                      className="flex min-h-[44px] items-center justify-center gap-2 px-4 py-2 rounded-lg font-semibold text-red-600 dark:text-red-500 bg-red-100 dark:bg-red-500/10 hover:bg-red-200"
+                    >
+                      <FiTrash2 size={18} />
+                      <span>Tolak Tiket</span>
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </form>
+              </form>
+            )
           )}
         </div>
       </div>

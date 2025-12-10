@@ -1,6 +1,12 @@
 import axios from "axios";
 import { API_BASE_URL } from "../../../config";
 
+const getAuthHeader = () => {
+  const token = localStorage.getItem("token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
+// POST Login
 export const login = async (username, password) => {
   try {
     const response = await axios.post(
@@ -23,5 +29,32 @@ export const login = async (username, password) => {
     throw new Error(
       error.response?.data?.message || "Username atau password salah."
     );
+  }
+};
+
+// GET Current User Profile
+export const getCurrentUser = async () => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/auth/me`, {
+      headers: getAuthHeader(),
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || "Gagal memuat profil");
+  }
+};
+
+// PUT Update User Profile
+export const updateUserProfile = async (userData) => {
+  try {
+    const response = await axios.put(`${API_BASE_URL}/auth/me`, userData, {
+      headers: {
+        "Content-Type": "application/json",
+        ...getAuthHeader(),
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || "Gagal update profil");
   }
 };

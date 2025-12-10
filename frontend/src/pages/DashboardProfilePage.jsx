@@ -3,7 +3,7 @@ import ProfilePictureCard from "../features/profile/components/ProfilePictureCar
 import PasswordChangeForm from "../features/profile/components/PasswordChangeForm";
 import UserDataDisplay from "../features/profile/components/UserDataDisplay";
 
-const ProfilePage = () => {
+const DashboardProfilePage = () => {
   return (
     <div>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -13,7 +13,7 @@ const ProfilePage = () => {
         </h1>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-          <div className="md:col-span-1">
+        <div className="md:col-span-1">
             <ProfilePictureCard />
           </div>
 
@@ -29,4 +29,4 @@ const ProfilePage = () => {
   );
 };
 
-export default ProfilePage;
+export default DashboardProfilePage;
