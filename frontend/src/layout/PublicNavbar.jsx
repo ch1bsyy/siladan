@@ -12,7 +12,7 @@ const PublicNavbar = () => {
   const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
 
-  const roleName = user.role?.name || user.role;
+  const roleName = user?.role?.name || user?.role;
   const isPegawai = isAuthenticated && roleName === "pegawai_opd";
 
   const baseNavLinks = [

@@ -218,7 +218,7 @@ const ProfilePictureCard = () => {
 
             <button
               onClick={() => setIsEditingName(true)}
-              className="absolute right-8 top-1 text-slate-400 hover:text-[#053F5C] dark:hover:text-[#429EBD] group-hover:cursor-pointer p-1"
+              className="absolute -right-8 top-1 text-slate-400 hover:text-[#053F5C] dark:hover:text-[#429EBD] group-hover:cursor-pointer p-1"
               title="Edit Username"
             >
               <FiEdit2 size={20} />
