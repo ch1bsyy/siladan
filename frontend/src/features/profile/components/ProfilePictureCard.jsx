@@ -203,10 +203,22 @@ const ProfilePictureCard = () => {
             </div>
           </div>
         ) : (
-          <div className="group relative inline-block">
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white truncate">
-              {user.username || "Nama Pengguna"}
-            </h2>
+          <div className="flex flex-col items-center">
+            <div
+              className="flex items-center justify-center gap-3 group cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 px-3 py-1 rounded-lg transition-all"
+              onClick={() => setIsEditingName(true)}
+            >
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white truncate max-w-[250px]">
+                {user.username || "Nama Pengguna"}
+              </h2>
+
+              <button
+                className="text-slate-400 group-hover:text-[#053F5C] dark:group-hover:text-[#429EBD] transition-colors"
+                title="Edit Username"
+              >
+                <FiEdit2 size={18} />
+              </button>
+            </div>
 
             <p className="text-sm md:text-[15px] font-medium text-[#429EBD] mt-1">
               {user.opd?.name || "OPD Tidak Terdaftar"}
@@ -215,14 +227,6 @@ const ProfilePictureCard = () => {
             <p className="text-xs md:text-[13px] text-slate-500 dark:text-slate-400 mt-1 mb-2">
               {getRoleName(user.role)}
             </p>
-
-            <button
-              onClick={() => setIsEditingName(true)}
-              className="absolute -right-8 top-1 text-slate-400 hover:text-[#053F5C] dark:hover:text-[#429EBD] group-hover:cursor-pointer p-1"
-              title="Edit Username"
-            >
-              <FiEdit2 size={20} />
-            </button>
           </div>
         )}
       </div>

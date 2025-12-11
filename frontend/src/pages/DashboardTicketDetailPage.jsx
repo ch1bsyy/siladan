@@ -498,8 +498,10 @@ const DashboardTicketDetailPage = () => {
                   value={
                     <span
                       className={`inline-block px-2 py-1 rounded text-xs font-bold uppercase ${
-                        ticket.priority === "high"
-                          ? "bg-red-100 text-red-700"
+                        ticket.priority === "major"
+                          ? "bg-orange-100 text-orange-700"
+                          : ticket.priority === "high"
+                          ? "bg-orange-100 text-orange-700"
                           : ticket.priority === "medium"
                           ? "bg-yellow-100 text-yellow-700"
                           : "bg-green-100 text-green-700"
@@ -528,31 +530,29 @@ const DashboardTicketDetailPage = () => {
                   <FormSelect
                     id="urgency"
                     name="urgency"
-                    label="Urgency"
+                    label="Urgency (Tingkat Mendesak)"
                     value={formData.urgency}
                     onChange={handleChange}
                     required
                   >
                     <option value="">-- Tentukan Urgency --</option>
-                    <option value="6">Tinggi (Sistem utama mati / VIP)</option>
-                    <option value="4">
-                      Sedang (Fungsi terganggu / Lambat)
-                    </option>
-                    <option value="2">Rendah (Masalah kecil / Kosmetik)</option>
+                    <option value="2">Rendah (Masalah kecil)</option>
+                    <option value="4">Sedang (Fungsi terganggu)</option>
+                    <option value="5">Tinggi (Sistem utama mati)</option>
                   </FormSelect>
 
                   <FormSelect
                     id="impact"
                     name="impact"
-                    label="Impact"
+                    label="Impact (Dampak)"
                     value={formData.impact}
                     onChange={handleChange}
                     required
                   >
                     <option value="">-- Tentukan Impact --</option>
-                    <option value="1">1 - Satu Pengguna</option>
-                    <option value="2">2 - Satu Unit / Bidang</option>
-                    <option value="3">3 - Satu OPD</option>
+                    <option value="1">Satu Pengguna</option>
+                    <option value="3">Satu Unit / Bidang</option>
+                    <option value="4">Satu OPD</option>
                   </FormSelect>
 
                   {/* Helper Text Preview Skor (Opsional) */}
@@ -561,7 +561,7 @@ const DashboardTicketDetailPage = () => {
                       Estimasi Skor:{" "}
                       <strong>{formData.urgency * formData.impact} </strong>(
                       {formData.urgency * formData.impact > 15
-                        ? "Critical 🔴"
+                        ? "Major 🔴"
                         : formData.urgency * formData.impact > 10
                         ? "High 🟠"
                         : formData.urgency * formData.impact > 5

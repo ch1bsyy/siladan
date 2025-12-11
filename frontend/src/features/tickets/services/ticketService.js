@@ -126,9 +126,13 @@ export const classifyTicket = async (id, type, data) => {
     );
     return response.data;
   } catch (error) {
-    throw new Error(
-      error.response?.data?.message || "Gagal mengklasifikasikan tiket"
-    );
+    const errorMessage =
+      error.response?.data?.error ||
+      error.response?.data?.message ||
+      "Gagal mengklasifikasikan tiket";
+
+    console.error("Classify Ticket Error:", errorMessage);
+    throw new Error(errorMessage);
   }
 };
 
@@ -145,15 +149,13 @@ export const updateTicket = async (id, type, data) => {
     );
     return response.data;
   } catch (error) {
-    // LOG ERROR LENGKAP KE CONSOLE AGAR BISA DIBACA
     console.error("Update Ticket Error Response:", error.response?.data);
     console.error("Update Ticket Error Status:", error.response?.status);
 
-    // Ambil pesan error spesifik dari backend jika ada
     const errorMessage =
       error.response?.data?.message ||
       error.response?.data?.error ||
-      "Gagal mengupdate tiket (Cek Console untuk detail)";
+      "Gagal mengupdate tiket";
 
     throw new Error(errorMessage);
   }
