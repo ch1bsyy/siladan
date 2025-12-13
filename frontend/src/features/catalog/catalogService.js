@@ -17,7 +17,6 @@ export const getCatalog = async (params) => {
   } catch (error) {
     throw new Error(error.response?.data?.message || "Gagal memuat katalog");
   }
-  
 };
 
 // POST Create Item (Level 2 or Level 3)
