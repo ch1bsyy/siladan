@@ -41,7 +41,7 @@ const TicketListWidget = ({
                         : "text-[#429EBD]"
                     }`}
                   >
-                    {ticket.id} ({ticket.type})
+                    {ticket.ticket_number} ({ticket.type})
                   </span>
                 </div>
                 <FiArrowRight className="text-slate-400" />

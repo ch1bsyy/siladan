@@ -1,120 +1,131 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import AssignedTicketTable from "../features/tickets/components/AssignedTicketTable";
 import Pagination from "../components/Pagination";
 import TicketFilters from "../features/tickets/components/TicketFilters";
-
-const mockMyTickets = [
-  {
-    id: "TK-0010",
-    title: "Server Ruang Rapat Mati",
-    type: "pengaduan",
-    status: "Ditugaskan",
-    priority: "Critical",
-    sla: "2025-11-20T15:00:00",
-    date: "2025-11-19",
-  },
-  {
-    id: "TK-0012",
-    title: "Printer Macet di Keuangan",
-    type: "pengaduan",
-    status: "Diproses",
-    priority: "Medium",
-    sla: "2025-11-22T17:00:00",
-    date: "2025-11-19",
-  },
-  {
-    id: "TK-0110",
-    title: "Server Ruang Rapat Mati",
-    type: "pengaduan",
-    status: "Pending",
-    priority: "Critical",
-    sla: "2025-11-20T15:00:00",
-    date: "2025-11-19",
-  },
-  {
-    id: "TK-0112",
-    title: "Printer Macet di Keuangan",
-    type: "pengaduan",
-    status: "Menunggu",
-    priority: "Medium",
-    sla: "2025-11-22T17:00:00",
-    date: "2025-11-19",
-  },
-  {
-    id: "TK-1110",
-    title: "Server Ruang Rapat Mati",
-    type: "pengaduan",
-    status: "Diproses",
-    priority: "Critical",
-    sla: "2025-11-20T15:00:00",
-    date: "2025-11-19",
-  },
-  {
-    id: "TK-2112",
-    title: "Printer Macet di Keuangan",
-    type: "pengaduan",
-    status: "Pending",
-    priority: "Medium",
-    sla: "2025-11-22T17:00:00",
-    date: "2025-11-19",
-  },
-  {
-    id: "REQ-0055",
-    title: "Permintaan Akses VPN",
-    type: "permintaan",
-    status: "Analisa",
-    priority: "High",
-    sla: "2025-11-21T10:00:00",
-    date: "2025-11-18",
-  },
-  {
-    id: "REQ-0056",
-    title: "Instalasi Microsoft Visio",
-    type: "permintaan",
-    status: "Menunggu Approval Atasan",
-    priority: "Low",
-    sla: "2025-11-25T12:00:00",
-    date: "2025-11-15",
-  },
-];
+import { useAuth } from "../context/AuthContext";
+import {
+  getIncidents,
+  getRequests,
+} from "../features/tickets/services/ticketService";
+import { mapBackendStatusToUI } from "../features/tickets/utils/statusMapping";
+import toast from "react-hot-toast";
 
 const AssignedTicketPage = () => {
+  const { user } = useAuth();
+
   const [activeTab, setActiveTab] = useState("pengaduan");
-  const [filters, setFilters] = useState({ search: "", status: "Semua" });
+  const [allMyTickets, setAllMyTickets] = useState([]);
+  const [displayedTickets, setDisplayedTickets] = useState([]);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
 
-  // Filter Data by Tab & Search & Status
-  const filteredTickets = useMemo(() => {
-    return mockMyTickets.filter((ticket) => {
-      const matchTab = ticket.type === activeTab;
+  const [filters, setFilters] = useState({ search: "", status: "Semua" });
 
-      const searchLower = filters.search.toLowerCase();
-      const matchSearch =
-        ticket.title.toLowerCase().includes(searchLower) ||
-        ticket.id.toLowerCase().includes(searchLower);
+  const fetchTickets = useCallback(async () => {
+    try {
+      const params = {
+        page: 1,
+        limit: 100,
+        opd_id: user?.opd_id || user?.opd?.id,
+      };
 
-      const matchStatus =
-        filters.status === "Semua" || ticket.status === filters.status;
+      let response;
+      if (activeTab === "pengaduan") {
+        response = await getIncidents(params);
+        console.log("tickets", response);
+      } else {
+        response = await getRequests(params);
+        console.log("tickets", response);
+      }
 
-      return matchTab && matchSearch && matchStatus;
-    });
-  }, [activeTab, filters]);
+      // Transform data
+      if (response.success && Array.isArray(response.data)) {
+        const myTasks = response.data.filter((item) => {
+          const isNotOpen = item.status !== "open";
+          const isAssignedToMe = item.technician?.id === user?.id;
 
-  // Pagination Logic
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentTickets = filteredTickets.slice(
-    indexOfFirstItem,
-    indexOfLastItem
-  );
+          return isNotOpen && isAssignedToMe;
+        });
+
+        // Mapping ke format Table
+        const formattedData = myTasks.map((item) => ({
+          id: item.ticket_number,
+          dbId: item.id,
+          title: item.title,
+          type: activeTab,
+
+          status: item.status,
+          stage: item.stage,
+          uiStatus: mapBackendStatusToUI(item.status, item.stage),
+
+          priority: item.priority ? capitalize(item.priority) : "-",
+          sla: item.sla_due,
+          date: new Date(item.created_at).toLocaleDateString("id-ID", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          }),
+        }));
+
+        setAllMyTickets(formattedData);
+      }
+    } catch (error) {
+      console.error("Fetch Error:", error);
+      toast.error("Gagal memuat data tiket");
+      setAllMyTickets([]);
+    }
+  }, [activeTab, user]);
+
+  useEffect(() => {
+    fetchTickets();
+  }, [fetchTickets]);
+
+  useEffect(() => {
+    let result = allMyTickets;
+
+    if (filters.status !== "Semua") {
+      result = result.filter((t) => t.uiStatus === filters.status);
+    }
+
+    if (filters.search) {
+      const lowerSearch = filters.search.toLowerCase();
+      result = result.filter(
+        (t) =>
+          t.title.toLowerCase().includes(lowerSearch) ||
+          t.id.toLowerCase().includes(lowerSearch)
+      );
+    }
+
+    setDisplayedTickets(result);
+    setCurrentPage(1);
+  }, [filters, allMyTickets]);
+
+  // 3. Pagination Logic
+  const paginatedTickets = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return displayedTickets.slice(startIndex, startIndex + itemsPerPage);
+  }, [displayedTickets, currentPage]);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
-    setCurrentPage(1);
     setFilters({ search: "", status: "Semua" });
+    setAllMyTickets([]);
   };
+
+  const handleFilterChange = useCallback((newFilters) => {
+    setFilters((prev) => {
+      if (
+        prev.search === newFilters.search &&
+        prev.status === newFilters.status
+      ) {
+        return prev;
+      }
+      return newFilters;
+    });
+  }, []);
+
+  const capitalize = (s) => s && s[0].toUpperCase() + s.slice(1);
 
   return (
     <div className="space-y-6 dark:text-white">
@@ -145,18 +156,18 @@ const AssignedTicketPage = () => {
         <TicketFilters
           role="teknisi"
           type={activeTab}
-          onFilterChange={setFilters}
+          onFilterChange={handleFilterChange}
         />
       </div>
 
       {/* Table Section */}
-      <AssignedTicketTable tickets={currentTickets} />
+      <AssignedTicketTable tickets={paginatedTickets} />
 
       {/* Pagination */}
       <div className="mt-4">
         <Pagination
           currentPage={currentPage}
-          totalItems={filteredTickets.length}
+          totalItems={displayedTickets.length}
           itemsPerPage={itemsPerPage}
           onPageChange={setCurrentPage}
         />

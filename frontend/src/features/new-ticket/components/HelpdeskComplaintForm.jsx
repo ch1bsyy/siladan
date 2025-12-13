@@ -182,9 +182,15 @@ const HelpdeskComplaintForm = () => {
         response = await createGuestIncident(publicPayload);
       }
 
-      const responseData = response?.data || response;
+      const responseBody = response?.data || response;
+
       const newTicketId =
-        responseData?.ticket_number || responseData?.id || "-";
+        responseBody?.ticket?.ticket_number ||
+        responseBody?.data?.ticket_number ||
+        responseBody?.ticket_number ||
+        "-";
+
+      console.log("Ticket ID Created:", newTicketId);
 
       setCreatedTicketId(newTicketId);
       setShowSuccessModal(true);

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import {
   FiMessageCircle,
   FiHeadphones,
@@ -8,52 +8,107 @@ import {
   FiUser,
 } from "react-icons/fi";
 import { FaWhatsapp } from "react-icons/fa";
+import { useAuth } from "../../../context/AuthContext";
+
+import io from "socket.io-client";
+import { v4 as uuidv4 } from "uuid";
+
+const socket = io("http://localhost:3001", {
+  autoConnect: false,
+  transports: ["websocket"],
+});
 
 /* INTERNAL COMPONENT: CHAT WIDGET */
 const ChatWidget = ({ onClose }) => {
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      text: "Halo! Ada yang bisa kami bantu terkait layanan SILADAN?",
-      sender: "admin",
-      time: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-    },
-  ]);
+  const { user } = useAuth();
+
+  const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState("");
   const messagesEndRef = useRef(null);
 
-  // Auto-scroll to last message
+  const getGuestId = () => {
+    let id = localStorage.getItem("guest_id");
+    if (!id) {
+      id = uuidv4();
+      localStorage.setItem("guest_id", id);
+    }
+    return id;
+  };
+
+  const activeIdentity = useMemo(() => {
+    if (user) {
+      // Jika Login
+      return {
+        id: user.id, // Gunakan ID asli dari database/login
+        name: user.username,
+        role: "pegawai", // Beritahu backend ini pegawai
+        isGuest: false,
+      };
+    } else {
+      // Jika Tidak Login (Tamu)
+      return {
+        id: getGuestId(),
+        name: "Masyarakat",
+        role: "masyarakat",
+        isGuest: true,
+      };
+    }
+  }, [user]);
+
+  // // Auto-scroll to last message
+  // useEffect(() => {
+  //   messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  // }, [messages]);
+
+  // useEffect(() => {
+  //   // 1. Connect ke Socket
+  //   socket.io.opts.query = { role: "masyarakat", userId: guestId };
+  //   socket.connect();
+
+  //   // 2. Dengarkan balasan dari Staff
+  //   socket.on("pesan_masuk_user", (data) => {
+  //     setMessages((prev) => [
+  //       ...prev,
+  //       {
+  //         id: Date.now(),
+  //         text: data.text,
+  //         sender: "admin", // Dianggap admin oleh UI ini
+  //         time: new Date().toLocaleTimeString([], {
+  //           hour: "2-digit",
+  //           minute: "2-digit",
+  //         }),
+  //       },
+  //     ]);
+  //   });
+
+  //   return () => {
+  //     socket.off("pesan_masuk_user");
+  //     socket.disconnect();
+  //   };
+  // }, [guestId]);
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    console.log("Menghubungkan socket sebagai:", activeIdentity.name);
 
-  const handleSendMessage = (e) => {
-    e.preventDefault();
-    if (!inputText.trim()) return;
+    // Putus koneksi lama jika identitas berubah (misal habis login)
+    if (socket.connected) {
+      socket.disconnect();
+    }
 
-    const newUserMsg = {
-      id: Date.now(),
-      text: inputText,
-      sender: "user",
-      time: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
+    // 3. Set Query dengan Identitas yang BENAR
+    socket.io.opts.query = {
+      role: activeIdentity.role,
+      userId: activeIdentity.id,
     };
 
-    setMessages((prev) => [...prev, newUserMsg]);
-    setInputText("");
+    socket.connect();
 
-    // Simulation Auto-reply
-    setTimeout(() => {
+    socket.on("pesan_masuk_user", (data) => {
+      console.log("DAPAT BALASAN DARI HELPDESK:", data);
       setMessages((prev) => [
         ...prev,
         {
-          id: Date.now() + 1,
-          text: "Terima kasih. Petugas kami akan segera terhubung dengan Anda.",
+          id: Date.now(),
+          text: data.text,
           sender: "admin",
           time: new Date().toLocaleTimeString([], {
             hour: "2-digit",
@@ -61,7 +116,82 @@ const ChatWidget = ({ onClose }) => {
           }),
         },
       ]);
-    }, 1500);
+    });
+
+    return () => {
+      socket.off("pesan_masuk_user");
+      // Jangan disconnect total disini agar tidak putus nyambung saat minimize widget
+      // socket.disconnect();
+    };
+  }, [activeIdentity]); // Re-run jika user login/logout
+
+  // const handleSendMessage = (e) => {
+  //   e.preventDefault();
+  //   if (!inputText.trim()) return;
+
+  //   const newUserMsg = {
+  //     id: Date.now(),
+  //     text: inputText,
+  //     sender: "user",
+  //     time: new Date().toLocaleTimeString([], {
+  //       hour: "2-digit",
+  //       minute: "2-digit",
+  //     }),
+  //   };
+
+  //   setMessages((prev) => [...prev, newUserMsg]);
+  //   setInputText("");
+
+  //   // Simulation Auto-reply
+  //   setTimeout(() => {
+  //     setMessages((prev) => [
+  //       ...prev,
+  //       {
+  //         id: Date.now() + 1,
+  //         text: "Terima kasih. Petugas kami akan segera terhubung dengan Anda.",
+  //         sender: "admin",
+  //         time: new Date().toLocaleTimeString([], {
+  //           hour: "2-digit",
+  //           minute: "2-digit",
+  //         }),
+  //       },
+  //     ]);
+  //   }, 1500);
+  // };
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    if (!inputText.trim()) return;
+
+    const messageData = {
+      text: inputText,
+      sender: "user",
+      role: activeIdentity.role, // Ini akan mengirim "pegawai" (BENAR)
+      userId: activeIdentity.id, // ID Pegawai OPD (BENAR)
+
+      // PENTING: recipientId harus 'staff_room' agar backend memasukannya ke inbox helpdesk
+      recipientId: "staff_room",
+
+      time: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      // Tambahkan avatar agar di ChatPage fotonya muncul
+      avatar:
+        user?.avatar ||
+        `https://ui-avatars.com/api/?name=${activeIdentity.name}&background=random`,
+    };
+
+    // Update UI Sendiri
+    setMessages((prev) => [...prev, { ...messageData, id: Date.now() }]);
+    setInputText("");
+
+    // Kirim ke Socket
+    socket.emit("kirim_pesan", messageData);
   };
 
   return (
@@ -77,7 +207,9 @@ const ChatWidget = ({ onClose }) => {
           </div>
           <div>
             <h3 className="font-bold text-sm">Helpdesk SILADAN</h3>
-            <p className="text-xs text-blue-200">Online • Siap membantu</p>
+            <p className="text-xs text-blue-200">
+              {user ? `Halo, ${user?.username}` : "Online • Siap membantu"}
+            </p>
           </div>
         </div>
         <button

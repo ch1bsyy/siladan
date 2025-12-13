@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FiChevronRight,
   FiChevronDown,
@@ -16,139 +16,140 @@ import toast from "react-hot-toast";
 import Input from "../components/Input";
 import FormSelect from "../components/FormSelect";
 import FormTextArea from "../components/FormTextArea";
+import { useLoading } from "../context/LoadingContext";
 
-// Mock Initial Data (Hierarky 3 Level)
-const initialCatalog = [
-  {
-    id: "CAT-001",
-    name: "Perangkat Keras (Hardware)",
-    icon: "hardware",
-    isReadOnly: true, // Level 1 Read Only
-    children: [
-      {
-        id: "ACT-001",
-        name: "Instalasi & Pemasangan",
-        needAsset: true, // Need Choose Aset
-        workflow: "internal",
-        children: [
-          {
-            id: "SRV-001",
-            name: "Printer Baru",
-            desc: "Pemasangan printer desktop standar.",
-          },
-          {
-            id: "SRV-002",
-            name: "Scanner Unit",
-            desc: "Instalasi driver dan unit scanner.",
-          },
-        ],
-      },
-      {
-        id: "ACT-002",
-        name: "Perbaikan Fisik",
-        needAsset: true,
-        workflow: "internal",
-        children: [
-          {
-            id: "SRV-003",
-            name: "Ganti Keyboard Laptop",
-            desc: "Penggantian komponen keyboard rusak.",
-          },
-        ],
-      },
-    ],
-  },
-  {
-    id: "CAT-002",
-    name: "Perangkat Lunak (Software)",
-    icon: "software",
-    isReadOnly: true,
-    children: [
-      {
-        id: "ACT-003",
-        name: "Instalasi Aplikasi",
-        needAsset: true,
-        workflow: "internal",
-        children: [
-          {
-            id: "SRV-004",
-            name: "Microsoft Office 2021",
-            desc: "Lisensi Volume Dinas.",
-          },
-          {
-            id: "SRV-005",
-            name: "Antivirus Corporate",
-            desc: "Symantec Endpoint Protection.",
-          },
-        ],
-      },
-    ],
-  },
-  {
-    id: "CAT-003",
-    name: "Layanan Akun (User Account)",
-    icon: "account",
-    isReadOnly: true,
-    children: [
-      {
-        id: "ACT-004",
-        name: "Akses & Password",
-        needAsset: false, // No need Asset
-        workflow: "internal",
-        children: [
-          {
-            id: "SRV-006",
-            name: "Reset Password Email",
-            desc: "Reset password email @opd.go.id",
-          },
-        ],
-      },
-    ],
-  },
-];
+import {
+  getCatalog,
+  createCatalogItem,
+  updateCatalogItem,
+  deleteCatalogItem,
+} from "../features/catalog/catalogService";
 
 const ServiceCatalogPage = () => {
-  // eslint-disable-next-line no-unused-vars
-  const [catalog, setCatalog] = useState(initialCatalog);
-  // State for expand/collapse accordion
+  const [catalog, setCatalog] = useState([]);
+  const { showLoading, hideLoading } = useLoading();
+
   const [expanded, setExpanded] = useState({});
-  // State Modal
   const [modalOpen, setModalOpen] = useState(false);
-  const [modalType, setModalType] = useState(""); // 'add-level-2', 'edit-level-2', 'add-level-3', etc.
+  const [modalType, setModalType] = useState("");
+
   const [currentParentId, setCurrentParentId] = useState(null);
+  const [currentCatalogId, setCurrentCatalogId] = useState(null);
   const [editingItem, setEditingItem] = useState(null);
+
+  const fetchCatalog = async () => {
+    try {
+      showLoading("Mengambil daftar katalog.");
+      const response = await getCatalog();
+      if (response.success) {
+        setCatalog(response.data);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Gagal memuat katalog layanan");
+    } finally {
+      hideLoading();
+    }
+  };
+
+  useEffect(() => {
+    fetchCatalog();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // --- HANDLERS ---
   const toggleExpand = (id) => {
     setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const handleOpenModal = (type, parentId = null, item = null) => {
+  const handleOpenModal = (
+    type,
+    parentId = null,
+    catalogId = null,
+    item = null
+  ) => {
     setModalType(type);
     setCurrentParentId(parentId);
+    setCurrentCatalogId(catalogId);
     setEditingItem(item);
     setModalOpen(true);
   };
 
-  const handleSave = (formData) => {
-    // Logic Update State (Backend)
-    // Di real app this would POST/PUT into API
-    console.log("Saving Data:", formData);
-    toast.success("Data berhasil disimpan!");
-    setModalOpen(false);
+  const handleDelete = async (id, name) => {
+    if (window.confirm(`Apakah Anda yakin ingin menghapus "${name}"?`)) {
+      try {
+        showLoading("Menghapus item...");
+        await deleteCatalogItem(id);
+        toast.success("Item berhasil dihapus");
+        fetchCatalog();
+      } catch (error) {
+        console.error(error);
+        toast.error(error.message);
+      } finally {
+        hideLoading();
+      }
+    }
+  };
+
+  const handleSave = async (formData) => {
+    try {
+      const isEdit = modalType.includes("edit");
+      const isLevel2 = modalType.includes("level-2");
+      const isLevel3 = modalType.includes("level-3");
+
+      const payload = {
+        item_name: formData.name,
+        description: formData.desc,
+        needAsset: formData.needAsset,
+        workflow: formData.workflow,
+      };
+
+      // --- EDIT MODE ---
+      if (isEdit && editingItem) {
+        await updateCatalogItem(editingItem.id, payload);
+        toast.success("Item berhasil diperbarui!");
+      }
+
+      // --- CREATE MODE ---
+      else {
+        // Scenario A: Sub Layanan
+        if (isLevel2) {
+          payload.catalog_id = currentCatalogId;
+          payload.item_level = "sub_layanan";
+        } else if (isLevel3) {
+          // Scenario B: Item Layanan
+          payload.catalog_id = currentCatalogId;
+          payload.parent_item_id = currentParentId;
+          payload.item_level = "sub_layanan";
+        }
+
+        await createCatalogItem(payload);
+        toast.success("Item berhasil ditambahkan!");
+      }
+
+      // Close Modal
+      setModalOpen(false);
+      fetchCatalog();
+    } catch (error) {
+      console.error(error);
+      toast.error(error.message || "Gagal menyimpan data");
+    }
   };
 
   // --- ICONS MAPPING ---
-  const getIcon = (type) => {
-    switch (type) {
+  const getIcon = (iconName) => {
+    switch (iconName) {
+      case "monitor":
       case "hardware":
         return <FiMonitor size={20} className="text-blue-500" />;
+      case "cpu":
       case "software":
         return <FiCpu size={20} className="text-purple-500" />;
+      case "user":
       case "account":
         return <FiUser size={20} className="text-orange-500" />;
       default:
-        return <FiLayers size={20} />;
+        return <FiLayers size={20} className="text-slate-500" />;
     }
   };
 
@@ -165,6 +166,12 @@ const ServiceCatalogPage = () => {
             disinkronisasi dari Master Aset.
           </p>
         </div>
+        <button
+          onClick={fetchCatalog}
+          className="text-sm md:text-base text-blue-600 dark:text-blue-400 hover:underline"
+        >
+          Refresh Data
+        </button>
       </div>
 
       {/* MAIN CONTENT (ACCORDION LIST) */}
@@ -186,7 +193,7 @@ const ServiceCatalogPage = () => {
                 </span>
               </div>
               <button
-                onClick={() => handleOpenModal("add-level-2", level1.id)}
+                onClick={() => handleOpenModal("add-level-2", null, level1.id)}
                 className="flex min-h-11 min-w-11 items-center justify-center gap-2 text-sm md:text-base font-bold text-[#053F5C] dark:text-white dark:hover:bg-[#053F5C] hover:bg-blue-200 px-3 py-1.5 rounded transition-colors cursor-pointer"
               >
                 <FiPlus size={18} /> Tambah Tipe Tindakan
@@ -196,7 +203,7 @@ const ServiceCatalogPage = () => {
             {/* LEVEL 2 LIST */}
             <div className="divide-y divide-slate-100 dark:divide-slate-700">
               {level1.children.length === 0 && (
-                <div className="p-8 text-center text-slate-400 italic text-sm">
+                <div className="p-8 text-center text-slate-400 italic text-sm md:text-base">
                   Belum ada tipe tindakan. Silakan tambah baru.
                 </div>
               )}
@@ -206,7 +213,7 @@ const ServiceCatalogPage = () => {
                   {/* LEVEL 2 ROW */}
                   <div className="p-4 pl-6 flex flex-col md:flex-row items-center gap-3 md:gap-0 md:justify-between hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                     <div
-                      className="flex items-center gap-3 cursor-pointer flex-1"
+                      className="flex items-center   gap-3 cursor-pointer flex-1"
                       onClick={() => toggleExpand(level2.id)}
                     >
                       <button className="text-slate-400 hover:text-[#053F5C] dark:hover:text-white">
@@ -243,7 +250,7 @@ const ServiceCatalogPage = () => {
                     <div className="flex items-center justify-center gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() =>
-                          handleOpenModal("add-level-3", level2.id)
+                          handleOpenModal("add-level-3", level2.id, level1.id)
                         }
                         className="p-1.5 flex items-center justify-center min-h-11 min-w-11 cursor-pointer text-blue-600 dark:text-blue-400 dark:hover:text-blue-600 hover:bg-blue-100 rounded"
                         title="Tambah Detail Layanan"
@@ -252,13 +259,16 @@ const ServiceCatalogPage = () => {
                       </button>
                       <button
                         onClick={() =>
-                          handleOpenModal("edit-level-2", null, level2)
+                          handleOpenModal("edit-level-2", null, null, level2)
                         }
                         className="p-1.5 flex items-center justify-center min-h-11 min-w-11 cursor-pointer text-slate-600 dark:text-slate-400 dark:hover:text-slate-600 hover:bg-slate-200 rounded"
                       >
                         <FiEdit2 size={18} />
                       </button>
-                      <button className="p-1.5 flex items-center justify-center min-h-11 min-w-11 cursor-pointer text-red-600 hover:bg-red-100 rounded">
+                      <button
+                        onClick={() => handleDelete(level2.id, level2.name)}
+                        className="p-1.5 flex items-center justify-center min-h-11 min-w-11 cursor-pointer text-red-600 hover:bg-red-100 rounded"
+                      >
                         <FiTrash2 size={18} />
                       </button>
                     </div>
@@ -268,7 +278,7 @@ const ServiceCatalogPage = () => {
                   {expanded[level2.id] && (
                     <div className="bg-slate-50/50 dark:bg-slate-900/20 border-t border-slate-100 dark:border-slate-800 pl-14 pr-4 py-2">
                       {level2.children.length === 0 && (
-                        <div className="py-3 text-xs text-slate-400 italic">
+                        <div className="py-3 text-sm text-slate-400 italic">
                           Belum ada detail layanan.
                         </div>
                       )}
@@ -291,13 +301,23 @@ const ServiceCatalogPage = () => {
                           <div className="flex gap-2">
                             <button
                               onClick={() =>
-                                handleOpenModal("edit-level-3", null, level3)
+                                handleOpenModal(
+                                  "edit-level-3",
+                                  null,
+                                  null,
+                                  level3
+                                )
                               }
                               className="text-sm md:text-[15px] min-h-11 min-w-11 flex items-center justify-center cursor-pointer text-blue-600 dark:text-blue-300 hover:underline"
                             >
                               Edit
                             </button>
-                            <button className="text-sm md:text-[15px] min-h-11 min-w-11 flex items-center justify-center cursor-pointer text-red-500 dark:text-red-400 hover:underline">
+                            <button
+                              onClick={() =>
+                                handleDelete(level3.id, level3.name)
+                              }
+                              className="text-sm md:text-[15px] min-h-11 min-w-11 flex items-center justify-center cursor-pointer text-red-500 dark:text-red-400 hover:underline"
+                            >
                               Hapus
                             </button>
                           </div>
@@ -316,7 +336,6 @@ const ServiceCatalogPage = () => {
       {modalOpen && (
         <CatalogModal
           type={modalType}
-          parentId={currentParentId}
           data={editingItem}
           onClose={() => setModalOpen(false)}
           onSave={handleSave}
@@ -327,9 +346,9 @@ const ServiceCatalogPage = () => {
 };
 
 /* COMPONENT: CATALOG MODAL */
-// eslint-disable-next-line no-unused-vars
-const CatalogModal = ({ type, parentId, data, onClose, onSave }) => {
+const CatalogModal = ({ type, data, onClose, onSave }) => {
   const isLevel2 = type.includes("level-2");
+  const isLevel3 = type.includes("level-3");
   const isEdit = type.includes("edit");
 
   const [formData, setFormData] = useState({
@@ -373,8 +392,8 @@ const CatalogModal = ({ type, parentId, data, onClose, onSave }) => {
             required
           />
 
-          {/* LEVEL 2: CONFIG */}
-          {isLevel2 && (
+          {/* CONFIG */}
+          {(isLevel2 || isLevel3) && (
             <div className="space-y-4 mb-4">
               <div className="p-4 bg-blue-50 dark:bg-blue-900/10 rounded-lg border border-blue-100 dark:border-blue-800">
                 <h4 className="text-xs font-bold text-blue-800 dark:text-blue-300 uppercase mb-3 flex items-center gap-2">
@@ -402,7 +421,7 @@ const CatalogModal = ({ type, parentId, data, onClose, onSave }) => {
                   <option value="internal">
                     Internal OPD (Aplikasi SILADAN)
                   </option>
-                  <option value="change">
+                  <option value="approval">
                     Butuh Perubahan (Aplikasi SAKTI)
                   </option>
                 </FormSelect>
@@ -423,19 +442,6 @@ const CatalogModal = ({ type, parentId, data, onClose, onSave }) => {
                     setFormData({ ...formData, desc: e.target.value })
                   }
                 />
-              </div>
-              <div className="flex items-center gap-2 mb-4">
-                <input
-                  type="checkbox"
-                  id="override"
-                  className="rounded text-[#053F5C] focus:ring-[#053F5C]"
-                />
-                <label
-                  htmlFor="override"
-                  className="text-sm text-slate-600 dark:text-slate-400"
-                >
-                  Override workflow induk?
-                </label>
               </div>
             </div>
           )}
