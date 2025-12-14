@@ -1,61 +1,93 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   FiSearch,
   FiPlus,
   FiEdit2,
   FiTrash2,
   FiHelpCircle,
-  FiGlobe,
-  FiLock,
   FiFilter,
 } from "react-icons/fi";
 import toast from "react-hot-toast";
 import FAQModal from "../features/settings/components/FAQModal";
+import { useAuth } from "../context/AuthContext";
+import { useLoading } from "../context/LoadingContext";
+import {
+  getFAQs,
+  createFAQ,
+  updateFAQ,
+  deleteFAQ,
+} from "../features/settings/services/faqService";
 
 // MOCK DATA
-const initialFAQs = [
-  {
-    id: 1,
-    question: "Bagaimana cara reset password email dinas?",
-    category: "Aplikasi",
-    audience: "public",
-    status: "published",
-    answer: "Buka portal SSO...",
-  },
-  {
-    id: 2,
-    question: "Syarat pengajuan laptop baru?",
-    category: "Hardware",
-    audience: "internal",
-    status: "published",
-    answer: "Isi form A-01...",
-  },
-  {
-    id: 3,
-    question: "Kenapa WiFi 'Pemkot_Secure' tidak muncul?",
-    category: "Jaringan",
-    audience: "internal",
-    status: "draft",
-    answer: "Sedang maintenance...",
-  },
-];
+// const initialFAQs = [
+//   {
+//     id: 1,
+//     question: "Bagaimana cara reset password email dinas?",
+//     category: "Aplikasi",
+//     audience: "public",
+//     status: "published",
+//     answer: "Buka portal SSO...",
+//   },
+//   {
+//     id: 2,
+//     question: "Syarat pengajuan laptop baru?",
+//     category: "Hardware",
+//     audience: "internal",
+//     status: "published",
+//     answer: "Isi form A-01...",
+//   },
+//   {
+//     id: 3,
+//     question: "Kenapa WiFi 'Pemkot_Secure' tidak muncul?",
+//     category: "Jaringan",
+//     audience: "internal",
+//     status: "draft",
+//     answer: "Sedang maintenance...",
+//   },
+// ];
 
 const FAQManagementPage = () => {
-  const [faqs, setFaqs] = useState(initialFAQs);
+  const { user } = useAuth();
+  const { showLoading, hideLoading } = useLoading();
+
+  const [faqs, setFaqs] = useState([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedFAQ, setSelectedFAQ] = useState(null);
 
+  const fetchFAQs = async () => {
+    try {
+      showLoading("Memuat FAQ...");
+      const opdId = user?.opd_id || user?.opd?.id;
+      const response = await getFAQs(opdId);
+
+      if (response.success || Array.isArray(response.data)) {
+        setFaqs(response.data || []);
+      } else if (Array.isArray(response)) {
+        setFaqs(response);
+      }
+    } catch (error) {
+      console.error("Error fetching FAQ:", error);
+      toast.error("Gagal memuat daftar FAQ");
+    } finally {
+      hideLoading();
+    }
+  };
+
+  useEffect(() => {
+    fetchFAQs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // FILTER LOGIC
   const filteredFAQs = useMemo(() => {
     return faqs.filter((faq) => {
-      const matchSearch =
-        faq.question.toLowerCase().includes(search.toLowerCase()) ||
-        faq.category.toLowerCase().includes(search.toLowerCase());
+      const q = faq.question || "";
 
-      // Filter by Status
+      const matchSearch = q.toLowerCase().includes(search.toLowerCase());
+
       const matchStatus = statusFilter === "all" || faq.status === statusFilter;
 
       return matchSearch && matchStatus;
@@ -72,25 +104,57 @@ const FAQManagementPage = () => {
     setIsModalOpen(true);
   };
 
-  const handleDeleteClick = (id) => {
+  const handleDeleteClick = async (id) => {
     if (window.confirm("Yakin ingin menghapus FAQ ini?")) {
-      setFaqs(faqs.filter((f) => f.id !== id));
-      toast.success("FAQ berhasil dihapus");
+      try {
+        showLoading("Menghapus FAQ...");
+        await deleteFAQ(id);
+        toast.success("FAQ berhasil dihapus");
+        // Update state lokal tanpa fetch ulang
+        setFaqs(faqs.filter((f) => f.id !== id));
+      } catch (error) {
+        console.log(error);
+        toast.error("Gagal menghapus FAQ");
+      } finally {
+        hideLoading();
+      }
     }
   };
 
-  const handleSave = (formData) => {
-    if (selectedFAQ) {
-      setFaqs(
-        faqs.map((f) => (f.id === selectedFAQ.id ? { ...f, ...formData } : f))
-      );
-      toast.success("FAQ berhasil diperbarui");
-    } else {
-      const newId = Date.now();
-      setFaqs([...faqs, { id: newId, ...formData }]);
-      toast.success("FAQ baru berhasil ditambahkan");
+  const handleSave = async (formData) => {
+    try {
+      showLoading("Menyimpan FAQ...");
+      const opdId = user?.opd_id || user?.opd?.id;
+
+      // Sesuaikan payload dengan spesifikasi API
+      const payload = {
+        question: formData.question,
+        answer: formData.answer,
+        opd_id: opdId,
+        status: formData.status,
+
+        category: formData.category,
+        audience: formData.audience,
+      };
+
+      if (selectedFAQ) {
+        // Update
+        await updateFAQ(selectedFAQ.id, payload);
+        toast.success("FAQ berhasil diperbarui");
+      } else {
+        // Create
+        await createFAQ(payload);
+        toast.success("FAQ baru berhasil ditambahkan");
+      }
+
+      setIsModalOpen(false);
+      fetchFAQs(); // Refresh data
+    } catch (error) {
+      console.error(error);
+      toast.error("Gagal menyimpan FAQ");
+    } finally {
+      hideLoading();
     }
-    setIsModalOpen(false);
   };
 
   const StatusBadge = ({ status }) => (
@@ -102,19 +166,6 @@ const FAQManagementPage = () => {
       }`}
     >
       {status === "published" ? "Tayang" : "Draft"}
-    </span>
-  );
-
-  const AudienceBadge = ({ type }) => (
-    <span
-      className={`flex items-center justify-center gap-1 px-1 py-1.5 text-center rounded text-xs font-medium ${
-        type === "public"
-          ? "text-blue-600 bg-blue-100 dark:text-blue-300 dark:bg-blue-900/20"
-          : "text-purple-600 bg-purple-100 dark:text-purple-300 dark:bg-purple-900/20"
-      }`}
-    >
-      {type === "public" ? <FiGlobe size={14} /> : <FiLock size={14} />}
-      {type === "public" ? "Publik" : "Internal"}
     </span>
   );
 
@@ -175,14 +226,8 @@ const FAQManagementPage = () => {
           <table className="w-full text-left border-collapse">
             <thead className="bg-slate-50 dark:bg-slate-700/50 border-b border-slate-200 dark:border-slate-700">
               <tr>
-                <th className="px-6 py-4 text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  Pertanyaan
-                </th>
-                <th className="px-6 py-4 text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  Kategori
-                </th>
-                <th className="px-6 py-4 text-sm text-center font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  Audiens
+                <th className="px-6 py-4 text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider w-1/2">
+                  Pertanyaan & Jawaban
                 </th>
                 <th className="px-6 py-4 text-center text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
                   Status
@@ -199,25 +244,18 @@ const FAQManagementPage = () => {
                   className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors"
                 >
                   <td className="px-6 py-4">
-                    <p className="font-bold text-slate-800 dark:text-white text-sm md:text-base line-clamp-2">
+                    <p className="font-bold text-slate-800 dark:text-white text-sm md:text-base mb-1">
                       {faq.question}
                     </p>
-                    <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 mt-1 line-clamp-1">
+                    <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 line-clamp-2">
                       {faq.answer}
                     </p>
                   </td>
-                  <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">
-                    <span className="bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded">
-                      {faq.category}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <AudienceBadge type={faq.audience} />
-                  </td>
-                  <td className="px-6 py-4 text-center">
+
+                  <td className="px-6 py-4 text-center align-top pt-6">
                     <StatusBadge status={faq.status} />
                   </td>
-                  <td className="px-6 py-4 text-center">
+                  <td className="px-6 py-4 text-center align-top pt-6">
                     <div className="flex items-center justify-center gap-2">
                       <button
                         onClick={() => handleEditClick(faq)}
@@ -240,7 +278,7 @@ const FAQManagementPage = () => {
               {filteredFAQs.length === 0 && (
                 <tr>
                   <td
-                    colSpan="5"
+                    colSpan="3"
                     className="px-6 py-12 text-center text-slate-400 italic"
                   >
                     Tidak ada FAQ yang sesuai filter.

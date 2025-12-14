@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { FiX, FiSave, FiHelpCircle, FiFileText, FiEye } from "react-icons/fi";
+import { FiX, FiSave, FiHelpCircle, FiEye } from "react-icons/fi";
 import Input from "../../../components/Input";
-import FormSelect from "../../../components/FormSelect";
 import FormTextArea from "../../../components/FormTextArea";
 
 const FAQModal = ({ isOpen, onClose, data, onSave }) => {
@@ -9,21 +8,22 @@ const FAQModal = ({ isOpen, onClose, data, onSave }) => {
     question: "",
     answer: "",
     category: "Umum",
-    audience: "public", // public | internal
-    status: "published", // published | draft
+    status: "published",
   });
 
   // Load data if edit mode
   useEffect(() => {
     if (data) {
-      setFormData(data);
+      // Hapus properti extra yang tidak perlu
+      setFormData({
+        question: data.question,
+        answer: data.answer,
+        status: data.status,
+      });
     } else {
-      // Reset If New Mode
       setFormData({
         question: "",
         answer: "",
-        category: "Umum",
-        audience: "public",
         status: "published",
       });
     }
@@ -82,35 +82,6 @@ const FAQModal = ({ isOpen, onClose, data, onSave }) => {
             }
             required
           />
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormSelect
-              id="category"
-              label="Kategori"
-              value={formData.category}
-              onChange={(e) =>
-                setFormData({ ...formData, category: e.target.value })
-              }
-            >
-              <option value="Umum">Umum</option>
-              <option value="Aplikasi">Aplikasi</option>
-              <option value="Jaringan">Jaringan</option>
-              <option value="Hardware">Perangkat Keras</option>
-              <option value="Kepegawaian">Kepegawaian</option>
-            </FormSelect>
-
-            <FormSelect
-              id="audience"
-              label="Target Audiens"
-              value={formData.audience}
-              onChange={(e) =>
-                setFormData({ ...formData, audience: e.target.value })
-              }
-            >
-              <option value="public">Publik (Semua Orang)</option>
-              <option value="internal">Internal Pegawai</option>
-            </FormSelect>
-          </div>
 
           {/* Status Switch */}
           <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-700/30 p-3 rounded-lg border border-slate-200 dark:border-slate-700">

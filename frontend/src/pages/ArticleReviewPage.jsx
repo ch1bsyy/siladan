@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
 import toast from "react-hot-toast";
@@ -15,53 +15,26 @@ import {
   FiFilter,
 } from "react-icons/fi";
 
-import FormSelect from "../components/FormSelect";
+import { useAuth } from "../context/AuthContext";
+import { useLoading } from "../context/LoadingContext";
+import {
+  getArticles,
+  updateArticleStatus,
+  updateArticle, // Import updateArticle
+} from "../features/knowledge-base/services/articleService";
 import Pagination from "../components/Pagination";
 
-// --- MOCK DATA ARTICLE ---
-const mockArticles = [
-  {
-    id: "ART-001",
-    title: "Cara Mengatasi Printer Error 505 di Windows 11",
-    author: "Budi Santoso (Teknisi)",
-    submittedAt: "2025-11-20T09:00:00",
-    status: "Menunggu Review",
-    category: "Hardware",
-    visibility: "public",
-    content: "<p>Langkah pertama adalah cek kabel USB...</p>",
-    tags: ["printer", "error", "windows"],
-  },
-  {
-    id: "ART-002",
-    title: "Konfigurasi VPN untuk WFH (OPD Teknis)",
-    author: "Andi Saputra (Network Engineer)",
-    submittedAt: "2025-11-21T14:30:00",
-    status: "Menunggu Review",
-    category: "Jaringan",
-    visibility: "internal_teknis",
-    content: "<p>IP Server VPN adalah 192.168.x.x...</p>",
-    tags: ["vpn", "network", "security"],
-  },
-  {
-    id: "ART-003",
-    title: "Panduan Reset Password Email Pemerintah",
-    author: "Siti Aminah (Helpdesk)",
-    submittedAt: "2025-11-18T10:00:00",
-    status: "Published",
-    category: "Aplikasi",
-    visibility: "internal_opd",
-    content: "<p>Buka portal SSO...</p>",
-    tags: ["email", "password", "sso"],
-  },
-];
-
-// --- COMPONENT BADGES ---
+// ... (StatusBadge and VisibilityBadge components remain the same) ...
 const StatusBadge = ({ status }) => {
   const styles = {
-    "Menunggu Review": "bg-yellow-100 text-yellow-700 border-yellow-200",
-    Published: "bg-green-100 text-green-700 border-green-200",
-    "Revisi Diperlukan": "bg-red-100 text-red-700 border-red-200",
-    Draft: "bg-slate-100 text-slate-600 border-slate-200",
+    "Menunggu Review":
+      "bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800",
+    Published:
+      "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800",
+    "Revisi Diperlukan":
+      "bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800",
+    Draft:
+      "bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700",
   };
   return (
     <span
@@ -79,17 +52,19 @@ const VisibilityBadge = ({ type }) => {
     public: {
       icon: FiGlobe,
       label: "Publik",
-      color: "text-blue-600 bg-blue-50",
+      color: "text-blue-600 bg-blue-50 dark:text-blue-300 dark:bg-blue-900/20",
     },
     internal_opd: {
       icon: FiUsers,
       label: "Internal OPD",
-      color: "text-purple-600 bg-purple-100",
+      color:
+        "text-purple-600 bg-purple-100 dark:text-purple-300 dark:bg-purple-900/20",
     },
     internal_teknis: {
       icon: FiLock,
       label: "Teknis Only",
-      color: "text-slate-600 bg-slate-100",
+      color:
+        "text-slate-600 bg-slate-100 dark:text-slate-300 dark:bg-slate-700",
     },
   };
   const { icon: Icon, label, color } = config[type] || config.internal_teknis;
@@ -104,6 +79,10 @@ const VisibilityBadge = ({ type }) => {
 };
 
 const ArticleReviewPage = () => {
+  const { user } = useAuth();
+  const { showLoading, hideLoading } = useLoading();
+
+  const [articles, setArticles] = useState([]);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("Menunggu Review");
   const [currentPage, setCurrentPage] = useState(1);
@@ -115,18 +94,49 @@ const ArticleReviewPage = () => {
   const [showRejectInput, setShowRejectInput] = useState(false);
   const [editVisibility, setEditVisibility] = useState("");
 
-  // --- FILTER LOGIC ---
+  // 1. Fetch Data Artikel (Khusus OPD User)
+  const fetchArticles = async () => {
+    try {
+      showLoading("Memuat daftar artikel...");
+      const opdId = user?.opd_id || user?.opd?.id;
+
+      // Ambil semua artikel milik OPD ini
+      const response = await getArticles({ opd_id: opdId, limit: 100 });
+
+      if (response.success && Array.isArray(response.data)) {
+        setArticles(response.data);
+      }
+    } catch (error) {
+      console.error("Fetch Error:", error);
+      toast.error("Gagal memuat artikel.");
+    } finally {
+      hideLoading();
+    }
+  };
+
+  useEffect(() => {
+    fetchArticles();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // --- FILTER LOGIC (Client-Side) ---
   const filteredArticles = useMemo(() => {
-    return mockArticles.filter((article) => {
+    return articles.filter((article) => {
       const matchStatus =
         filterStatus === "Semua" || article.status === filterStatus;
-      const matchSearch =
-        article.title.toLowerCase().includes(search.toLowerCase()) ||
-        article.author.toLowerCase().includes(search.toLowerCase());
-      return matchStatus && matchSearch;
-    });
-  }, [search, filterStatus]);
 
+      const titleMatch = article.title
+        .toLowerCase()
+        .includes(search.toLowerCase());
+      const authorMatch = article.author
+        ?.toLowerCase()
+        .includes(search.toLowerCase());
+
+      return matchStatus && (titleMatch || authorMatch);
+    });
+  }, [search, filterStatus, articles]);
+
+  // Handle Modal
   const handleOpenReview = (article) => {
     setSelectedArticle(article);
     setEditVisibility(article.visibility);
@@ -135,14 +145,53 @@ const ArticleReviewPage = () => {
     setIsModalOpen(true);
   };
 
-  const handleApprove = () => {
-    // Logic API: PUT /articles/:id/approve { visibility: editVisibility }
-    toast.success(`Artikel diterbitkan dengan visibilitas: ${editVisibility}`);
-    setIsModalOpen(false);
-    // Refresh data here...
+  // 2. Approve Action (Fix: Update Visibility first if changed)
+  const handleApprove = async () => {
+    try {
+      showLoading("Menerbitkan artikel...");
+
+      // Cek jika visibilitas berubah, update dulu via PUT
+      if (editVisibility !== selectedArticle.visibility) {
+        // Siapkan payload lengkap untuk PUT (karena PUT biasanya replace all)
+        // Pastikan selectedArticle punya semua field yg dibutuhkan PUT
+        const updatePayload = {
+          title: selectedArticle.title,
+          category: selectedArticle.category,
+          visibility: editVisibility, // Update visibilitas
+          tags: selectedArticle.tags,
+          symptoms: selectedArticle.symptoms,
+          rootCause: selectedArticle.rootCause,
+          solution: selectedArticle.solution,
+          content: selectedArticle.content,
+        };
+        await updateArticle(selectedArticle.id, updatePayload);
+      }
+
+      // Panggil API PATCH status -> Published
+      await updateArticleStatus(
+        selectedArticle.id,
+        "Published",
+        "Artikel disetujui oleh Admin OPD"
+      );
+
+      toast.success(
+        `Artikel diterbitkan dengan visibilitas: ${editVisibility}`
+      );
+      setIsModalOpen(false);
+      fetchArticles(); // Refresh list
+    } catch (error) {
+      console.error(error);
+      toast.error(
+        "Gagal menerbitkan artikel: " +
+          (error.response?.data?.message || error.message)
+      );
+    } finally {
+      hideLoading();
+    }
   };
 
-  const handleReject = () => {
+  // 3. Reject Action
+  const handleReject = async () => {
     if (!showRejectInput) {
       setShowRejectInput(true);
       return;
@@ -151,13 +200,38 @@ const ArticleReviewPage = () => {
       toast.error("Mohon isi alasan penolakan/revisi.");
       return;
     }
-    // Logic API: PUT /articles/:id/reject { reason: rejectReason }
-    toast.error("Artikel dikembalikan ke teknisi untuk revisi.");
-    setIsModalOpen(false);
+
+    try {
+      showLoading("Mengirim revisi...");
+      // Panggil API PATCH status -> Revisi Diperlukan
+      await updateArticleStatus(
+        selectedArticle.id,
+        "Rejected", // Pastikan string ini sesuai enum di backend
+        rejectReason
+      );
+
+      toast.error("Artikel dikembalikan ke teknisi untuk revisi.");
+      setIsModalOpen(false);
+      fetchArticles(); // Refresh list
+    } catch (error) {
+      console.error(error);
+      toast.error("Gagal menolak artikel.");
+    } finally {
+      hideLoading();
+    }
   };
+
+  // Pagination Logic (Client Side)
+  const itemsPerPage = 5;
+  const paginatedData = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredArticles.slice(start, start + itemsPerPage);
+  }, [filteredArticles, currentPage]);
 
   return (
     <div className="space-y-6 pb-10">
+      {/* ... (Header, Filters, Table UI remain exactly the same as previous response) ... */}
+
       {/* HEADER */}
       <div>
         <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">
@@ -192,7 +266,10 @@ const ArticleReviewPage = () => {
             <select
               className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 focus:ring-1 focus:ring-[#429EBD] outline-none dark:text-white appearance-none cursor-pointer"
               value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
+              onChange={(e) => {
+                setFilterStatus(e.target.value);
+                setCurrentPage(1);
+              }}
             >
               <option value="Semua">Semua Status</option>
               <option value="Menunggu Review">Perlu Review (Pending)</option>
@@ -227,8 +304,8 @@ const ArticleReviewPage = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-              {filteredArticles.length > 0 ? (
-                filteredArticles.map((article) => (
+              {paginatedData.length > 0 ? (
+                paginatedData.map((article) => (
                   <tr
                     key={article.id}
                     className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors"
@@ -247,9 +324,13 @@ const ArticleReviewPage = () => {
                       </div>
                       <div className="text-xs text-slate-500 flex items-center gap-2 mt-1">
                         <FiClock size={14} />
-                        {format(new Date(article.submittedAt), "dd MMM yyyy", {
-                          locale: localeId,
-                        })}
+                        {article.created_at
+                          ? format(
+                              new Date(article.created_at),
+                              "dd MMM yyyy",
+                              { locale: localeId }
+                            )
+                          : "-"}
                       </div>
                     </td>
                     <td className="px-6 py-4 text-center">
@@ -287,7 +368,7 @@ const ArticleReviewPage = () => {
           <Pagination
             currentPage={currentPage}
             totalItems={filteredArticles.length}
-            itemsPerPage={5}
+            itemsPerPage={itemsPerPage}
             onPageChange={setCurrentPage}
           />
         </div>
@@ -327,14 +408,20 @@ const ArticleReviewPage = () => {
                 <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-bold uppercase tracking-wide">
                   {selectedArticle.category}
                 </span>
-                {selectedArticle.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="px-3 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full text-xs"
-                  >
-                    #{tag}
-                  </span>
-                ))}
+                {/* Handle tags (array or string) */}
+                {(() => {
+                  const tags = Array.isArray(selectedArticle.tags)
+                    ? selectedArticle.tags
+                    : (selectedArticle.tags || "").split(",");
+                  return tags.map((tag, idx) => (
+                    <span
+                      key={idx}
+                      className="px-3 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full text-xs"
+                    >
+                      #{tag.trim()}
+                    </span>
+                  ));
+                })()}
               </div>
 
               {/* Article Title */}
@@ -347,29 +434,28 @@ const ArticleReviewPage = () => {
                 <div
                   dangerouslySetInnerHTML={{ __html: selectedArticle.content }}
                 />
-                {/* Dummy */}
-                <p>
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed
-                  do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                  Ut enim ad minim veniam, quis nostrud exercitation ullamco
-                  laboris nisi ut aliquip ex ea commodo consequat.
-                </p>
-                <div className="my-4 p-4 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 text-sm">
-                  <strong>Catatan Penting:</strong> Pastikan driver printer
-                  sudah versi terbaru sebelum mengikuti langkah ini.
-                </div>
-                <h3>Langkah Penyelesaian:</h3>
-                <ol className="list-decimal pl-5 space-y-2">
-                  <li>Buka Control Panel di Windows Anda.</li>
-                  <li>
-                    Pilih menu <strong>Devices and Printers</strong>.
-                  </li>
-                  <li>
-                    Klik kanan pada printer yang bermasalah, pilih{" "}
-                    <em>Remove Device</em>.
-                  </li>
-                  <li>Restart komputer Anda.</li>
-                </ol>
+
+                {/* Metadata Fields (Symptoms etc) */}
+                {(selectedArticle.symptoms || selectedArticle.rootCause) && (
+                  <div className="my-6 p-4 bg-slate-50 dark:bg-slate-700/30 rounded border-l-4 border-[#053F5C] space-y-4">
+                    {selectedArticle.symptoms && (
+                      <div>
+                        <strong className="block text-slate-900 dark:text-white">
+                          Gejala:
+                        </strong>
+                        <p className="text-sm">{selectedArticle.symptoms}</p>
+                      </div>
+                    )}
+                    {selectedArticle.rootCause && (
+                      <div>
+                        <strong className="block text-slate-900 dark:text-white">
+                          Penyebab:
+                        </strong>
+                        <p className="text-sm">{selectedArticle.rootCause}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -393,9 +479,9 @@ const ArticleReviewPage = () => {
                   </div>
                 </div>
                 <div className="md:w-64">
-                  <FormSelect
-                    id="visibilitas"
-                    name="visibilitas"
+                  {/* Select Manual (Native) */}
+                  <select
+                    className="w-full p-2 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 dark:text-white text-sm"
                     value={editVisibility}
                     onChange={(e) => setEditVisibility(e.target.value)}
                   >
@@ -408,7 +494,7 @@ const ArticleReviewPage = () => {
                     <option value="internal_teknis">
                       Internal Teknisi Saja (Unit)
                     </option>
-                  </FormSelect>
+                  </select>
                 </div>
               </div>
 
@@ -419,7 +505,7 @@ const ArticleReviewPage = () => {
                     Alasan Penolakan / Catatan Revisi:
                   </label>
                   <textarea
-                    className="w-full p-3 rounded-lg border border-red-300 bg-red-50 focus:ring-2 focus:ring-red-500 outline-none text-sm md:text-base"
+                    className="w-full p-3 rounded-lg border border-red-300 bg-red-50 focus:ring-2 focus:ring-red-500 outline-none text-sm md:text-base dark:bg-slate-800 dark:text-white dark:border-red-800"
                     rows={3}
                     placeholder="Jelaskan bagian mana yang perlu diperbaiki oleh teknisi..."
                     value={rejectReason}

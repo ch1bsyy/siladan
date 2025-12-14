@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   FiSearch,
   FiGlobe,
@@ -6,85 +6,42 @@ import {
   FiUsers,
   FiFileText,
   FiServer,
-  FiShield,
   FiWifi,
   FiBookOpen,
   FiMonitor,
   FiX,
+  FiShield,
 } from "react-icons/fi";
+import { useLoading } from "../context/LoadingContext";
+import { getArticles } from "../features/knowledge-base/services/articleService";
+import toast from "react-hot-toast";
+import { format } from "date-fns";
+import { id as localeId } from "date-fns/locale";
 
-const mockKBArticles = [
-  {
-    id: "KB-001",
-    title: "SOP Restart Server Database E-Kinerja",
-    category: "Server & Cloud",
-    visibility: "internal_teknis", // SECRET
-    updatedAt: "20 Nov 2023",
-    tags: ["linux", "mysql", "restart"],
-    content:
-      "<p><strong>PERINGATAN:</strong> Lakukan hanya di jam maintenance (22:00 - 04:00).</p><ol><li>SSH ke 192.168.10.5</li><li>Jalankan <code>sudo systemctl restart mysql</code></li><li>Cek log: <code>tail -f /var/log/mysql/error.log</code></li></ol>",
-  },
-  {
-    id: "KB-002",
-    title: "Panduan Koneksi VPN dari Rumah",
-    category: "Jaringan",
-    visibility: "public",
-    updatedAt: "15 Nov 2023",
-    tags: ["vpn", "wfh", "forticlient"],
-    content:
-      "<p>Panduan ini untuk disebarkan ke user.</p><p>Download client di...</p>",
-  },
-  {
-    id: "KB-003",
-    title: "Topologi Jaringan Gedung A (Lantai 2)",
-    category: "Jaringan",
-    visibility: "internal_teknis",
-    updatedAt: "10 Okt 2023",
-    tags: ["switch", "cisco", "vlan"],
-    content:
-      "<p>Switch Core ada di Ruang Server Lt 1. Uplink ke lantai 2 menggunakan FO Single Mode.</p>",
-  },
-  {
-    id: "KB-004",
-    title: "Prosedur Reset Password Akun E-Gov",
-    category: "Aplikasi",
-    visibility: "internal_opd",
-    updatedAt: "05 Nov 2023",
-    tags: ["password", "sso", "reset"],
-    content:
-      "<p>Pegawai wajib melampirkan foto ID Card saat meminta reset manual ke Helpdesk.</p>",
-  },
-  {
-    id: "KB-005",
-    title: "Troubleshoot Printer Epson L3110 (Blinking)",
-    category: "Hardware",
-    visibility: "public",
-    updatedAt: "01 Des 2023",
-    tags: ["printer", "epson", "maintenance"],
-    content:
-      "<p>Cek indikator tinta. Jika penuh tapi blinking, reset counter menggunakan tool adjustment.</p>",
-  },
-];
+// --- Sub Components ---
 
-// Badge Visibility
 const VisibilityBadge = ({ type }) => {
   const config = {
     public: {
       icon: FiGlobe,
       label: "Publik",
-      color: "bg-green-100 text-green-700 border-green-200",
+      color:
+        "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800",
     },
     internal_opd: {
       icon: FiUsers,
       label: "Internal OPD",
-      color: "bg-blue-100 text-blue-700 border-blue-200",
+      color:
+        "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800",
     },
     internal_teknis: {
       icon: FiLock,
       label: "Restricted (Teknis)",
-      color: "bg-red-100 text-red-700 border-red-200",
+      color:
+        "bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800",
     },
   };
+  // Fallback ke internal_teknis jika type tidak dikenal
   const { icon: Icon, label, color } = config[type] || config.internal_teknis;
 
   return (
@@ -96,9 +53,14 @@ const VisibilityBadge = ({ type }) => {
   );
 };
 
-// Modal Baca Artikel
 const ReadArticleModal = ({ article, onClose }) => {
   if (!article) return null;
+
+  // Format Date Safe
+  const formattedDate = article.updated_at
+    ? format(new Date(article.updated_at), "dd MMM yyyy", { locale: localeId })
+    : "-";
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6 bg-black/70 backdrop-blur-sm">
       <div className="bg-white dark:bg-slate-800 w-full max-w-3xl max-h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-bounce-in">
@@ -107,7 +69,7 @@ const ReadArticleModal = ({ article, onClose }) => {
             <div className="flex items-center gap-3 mb-2">
               <VisibilityBadge type={article.visibility} />
               <span className="text-[13px] text-slate-500 dark:text-slate-400">
-                Updated: {article.updatedAt}
+                Updated: {formattedDate}
               </span>
             </div>
             <h2 className="text-xl font-bold text-slate-800 dark:text-white">
@@ -122,7 +84,34 @@ const ReadArticleModal = ({ article, onClose }) => {
           </button>
         </div>
         <div className="p-6 overflow-y-auto flex-1 prose dark:prose-invert dark:text-white max-w-none">
+          {/* Render HTML Content from Jodit */}
           <div dangerouslySetInnerHTML={{ __html: article.content }} />
+
+          {/* Render Metadata Fields jika ada (optional) */}
+          {(article.symptoms || article.rootCause) && (
+            <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700 space-y-4">
+              {article.symptoms && (
+                <div>
+                  <h4 className="font-bold text-slate-700 dark:text-slate-300">
+                    Gejala:
+                  </h4>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                    {article.symptoms}
+                  </p>
+                </div>
+              )}
+              {article.rootCause && (
+                <div>
+                  <h4 className="font-bold text-slate-700 dark:text-slate-300">
+                    Penyebab:
+                  </h4>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                    {article.rootCause}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -133,32 +122,74 @@ const ReadArticleModal = ({ article, onClose }) => {
    MAIN PAGE
    ========================================== */
 const TechnicianKBPage = () => {
+  const { showLoading, hideLoading } = useLoading();
+  const [articles, setArticles] = useState([]);
+
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("Semua");
   const [selectedArticle, setSelectedArticle] = useState(null);
 
-  // List Kategori (Unik dari data)
+  // List Kategori (Bisa dibuat dinamis dari API unique category)
   const categories = [
     "Semua",
     "Server & Cloud",
     "Jaringan",
     "Aplikasi",
     "Hardware",
+    "Kepegawaian", // Tambahan sesuai CreateArticle
   ];
 
-  // Filter Logic
+  // Fetch Data
+  const fetchKB = async () => {
+    try {
+      showLoading("Memuat Knowledge Base...");
+      // Ambil semua artikel yang statusnya Published (biasanya default endpoint get public/technician articles)
+      // Jika endpoint getArticles memuat semua status, filter di backend atau frontend.
+      // Asumsi getArticles menampilkan artikel yang boleh dilihat teknisi (Published & Internal)
+      const response = await getArticles({ limit: 100 }); // Ambil banyak untuk client filter
+
+      if (response.success && Array.isArray(response.data)) {
+        // Filter hanya yang published untuk referensi (atau sesuai kebijakan: teknisi bisa lihat draft sendiri?)
+        // Di sini kita tampilkan yang status 'Published' agar valid sebagai referensi
+        const published = response.data.filter((a) => a.status === "Published");
+        setArticles(published);
+      }
+    } catch (error) {
+      console.error("KB Error:", error);
+      toast.error("Gagal memuat artikel.");
+    } finally {
+      hideLoading();
+    }
+  };
+
+  useEffect(() => {
+    fetchKB();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Filter Logic (Client Side)
   const filteredArticles = useMemo(() => {
-    return mockKBArticles.filter((art) => {
-      const matchSearch =
-        art.title.toLowerCase().includes(search.toLowerCase()) ||
-        art.tags.some((tag) =>
-          tag.toLowerCase().includes(search.toLowerCase())
-        );
+    return articles.filter((art) => {
+      const titleMatch = art.title.toLowerCase().includes(search.toLowerCase());
+
+      // Tags di backend mungkin array string atau string comma-separated
+      // Kita normalisasi menjadi array untuk pencarian
+      let tagsArray = [];
+      if (Array.isArray(art.tags)) tagsArray = art.tags;
+      else if (typeof art.tags === "string") tagsArray = art.tags.split(",");
+
+      const tagMatch = tagsArray.some((tag) =>
+        tag.trim().toLowerCase().includes(search.toLowerCase())
+      );
+
+      const matchSearch = titleMatch || tagMatch;
+
       const matchCat =
         categoryFilter === "Semua" || art.category === categoryFilter;
+
       return matchSearch && matchCat;
     });
-  }, [search, categoryFilter]);
+  }, [search, categoryFilter, articles]);
 
   return (
     <div className="space-y-6 pb-20 animate-fade-in">
@@ -195,7 +226,7 @@ const TechnicianKBPage = () => {
         </div>
 
         {/* Category Tabs (Desktop) */}
-        <div className="hidden md:flex gap-2">
+        <div className="hidden md:flex gap-2 flex-wrap">
           {categories.map((cat) => (
             <button
               key={cat}
@@ -252,19 +283,27 @@ const TechnicianKBPage = () => {
             </h3>
 
             <div className="flex flex-wrap gap-2 mt-auto pt-4">
-              {article.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="text-xs px-2 py-1 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded"
-                >
-                  #{tag}
-                </span>
-              ))}
+              {/* Handle tags array or string */}
+              {(Array.isArray(article.tags)
+                ? article.tags
+                : (article.tags || "").split(",")
+              ).map(
+                (tag, idx) =>
+                  tag.trim() && (
+                    <span
+                      key={idx}
+                      className="text-xs px-2 py-1 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded"
+                    >
+                      #{tag.trim()}
+                    </span>
+                  )
+              )}
             </div>
           </div>
         ))}
       </div>
 
+      {/* Empty State */}
       {filteredArticles.length === 0 && (
         <div className="text-center py-20 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-dashed border-slate-300 dark:border-slate-700">
           <FiShield className="mx-auto h-12 w-12 text-slate-300 mb-3" />

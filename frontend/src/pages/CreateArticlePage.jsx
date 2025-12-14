@@ -8,15 +8,16 @@ import {
   FiInfo,
   FiFileText,
   FiTag,
-  FiPaperclip,
   FiMonitor,
 } from "react-icons/fi";
 import { useLoading } from "../context/LoadingContext";
 import Input from "../components/Input";
 import FormTextArea from "../components/FormTextArea";
-import FormFileUpload from "../components/FormFileUpload";
 import FormSelect from "../components/FormSelect";
 import JoditEditor from "jodit-react";
+
+// Import Service
+import { createArticle } from "../features/knowledge-base/services/articleService";
 
 const CreateArticlePage = () => {
   const { state } = useLocation();
@@ -28,14 +29,13 @@ const CreateArticlePage = () => {
   const [formData, setFormData] = useState({
     title: "",
     category: "",
-    visibility: "internal_teknis",
+    visibility: "internal_teknis", // Default teknisi
     tags: "",
     symptoms: "",
     rootCause: "",
-    solution: "",
-    relatedAsset: "",
-    ticketReference: "",
-    attachment: null,
+    solution: "", // Ini akan diisi oleh Jodit
+    // relatedAsset: "", // Backend belum support di payload contoh, bisa diabaikan atau masuk content
+    // ticketReference: "",
   });
 
   // --- Jodit Config ---
@@ -76,7 +76,7 @@ const CreateArticlePage = () => {
         "fullsize",
       ],
       uploader: {
-        insertImageAsBase64URI: true,
+        insertImageAsBase64URI: true, // Upload gambar base64
       },
       showCharsCounter: false,
       showWordsCounter: false,
@@ -85,24 +85,26 @@ const CreateArticlePage = () => {
     []
   );
 
-  // --- SMART CONVERT LOGIC ---
+  // --- SMART CONVERT LOGIC (Dari Tiket -> Artikel) ---
   useEffect(() => {
     if (state?.ticketData) {
       const ticket = state.ticketData;
       toast("Mode Konversi Tiket Aktif", { icon: "🪄" });
 
+      // Convert worklogs to list items
+      const solutionSteps = ticket.worklogs?.length
+        ? `<ul>${ticket.worklogs
+            .map((w) => `<li>${w.activity}</li>`)
+            .join("")}</ul>`
+        : "";
+
       setFormData((prev) => ({
         ...prev,
         title: `Solusi: ${ticket.title}`,
-        ticketReference: ticket.id,
-        category: ticket.details?.kategori || "Hardware",
-        symptoms: ticket.details?.deskripsi || "",
-        // Ambil solusi dari worklog terakhir teknisi (Simulasi)
-        solution: ticket.worklogs?.length
-          ? `<p><strong>Berdasarkan penyelesaian tiket ${ticket.id}:</strong></p><ul>` +
-            ticket.worklogs.map((w) => `<li>${w.activity}</li>`).join("") +
-            `</ul>`
-          : "",
+        // ticketReference: ticket.id,
+        category: "Hardware", // Default atau mapping dari ticket.category
+        symptoms: ticket.description || "",
+        solution: `<p><strong>Berdasarkan penyelesaian tiket ${ticket.id}:</strong></p>${solutionSteps}`,
       }));
     }
   }, [state]);
@@ -116,24 +118,8 @@ const CreateArticlePage = () => {
     setFormData((prev) => ({ ...prev, solution: newContent }));
   };
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file && file.size > 5 * 1024 * 1024) {
-      toast.error("File maksimal 5MB");
-      return;
-    }
-    setFormData((prev) => ({ ...prev, attachment: file }));
-  };
-
-  const clearFile = () => {
-    setFormData((prev) => ({ ...prev, attachment: null }));
-    if (editor.current) {
-      editor.current.value = "";
-    }
-  };
-
-  const handleSubmit = (status) => {
-    // validasi content Jodit
+  const handleSubmit = async (actionType) => {
+    // Validasi
     const isSolutionEmpty =
       !formData.solution || formData.solution === "<p><br></p>";
 
@@ -143,19 +129,53 @@ const CreateArticlePage = () => {
     }
 
     showLoading(
-      status === "draft" ? "Menyimpan Draft..." : "Mengirim ke Admin OPD..."
+      actionType === "draft" ? "Menyimpan Draft..." : "Mengirim ke Admin OPD..."
     );
 
-    // Simulation API Call
-    setTimeout(() => {
-      hideLoading();
+    try {
+      // 1. Prepare Payload sesuai API
+      // Tags dari string "a, b, c" menjadi array ["a", "b", "c"]
+      const tagsArray = formData.tags
+        ? formData.tags.split(",").map((t) => t.trim())
+        : [];
+
+      // Content utama artikel adalah gabungan atau field terpisah?
+      // Sesuai payload contoh: ada field 'content', 'symptoms', 'rootCause', 'solution'.
+      // Kita pakai 'content' untuk menyimpan full article body (Jodit result)
+      // Field lain disimpan terpisah sebagai metadata terstruktur.
+
+      const payload = {
+        title: formData.title,
+        category: formData.category,
+        visibility: formData.visibility,
+        tags: tagsArray,
+        symptoms: formData.symptoms,
+        rootCause: formData.rootCause,
+        solution: formData.solution, // HTML content dari Jodit
+        content: formData.solution, // Redundant/Fallback jika backend butuh 'content'
+        // Status tidak dikirim di sini karena default backend = "Menunggu Review" / Draft
+      };
+
+      // 2. Call API
+      await createArticle(payload);
+
       toast.success(
-        status === "draft"
+        actionType === "draft"
           ? "Artikel berhasil disimpan sebagai Draft"
-          : "Artikel dikirim untuk Review Admin"
+          : "Artikel berhasil dikirim untuk Review"
       );
-      navigate("/dashboard");
-    }, 1000);
+
+      // Redirect kembali ke dashboard atau list artikel
+      navigate("/dashboard/knowledge-base"); // Sesuaikan route list artikel Anda
+    } catch (error) {
+      console.error("Create Article Error:", error);
+      toast.error(
+        "Gagal membuat artikel: " +
+          (error.response?.data?.message || error.message)
+      );
+    } finally {
+      hideLoading();
+    }
   };
 
   return (
@@ -274,16 +294,14 @@ const CreateArticlePage = () => {
                   <span className="text-red-500">*</span>
                 </label>
 
-                {/* IMPLEMENTATION JODIT EDITOR */}
-                <div className="prose-editor">
+                {/* JODIT EDITOR */}
+                <div className="prose-editor text-black">
                   <JoditEditor
                     ref={editor}
                     value={formData.solution}
                     config={config}
                     tabIndex={1}
                     onBlur={(newContent) => handleEditorChange(newContent)}
-                    // eslint-disable-next-line no-unused-vars
-                    onChange={(newContent) => {}}
                   />
                 </div>
 
@@ -297,72 +315,47 @@ const CreateArticlePage = () => {
 
         {/* --- RIGHT FORM (Support) --- */}
         <div className="lg:col-span-1 space-y-6">
-          {/* Support Panel */}
+          {/* Reference Panel (Optional, tidak dikirim ke backend tapi berguna buat UI) */}
           <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
             <h3 className="font-semibold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
-              <FiPaperclip size={20} className="text-[#F7AD19]" /> Data
-              Pendukung
+              <FiMonitor size={20} className="text-[#F7AD19]" /> Referensi
             </h3>
             <div className="space-y-4">
-              <FormFileUpload
-                id="attachment"
-                name="attachment"
-                label="Lampiran (Driver/Manual)"
-                file={formData.attachment}
-                onChange={handleFileChange}
-                onClear={clearFile}
-                ref={editor}
-              />
-
-              <Input
-                id="ticketReference"
-                name="ticketReference"
-                label="Referensi Tiket (Source)"
-                placeholder="Contoh: TK-2023-001"
-                value={formData.ticketReference}
-                onChange={handleChange}
-                disabled={!!state?.ticketData}
-                rightIcon={<FiTag className="text-slate-400" />}
-              />
-
-              <div>
-                <label className="block text-sm md:text-base font-medium text-slate-700 dark:text-slate-300 mb-1">
-                  Relasi Aset
-                </label>
-                <div className="relative">
-                  <FiMonitor
-                    size={18}
-                    className="absolute left-3 top-3 text-slate-400"
-                  />
-                  <input
-                    type="text"
-                    name="relatedAsset"
-                    value={formData.relatedAsset}
-                    onChange={handleChange}
-                    placeholder="Cari aset terkait..."
-                    className="w-full rounded-lg border border-slate-300 bg-white pl-10 pr-3 py-2 text-sm md:text-base focus:outline-none focus:ring-1 focus:ring-[#053F5C] dark:bg-slate-900 dark:border-slate-600 dark:text-white"
-                  />
+              {state?.ticketData && (
+                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded border border-blue-100 dark:border-blue-800 text-sm">
+                  <p className="font-bold text-blue-800 dark:text-blue-300">
+                    Tiket Sumber:
+                  </p>
+                  <p className="text-blue-600 dark:text-blue-400">
+                    {state.ticketData.ticketNumber || state.ticketData.id}
+                  </p>
                 </div>
-              </div>
+              )}
+              <p className="text-xs text-slate-500">
+                Artikel ini akan dibuat dengan status awal{" "}
+                <strong>Menunggu Review</strong> oleh Admin OPD sebelum
+                dipublikasikan.
+              </p>
             </div>
           </div>
 
           {/* Action Panel */}
           <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 sticky top-6">
             <h3 className="font-semibold text-slate-800 dark:text-white mb-4">
-              Status:{" "}
-              <span className="text-slate-500 font-normal">Draft Baru</span>
+              Aksi Publikasi
             </h3>
             <div className="flex flex-col gap-3">
               <button
                 onClick={() => handleSubmit("review")}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#053F5C] text-white font-bold rounded-lg hover:bg-[#075075] transition-all active:scale-95"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#053F5C] text-white font-bold rounded-lg hover:bg-[#075075] transition-all active:scale-95 cursor-pointer"
               >
                 <FiSend size={18} /> Kirim ke Admin
               </button>
+              {/* Draft button logic is same for backend (POST /articles), 
+                  status management usually handled by backend default or update later */}
               <button
                 onClick={() => handleSubmit("draft")}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-slate-100 text-slate-700 font-semibold rounded-lg hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 transition-all"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-slate-100 text-slate-700 font-semibold rounded-lg hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 transition-all cursor-pointer"
               >
                 <FiSave size={18} /> Simpan Draft
               </button>
