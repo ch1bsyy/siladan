@@ -61,7 +61,7 @@ const ChatWidget = ({ onClose }) => {
   }, [user]);
 
   // --- 2. KONEKSI SOCKET & LOAD DATA ---
-  useEffect(() => { 
+  useEffect(() => {
     if (!activeIdentity.id) return;
 
     console.log("🔌 Menghubungkan socket sebagai:", activeIdentity.name);
@@ -216,7 +216,7 @@ const ChatWidget = ({ onClose }) => {
       {/* Chat Body */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 dark:bg-slate-900/50">
         {messages.length === 0 && (
-          <div className="text-center text-slate-400 text-xs mt-10">
+          <div className="text-center text-slate-400 text-xs md:text-sm mt-10">
             Belum ada pesan. Mulai percakapan sekarang.
           </div>
         )}
@@ -282,9 +282,11 @@ const FloatingHelpButton = () => {
               onClick={() =>
                 window.open("https://wa.me/6281357571468", "_blank")
               }
-              className="flex items-center justify-center gap-3 bg-[#25D366] text-white px-4 py-3 rounded-full shadow-lg hover:brightness-110"
+              className="flex items-center justify-center gap-3 bg-[#25D366] text-white px-4 py-3 rounded-full shadow-lg hover:brightness-110 cursor-pointer"
             >
-              <span className="text-sm font-bold">Chat via WhatsApp</span>
+              <span className="text-sm md:text-base font-bold">
+                Chat via WhatsApp
+              </span>
               <FaWhatsapp size={24} />
             </button>
             <button
@@ -292,9 +294,11 @@ const FloatingHelpButton = () => {
                 setIsOpen(false);
                 setIsChatOpen(true);
               }}
-              className="flex items-center justify-center gap-3 bg-[#053F5C] text-white px-4 py-3 rounded-full shadow-lg hover:bg-[#075075]"
+              className="flex items-center justify-center gap-3 bg-[#053F5C] text-white px-4 py-3 rounded-full shadow-lg hover:bg-[#075075] cursor-pointer"
             >
-              <span className="text-sm font-bold">Chat dengan Helpdesk</span>
+              <span className="text-sm md:text-base font-bold">
+                Chat dengan Helpdesk
+              </span>
               <FiHeadphones size={22} />
             </button>
           </div>

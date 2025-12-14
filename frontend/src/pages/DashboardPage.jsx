@@ -38,7 +38,7 @@ const DashboardPage = () => {
       )}
 
       {/* 5. Section Admin Kota */}
-      {hasPermission(["read", "city_report"]) && <AdminKotaDashboard />}
+      {hasPermission(["city", "reports"]) && <AdminKotaDashboard />}
     </div>
   );
 };

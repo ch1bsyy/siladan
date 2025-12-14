@@ -68,7 +68,7 @@ const navigationLinks = [
     name: "Review Artikel",
     to: "/dashboard/review-articles",
     icon: FiFileText,
-    permission: ["approve", "article"],
+    permission: ["manage", "opd"],
   },
   {
     name: "Pusat Informasi",
