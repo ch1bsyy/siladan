@@ -36,6 +36,16 @@ const formatDateSafe = (dateString, formatStr = "dd MMMM yyyy, HH:mm") => {
   return isValid(date) ? format(date, formatStr, { locale: localeId }) : "-";
 };
 
+// Helper Parse JSON String Safe
+const parseServiceDetail = (jsonString) => {
+  try {
+    if (!jsonString) return null;
+    return JSON.parse(jsonString);
+  } catch (e) {
+    return { detail: jsonString }; // Fallback jika bukan JSON valid
+  }
+};
+
 const DashboardTicketDetailPage = () => {
   const { ticketId } = useParams();
   const location = useLocation();
@@ -101,6 +111,13 @@ const DashboardTicketDetailPage = () => {
         lampiranList = [...lampiranList, ...mappedAttachments];
       }
 
+      const serviceDetailObj = parseServiceDetail(ticketData.service_detail);
+      const detailLayananString = serviceDetailObj
+        ? Object.entries(serviceDetailObj)
+            .map(([key, val]) => `${key}: ${val}`)
+            .join(", ")
+        : "-";
+
       // Mapping API Data into State Component
       const mappedTicket = {
         id: ticketData.ticket_number,
@@ -138,14 +155,22 @@ const DashboardTicketDetailPage = () => {
           deskripsi: ticketData.description,
           lampiran: lampiranList,
           lokasiKejadian: ticketData.incident_location || "-",
-          tanggalKejadian: ticketData.incident_date,
-          tanggalPermintaan: ticketData.requested_date,
-          katalogLayanan: ticketData.service_catalog?.name || "-",
-          detailLayanan: ticketData.service_item?.name || "-",
+          tanggalKejadian: formatDateSafe(
+            ticketData.incident_date,
+            "dd MMMM yyyy"
+          ),
           namaAset:
             ticketData.asset_name_reported ||
             ticketData.asset_identifier ||
             "-",
+
+          tanggalPermintaan: formatDateSafe(
+            ticketData.requested_date,
+            "dd MMMM yyyy"
+          ),
+          katalogLayanan: ticketData.service_catalog?.catalog_name || "-",
+          subLayanan: ticketData.service_item?.item_name || "-",
+          detailLayanan: detailLayananString,
         },
 
         assignment: {
@@ -469,7 +494,7 @@ const DashboardTicketDetailPage = () => {
                       Oleh: {item.by}
                     </p>
                     {item.note && (
-                      <p className="text-sm text-slate-600 italic mt-2 bg-slate-50 dark:bg-slate-700/50 p-3 rounded border-l-2 border-slate-300 dark:border-slate-600">
+                      <p className="text-sm text-slate-600 dark:text-slate-300 italic mt-2 bg-slate-50 dark:bg-slate-700/50 p-3 rounded border-l-2 border-slate-300 dark:border-slate-600">
                         "{item.note}"
                       </p>
                     )}
