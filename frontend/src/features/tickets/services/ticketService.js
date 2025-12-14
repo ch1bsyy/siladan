@@ -160,3 +160,24 @@ export const updateTicket = async (id, type, data) => {
     throw new Error(errorMessage);
   }
 };
+
+// update Ticket Progress
+export const updateTicketProgress = async (id, type, payload) => {
+  const endpointType =
+    type?.toLowerCase() === "pengaduan" || type?.toLowerCase() === "incident"
+      ? "incidents"
+      : "requests";
+
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/${endpointType}/${id}/progress`,
+      payload,
+      { headers: { ...getAuthHeader(), "Content-Type": "application/json" } }
+    );
+    return response.data;
+  } catch (error) {
+    throw new Error(
+      error.response?.data?.message || "Gagal memperbarui progress tiket."
+    );
+  }
+};

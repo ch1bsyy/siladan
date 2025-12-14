@@ -1,12 +1,6 @@
 import React, { useState, useEffect } from "react";
 import StatCard from "./StatCard";
-import {
-  FiInbox,
-  FiUserCheck,
-  FiShield,
-  FiPlayCircle,
-  FiTool,
-} from "react-icons/fi";
+import { FiInbox, FiCheckCircle, FiTool } from "react-icons/fi";
 import TicketListWidget from "./TicketListWidget";
 import TicketChartWidget from "./TicketChartWidget";
 
@@ -19,16 +13,14 @@ const TeknisiDashboard = () => {
 
   const [stats, setStats] = useState({
     tugasBaru: 0,
-    approvalSeksi: 0,
-    approvalBidang: 0,
-    siapDikerjakan: 0,
+    tiketSelesai: 0,
     sedangDikerjakan: 0,
   });
 
   const [ticketList, setTicketList] = useState([]);
   const [chartData, setChartData] = useState([]);
 
-  const chartColors = ["#F7AD19", "#429EBD", "#82ca9d", "#ffc658", "#ff8042"];
+  const chartColors = ["#3B82F6", "#F59E0B", "#10B981"];
 
   useEffect(() => {
     fetchDashboard();
@@ -39,43 +31,46 @@ const TeknisiDashboard = () => {
     try {
       showLoading("Memuat data dashboard...");
       const response = await getDashboardData();
-      console.log("response", response);
 
       if (response.success && response.dashboard) {
         const d = response.dashboard;
 
         setStats({
           tugasBaru: d.by_status?.assigned || 0,
-
-          approvalSeksi: d.by_stage?.approval_seksi || 0,
-          approvalBidang: d.by_stage?.approval_bidang || 0,
-
-          siapDikerjakan: d.by_stage?.ready_to_execute || 0,
-
           sedangDikerjakan: d.by_status?.in_progress || 0,
+          tiketSelesai:
+            (d.by_status?.resolved || 0) + (d.by_status?.closed || 0),
         });
 
         // Mapping ticket
         const activeTickets = (d.my_assigned_tickets || [])
           .filter(
             (t) =>
-              t.status !== "closed" &&
-              t.status !== "resolved" &&
-              t.stage === "verification"
+              t.status === "assigned" ||
+              t.status === "open" ||
+              t.status === "in_progress"
           )
+
+          .sort((a, b) => {
+            if (a.status === "assigned" && b.status !== "assigned") return -1;
+            if (a.status !== "assigned" && b.status === "assigned") return 1;
+            return 0;
+          })
           .slice(0, 5);
 
         setTicketList(activeTickets);
 
         // Mapping Chart
-        const statusComposition = Object.keys(d.by_status || {})
-          .map((key) => ({
-            name: formatStatusName(key),
-            value: d.by_status[key],
-          }))
-          .filter((item) => item.value > 0);
+        const composition = [
+          { name: "Tugas Baru", value: d.by_status?.assigned || 0 },
+          { name: "Sedang Dikerjakan", value: d.by_status?.in_progress || 0 },
+          {
+            name: "Selesai",
+            value: (d.by_status?.resolved || 0) + (d.by_status?.closed || 0),
+          },
+        ].filter((item) => item.value > 0);
 
-        setChartData(statusComposition);
+        setChartData(composition);
       }
     } catch (error) {
       console.error("Dashboard Error:", error);
@@ -83,19 +78,6 @@ const TeknisiDashboard = () => {
     } finally {
       hideLoading();
     }
-  };
-
-  // Helper for chart name
-  const formatStatusName = (key) => {
-    const names = {
-      open: "Open",
-      assigned: "Tugas Baru",
-      in_progress: "Sedang Dikerjakan",
-      pending_approval: "Menunggu Approval",
-      resolved: "Selesai",
-      closed: "Ditutup",
-    };
-    return names[key] || key;
   };
 
   return (
@@ -113,30 +95,21 @@ const TeknisiDashboard = () => {
           value={stats.tugasBaru}
           icon={FiInbox}
           colorClass="bg-blue-500"
-        />
-        <StatCard
-          title="Menunggu Approval Seksi"
-          value={stats.approvalSeksi}
-          icon={FiUserCheck}
-          colorClass="bg-yellow-500"
-        />
-        <StatCard
-          title="Menunggu Approval Bidang"
-          value={stats.approvalBidang}
-          icon={FiShield}
-          colorClass="bg-orange-500"
-        />
-        <StatCard
-          title="Siap Untuk Dikerjakan"
-          value={stats.siapDikerjakan}
-          icon={FiPlayCircle}
-          colorClass="bg-green-500"
+          desc="Tiket menunggu respon"
         />
         <StatCard
           title="Sedang Dikerjakan"
           value={stats.sedangDikerjakan}
           icon={FiTool}
-          colorClass="bg-[#429EBD]"
+          colorClass="bg-yellow-500" // Ubah jadi kuning/orange biar beda
+          desc="Tiket dalam proses perbaikan"
+        />
+        <StatCard
+          title="Tiket Diselesaikan"
+          value={stats.tiketSelesai}
+          icon={FiCheckCircle}
+          colorClass="bg-green-500"
+          desc="Total tiket selesai bulan ini" // Asumsi dashboard per periode
         />
       </div>
 

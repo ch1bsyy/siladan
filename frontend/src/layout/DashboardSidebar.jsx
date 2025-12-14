@@ -6,14 +6,14 @@ import {
   FiGrid,
   FiPlus,
   FiTag,
-  FiUsers,
+  // FiUsers,
   FiFileText,
   FiSettings,
   FiLogOut,
   FiChevronLeft,
   FiChevronRight,
   FiActivity,
-  FiBarChart2,
+  // FiBarChart2,
   FiBookOpen,
   FiPieChart,
   FiLayers,
@@ -23,7 +23,7 @@ import {
   FiUser,
 } from "react-icons/fi";
 import { TfiTimer } from "react-icons/tfi";
-import { SlCalender } from "react-icons/sl";
+// import { SlCalender } from "react-icons/sl";
 import { IoChatbubblesOutline } from "react-icons/io5";
 import Logo from "../assets/images/logo-siladan.png";
 
@@ -76,37 +76,37 @@ const navigationLinks = [
     icon: FiBook,
     permission: ["read", "kb"],
   },
-  {
-    name: "Laporan Kinerja",
-    to: "/dashboard/reports",
-    icon: FiBarChart2,
-    permission: ["read", "reports"],
-    // performance_report
-  },
-  {
-    name: "Atur Operasional",
-    to: "/dashboard/settings/operational",
-    icon: SlCalender,
-    permission: ["manage", "operational"],
-  },
-  {
-    name: "Kalender & Jadwal",
-    to: "/dashboard/calendar-info",
-    icon: SlCalender,
-    permission: ["read", "operational"],
-  },
+  // {
+  //   name: "Laporan Kinerja",
+  //   to: "/dashboard/reports",
+  //   icon: FiBarChart2,
+  //   permission: ["read", "reports"],
+  //   // performance_report
+  // },
+  // {
+  //   name: "Atur Operasional",
+  //   to: "/dashboard/settings/operational",
+  //   icon: SlCalender,
+  // permission: ["manage", "operational"],
+  // },
+  // {
+  //   name: "Kalender & Jadwal",
+  //   to: "/dashboard/calendar-info",
+  //   icon: SlCalender,
+  //   permission: ["read", "operational"],
+  // },
   {
     name: "Atur SLA",
     to: "/dashboard/settings/sla",
     icon: TfiTimer,
     permission: ["manage", "opd"],
   },
-  {
-    name: "Kelola Pengguna",
-    to: "/dashboard/users",
-    icon: FiUsers,
-    permission: ["manage", "users"],
-  },
+  // {
+  //   name: "Kelola Pengguna",
+  //   to: "/dashboard/users",
+  //   icon: FiUsers,
+  //   permission: ["manage", "users"],
+  // },
   {
     name: "Katalog Layanan",
     to: "/dashboard/catalog",

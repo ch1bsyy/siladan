@@ -31,7 +31,7 @@ const DashboardPage = () => {
       )}
 
       {/* 4. Section OPD (Pengaturan OPD) */}
-      {hasPermission(["reassign", "ticket"]) && (
+      {hasPermission(["reassign", "tickets"]) && (
         <section id="area-admin-opd">
           <AdminOPDDashboard />
         </section>
