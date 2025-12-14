@@ -19,7 +19,8 @@ const SOCKET_URL =
 // Kita inisialisasi di luar agar tidak re-render, TAPI kita set autoConnect false
 const socket = io(SOCKET_URL, {
   autoConnect: false,
-  transports: ["websocket", "polling"], // Tambahkan polling untuk fallback
+  transports: ["polling", "websocket"], // Biarkan diawali polling dulu agar aman
+  withCredentials: true, // Tambahkan polling untuk fallback
   reconnection: true,
   reconnectionAttempts: 5,
 });

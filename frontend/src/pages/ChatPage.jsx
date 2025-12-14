@@ -21,7 +21,8 @@ const SOCKET_URL =
 // Inisialisasi socket di luar komponen agar singleton
 const socket = io(SOCKET_URL, {
   autoConnect: false, // Penting: Jangan auto connect dulu
-  transports: ["websocket", "polling"], // Urutan transport: WebSocket dulu, fallback ke Polling
+  transports: ["polling", "websocket"], // Biarkan diawali polling dulu agar aman
+  withCredentials: true, // Urutan transport: WebSocket dulu, fallback ke Polling
   reconnection: true,
   reconnectionAttempts: 5,
   reconnectionDelay: 1000,
