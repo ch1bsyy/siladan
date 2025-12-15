@@ -33,24 +33,24 @@ const PublicFooter = () => {
             </h4>
             <ul className="space-y-2 gap-1 text-sm xl:text-base grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 whitespace-nowrap">
               <li>
-                <Link to="/about" className="hover:underline hover:text-white">
-                  Tentang Kami
+                <Link
+                  to="/complaint"
+                  className="hover:underline hover:text-white"
+                >
+                  Form Pengaduan
                 </Link>
               </li>
               <li>
                 <Link
-                  to="/knowledge-base"
+                  to="/track-ticket"
                   className="hover:underline hover:text-white"
                 >
+                  Pelacakan Tiket
+                </Link>
+              </li>
+              <li>
+                <Link to="/help" className="hover:underline hover:text-white">
                   Pusat Informasi
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/privacy-policy"
-                  className="hover:underline hover:text-white"
-                >
-                  Kebijakan Privasi
                 </Link>
               </li>
             </ul>

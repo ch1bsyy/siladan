@@ -9,7 +9,7 @@ const LoginPage = () => {
   const [formData, setFormData] = useState({
     username: "",
     password: "",
-    rememberMe: false,
+    terms: false,
   });
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState("");
@@ -130,29 +130,29 @@ const LoginPage = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <Input
-                id="rememberMe"
-                name="rememberMe"
+                id="terms"
+                name="terms"
                 type="checkbox"
-                checked={formData.rememberMe}
+                checked={formData.terms}
                 onChange={handleChange}
                 className="h-4 w-4 text-cyan-600 focus:ring-cyan-500 border-gray-300 rounded"
               />
               <label
-                htmlFor="rememberMe"
+                htmlFor="terms"
                 className="ml-2 block text-sm text-gray-900 dark:text-gray-100 whitespace-nowrap"
               >
-                Ingat saya
+                Saya mengerti Syarat & Ketentuan
               </label>
             </div>
 
-            <div className="text-sm">
+            {/* <div className="text-sm">
               <a
                 href="#"
                 className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500"
               >
                 Lupa password?
               </a>
-            </div>
+            </div> */}
           </div>
 
           {serverError && (
