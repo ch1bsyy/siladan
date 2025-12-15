@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Input from "../../../components/Input";
-import { FiSave, FiEye, FiEyeOff } from "react-icons/fi";
+import { FiSave, FiEye, FiEyeOff, FiLoader } from "react-icons/fi";
+import { changePassword } from "../../auth/services/authService";
 
 const PasswordChangeForm = () => {
   const [currentPassword, setCurrentPassword] = useState("");
@@ -8,6 +9,7 @@ const PasswordChangeForm = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const [showPassword, setShowPassword] = useState({
     current: false,
@@ -22,13 +24,13 @@ const PasswordChangeForm = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setSuccess("");
 
     if (newPassword !== confirmPassword) {
-      setError("Password baru tidak cocok.");
+      setError("Password baru dan konfirmasi tidak cocok.");
       return;
     }
     if (newPassword.length < 8) {
@@ -36,19 +38,31 @@ const PasswordChangeForm = () => {
       return;
     }
 
-    // Call API changepassword
-    console.log("Changing password...", { currentPassword, newPassword });
-    setTimeout(() => {
-      // Simulation (change with API Logic)
-      if (currentPassword === "passwordlama") {
-        setSuccess("Password berhasil diubah.");
-        setCurrentPassword("");
-        setNewPassword("");
-        setConfirmPassword("");
-      } else {
-        setError("Password saat ini salah.");
-      }
-    }, 1000);
+    setIsLoading(true);
+
+    try {
+      // Panggil API
+      await changePassword({
+        currentPassword,
+        newPassword,
+        confirmPassword,
+      });
+
+      // Jika sukses
+      setSuccess(
+        "Password berhasil diubah. Silakan login ulang jika diperlukan."
+      );
+
+      // Reset Form
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (err) {
+      // Jika error dari API
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -70,6 +84,7 @@ const PasswordChangeForm = () => {
           }
           onRightIconClick={() => togglePasswordVisibility("current")}
           required
+          disabled={isLoading}
         />
         <Input
           id="new-password"
@@ -83,6 +98,7 @@ const PasswordChangeForm = () => {
           }
           onRightIconClick={() => togglePasswordVisibility("new")}
           required
+          disabled={isLoading}
         />
         <Input
           id="confirm-password"
@@ -96,6 +112,7 @@ const PasswordChangeForm = () => {
           }
           onRightIconClick={() => togglePasswordVisibility("confirm")}
           required
+          disabled={isLoading}
         />
 
         {error && <p className="text-sm text-red-500">{error}</p>}
@@ -104,10 +121,24 @@ const PasswordChangeForm = () => {
         <div className="flex justify-end pt-2">
           <button
             type="submit"
-            className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-2 px-4 py-2 rounded-lg font-semibold text-white bg-[#429EBD] hover:bg-[#053F5C] transition-colors shadow-md cursor-pointer duration-200"
+            disabled={isLoading}
+            className={`flex min-h-[44px] min-w-[44px] items-center justify-center gap-2 px-4 py-2 rounded-lg font-semibold text-white transition-colors shadow-md duration-200 ${
+              isLoading
+                ? "bg-slate-400 cursor-not-allowed"
+                : "bg-[#429EBD] hover:bg-[#053F5C] cursor-pointer"
+            }`}
           >
-            <FiSave size={18} />
-            <span>Simpan Password</span>
+            {isLoading ? (
+              <>
+                <FiLoader className="animate-spin" size={18} />
+                <span>Menyimpan...</span>
+              </>
+            ) : (
+              <>
+                <FiSave size={18} />
+                <span>Simpan Password</span>
+              </>
+            )}
           </button>
         </div>
       </form>

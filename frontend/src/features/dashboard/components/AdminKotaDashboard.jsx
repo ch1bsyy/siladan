@@ -10,7 +10,7 @@ import {
 
 import StatCard from "./StatCard";
 import TicketChartWidget from "./TicketChartWidget";
-import QuickActionsWidgetOPD from "./QuickActionsWidgetOPD";
+// import QuickActionsWidgetOPD from "./QuickActionsWidgetOPD";
 
 // import WarRoomStatusWidget from "./WarRoomStatusWidget";
 // import LiveTicketFeed from "./LiveTicketFeed";
@@ -145,7 +145,7 @@ const AdminKotaDashboard = () => {
 
         {/* KOLOM 2: INFRASTRUKTUR STATUS (Manual/Static) */}
         {/* Karena data API tidak ada, kita keep ini sebagai tampilan statis agar dashboard 'terlihat' penuh */}
-        <div className="lg:col-span-1 h-full">
+        <div className="lg:col-span-2 h-full">
           <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg h-full flex flex-col">
             <h3 className="font-bold text-slate-800 text-base md:text-lg dark:text-white mb-6 flex items-center gap-2">
               <FiServer
@@ -203,9 +203,9 @@ const AdminKotaDashboard = () => {
         </div>
 
         {/* KOLOM 3: AKSI CEPAT */}
-        <div className="lg:col-span-1">
+        {/* <div className="lg:col-span-1">
           <QuickActionsWidgetOPD />
-        </div>
+        </div> */}
       </div>
     </div>
   );

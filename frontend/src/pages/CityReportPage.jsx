@@ -44,9 +44,9 @@ const CityReportPage = () => {
               <option value="Aplikasi">Aplikasi</option>
             </FormSelect>
           </div>
-          <button className=" w-full md:w-30 flex min-h-11 min-w-11 items-center justify-center gap-2 px-4 py-2 bg-[#053F5C] text-white rounded-lg hover:bg-[#075075] transition-colors font-bold text-sm md:text-base shadow-md cursor-pointer">
+          {/* <button className=" w-full md:w-30 flex min-h-11 min-w-11 items-center justify-center gap-2 px-4 py-2 bg-[#053F5C] text-white rounded-lg hover:bg-[#075075] transition-colors font-bold text-sm md:text-base shadow-md cursor-pointer">
             <FiDownload size={20} /> Export
-          </button>
+          </button> */}
         </div>
       </div>
 

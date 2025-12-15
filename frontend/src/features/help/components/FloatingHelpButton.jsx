@@ -20,7 +20,7 @@ const SOCKET_URL =
 const socket = io(SOCKET_URL, {
   autoConnect: false,
   transports: ["polling", "websocket"], // Biarkan diawali polling dulu agar aman
-  withCredentials: true, // Tambahkan polling untuk fallback
+  withCredentials: false, // Tambahkan polling untuk fallback
   reconnection: true,
   reconnectionAttempts: 5,
 });

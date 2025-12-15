@@ -22,7 +22,7 @@ const SOCKET_URL =
 const socket = io(SOCKET_URL, {
   autoConnect: false, // Penting: Jangan auto connect dulu
   transports: ["polling", "websocket"], // Biarkan diawali polling dulu agar aman
-  withCredentials: true, // Urutan transport: WebSocket dulu, fallback ke Polling
+  withCredentials: false, // Urutan transport: WebSocket dulu, fallback ke Polling
   reconnection: true,
   reconnectionAttempts: 5,
   reconnectionDelay: 1000,

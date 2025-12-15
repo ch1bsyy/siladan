@@ -129,7 +129,7 @@ const navigationLinks = [
     name: "Laporan Kota",
     to: "/dashboard/city-reports",
     icon: FiTrendingUp,
-    permission: ["read", "city_report"],
+    permission: ["city", "reports"],
   },
 ];
 

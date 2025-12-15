@@ -58,3 +58,28 @@ export const updateUserProfile = async (userData) => {
     throw new Error(error.response?.data?.message || "Gagal update profil");
   }
 };
+
+// POST Change Password
+export const changePassword = async (data) => {
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/auth/change-password`,
+      {
+        old_password: data.currentPassword,
+        new_password: data.newPassword,
+        confirm_new_password: data.confirmPassword,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          ...getAuthHeader(),
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw new Error(
+      error.response?.data?.message || "Gagal mengubah password."
+    );
+  }
+};
