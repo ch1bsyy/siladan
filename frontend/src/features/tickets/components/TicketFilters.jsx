@@ -21,13 +21,8 @@ const STATUS_CONFIG = {
     ],
     permintaan: [
       "Baru Masuk",
-      "Ditugaskan", // Assigned (Verification)
-      "Perlu Analisa", // In Progress (Analysis)
-      "Menunggu Aprv. Seksi", // Pending Approval (Seksi)
-      "Menunggu Aprv. Bidang", // Pending Approval (Bidang)
-      "Disetujui", // In Progress (Ready to Execute)
-      "Revisi / Ditolak Atasan", // Assigned (Revision)
-      "Sedang Dikerjakan", // In Progress (Execution)
+      "Ditugaskan",
+      "Sedang Dikerjakan",
       "Selesai",
       "Ditolak",
     ],
@@ -37,11 +32,11 @@ const STATUS_CONFIG = {
     pengaduan: ["Ditugaskan", "Sedang Dikerjakan", "Selesai"],
     permintaan: [
       "Ditugaskan",
-      "Perlu Analisa",
+      // "Perlu Analisa",
       // "Menunggu Approval Seksi",
       // "Menunggu Approval Bidang",
-      "Menunggu Approval", // General waiting
-      "Disetujui",
+      // "Menunggu Approval", // General waiting
+      // "Disetujui",
       "Sedang Dikerjakan",
       "Selesai",
     ],

@@ -1,4 +1,3 @@
-// src/features/knowledge-base/services/articleService.js
 import axios from "axios";
 import { API_BASE_URL } from "../../../config";
 
@@ -63,9 +62,10 @@ export const updateArticleStatus = async (id, status, notes) => {
 };
 
 // GET Public Articles (Tanpa Token)
-export const getPublicArticles = async () => {
-  const response = await axios.get(`${API_BASE_URL}/public/articles`); // Asumsi ada endpoint ini
-  // Jika tidak ada endpoint khusus public, gunakan getArticles tapi handle 401 di backend
+export const getPublicArticles = async (params) => {
+  const response = await axios.get(`${API_BASE_URL}/public/articles`, {
+    params: params,
+  });
   return response.data;
 };
 

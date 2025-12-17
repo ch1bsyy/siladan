@@ -17,6 +17,29 @@ import { createGuestIncident } from "../../complaint/services/ticketService";
 import { uploadToCloudinary } from "../../../services/storageServices";
 import { CLOUDINARY_FOLDER_TICKET } from "../../../config";
 
+const SERVICE_TYPES = [
+  { value: "Hardware", label: "Perangkat Keras (Hardware)" },
+  { value: "Software", label: "Perangkat Lunak (Software)" },
+  { value: "Jaringan", label: "Jaringan & Internet" },
+  { value: "Sistem Informasi", label: "Sistem Informasi & Aplikasi" },
+  { value: "Keamanan", label: "Keamanan Informasi" },
+  { value: "Lainnya", label: "Layanan Lainnya" },
+];
+
+const ASSET_TYPES = [
+  { value: "Desktop", label: "Komputer Desktop" },
+  { value: "Laptop", label: "Laptop" },
+  { value: "Printer", label: "Printer & Scanner" },
+  { value: "Monitor", label: "Monitor" },
+  { value: "Router/Switch", label: "Router / Switch Network" },
+  { value: "WiFi Access Point", label: "WiFi Access Point" },
+  { value: "Projector", label: "Proyektor" },
+  { value: "UPS", label: "UPS" },
+  { value: "Telepon", label: "Telepon Kantor / PABX" },
+  { value: "Server", label: "Server Fisik" },
+  { value: "Aplikasi Web", label: "Aplikasi / Website" },
+];
+
 const HelpdeskComplaintForm = () => {
   const { showLoading, hideLoading } = useLoading();
   const [complainantType, setComplainantType] = useState("masyarakat");
@@ -42,7 +65,7 @@ const HelpdeskComplaintForm = () => {
     namaAset: "",
     judul: "",
     deskripsi: "",
-    tanggalKejadian: "",
+    tanggalKejadian: new Date().toISOString().split("T")[0],
     lokasiKejadian: "",
     lampiran: null,
   });
@@ -379,10 +402,11 @@ const HelpdeskComplaintForm = () => {
               <option value="" disabled>
                 -- Pilih Jenis Layanan --
               </option>
-              <option value="Hardware">Perangkat Keras (Hardware)</option>
-              <option value="Software">Perangkat Lunak (Software)</option>
-              <option value="Jaringan">Jaringan & Internet</option>
-              <option value="Lainnya">Lainnya</option>
+              {SERVICE_TYPES.map((service) => (
+                <option key={service.value} value={service.value}>
+                  {service.label}
+                </option>
+              ))}
             </FormSelect>
             <FormSelect
               id="namaAset"
@@ -395,11 +419,11 @@ const HelpdeskComplaintForm = () => {
               <option value="" disabled>
                 -- Pilih Aset --
               </option>
-              <option value="printer">Printer</option>
-              <option value="ac">AC</option>
-              <option value="Komputer">Komputer</option>
-              <option value="aplikasi_x">Aplikasi X</option>
-              <option value="lainnya">lainnya</option>
+              {ASSET_TYPES.map((asset) => (
+                <option key={asset.value} value={asset.value}>
+                  {asset.label}
+                </option>
+              ))}
             </FormSelect>
             <Input
               id="tanggalKejadian"

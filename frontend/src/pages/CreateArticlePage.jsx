@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
-  FiSave,
   FiSend,
   FiArrowLeft,
   FiInfo,
@@ -33,9 +32,7 @@ const CreateArticlePage = () => {
     tags: "",
     symptoms: "",
     rootCause: "",
-    solution: "", // Ini akan diisi oleh Jodit
-    // relatedAsset: "", // Backend belum support di payload contoh, bisa diabaikan atau masuk content
-    // ticketReference: "",
+    solution: "", // HTML dari Jodit
   });
 
   // --- Jodit Config ---
@@ -76,7 +73,7 @@ const CreateArticlePage = () => {
         "fullsize",
       ],
       uploader: {
-        insertImageAsBase64URI: true, // Upload gambar base64
+        insertImageAsBase64URI: true,
       },
       showCharsCounter: false,
       showWordsCounter: false,
@@ -101,8 +98,7 @@ const CreateArticlePage = () => {
       setFormData((prev) => ({
         ...prev,
         title: `Solusi: ${ticket.title}`,
-        // ticketReference: ticket.id,
-        category: "Hardware", // Default atau mapping dari ticket.category
+        category: "Hardware", // Bisa disesuaikan mappingnya
         symptoms: ticket.description || "",
         solution: `<p><strong>Berdasarkan penyelesaian tiket ${ticket.id}:</strong></p>${solutionSteps}`,
       }));
@@ -118,55 +114,61 @@ const CreateArticlePage = () => {
     setFormData((prev) => ({ ...prev, solution: newContent }));
   };
 
-  const handleSubmit = async (actionType) => {
-    // Validasi
+  const handleSubmit = async () => {
+    // 1. Validasi Input
     const isSolutionEmpty =
       !formData.solution || formData.solution === "<p><br></p>";
 
-    if (!formData.title || isSolutionEmpty) {
-      toast.error("Judul dan Langkah Penyelesaian wajib diisi!");
+    if (!formData.title || isSolutionEmpty || !formData.category) {
+      toast.error("Mohon lengkapi Judul, Kategori, dan Langkah Penyelesaian.");
       return;
     }
 
-    showLoading(
-      actionType === "draft" ? "Menyimpan Draft..." : "Mengirim ke Admin OPD..."
-    );
+    showLoading("Mengirim Artikel...");
 
     try {
-      // 1. Prepare Payload sesuai API
-      // Tags dari string "a, b, c" menjadi array ["a", "b", "c"]
+      // 2. Prepare Tags
       const tagsArray = formData.tags
         ? formData.tags.split(",").map((t) => t.trim())
         : [];
 
-      // Content utama artikel adalah gabungan atau field terpisah?
-      // Sesuai payload contoh: ada field 'content', 'symptoms', 'rootCause', 'solution'.
-      // Kita pakai 'content' untuk menyimpan full article body (Jodit result)
-      // Field lain disimpan terpisah sebagai metadata terstruktur.
+      // 3. CONSTRUCT FULL CONTENT (Agar tampilan rapi & tidak double)
+      // Kita gabungkan Gejala, Penyebab, dan Solusi menjadi satu HTML utuh untuk field 'content'
+      let constructedContent = "";
 
+      if (formData.symptoms) {
+        // Ganti newline dengan <br/> agar rapi di HTML
+        const cleanSymptoms = formData.symptoms.replace(/\n/g, "<br/>");
+        constructedContent += `<h3>Gejala Masalah</h3><p>${cleanSymptoms}</p>`;
+      }
+
+      if (formData.rootCause) {
+        const cleanRootCause = formData.rootCause.replace(/\n/g, "<br/>");
+        constructedContent += `<h3>Penyebab</h3><p>${cleanRootCause}</p>`;
+      }
+
+      // Append Solusi (sudah HTML dari Jodit)
+      constructedContent += `<h3>Langkah Penyelesaian</h3>${formData.solution}`;
+
+      // 4. Payload
       const payload = {
         title: formData.title,
         category: formData.category,
         visibility: formData.visibility,
         tags: tagsArray,
-        symptoms: formData.symptoms,
-        rootCause: formData.rootCause,
-        solution: formData.solution, // HTML content dari Jodit
-        content: formData.solution, // Redundant/Fallback jika backend butuh 'content'
-        // Status tidak dikirim di sini karena default backend = "Menunggu Review" / Draft
+        symptoms: formData.symptoms, // Disimpan mentah untuk keperluan edit nanti
+        rootCause: formData.rootCause, // Disimpan mentah untuk keperluan edit nanti
+        solution: formData.solution, // Disimpan mentah untuk keperluan edit nanti
+        content: constructedContent, // HTML Lengkap untuk Tampilan (Article Detail)
       };
 
-      // 2. Call API
+      // 5. Call API
       await createArticle(payload);
 
-      toast.success(
-        actionType === "draft"
-          ? "Artikel berhasil disimpan sebagai Draft"
-          : "Artikel berhasil dikirim untuk Review"
-      );
+      toast.success("Artikel berhasil dibuat dan dikirim untuk direview.");
 
-      // Redirect kembali ke dashboard atau list artikel
-      navigate("/dashboard/knowledge-base"); // Sesuaikan route list artikel Anda
+      // Redirect kembali ke list artikel
+      navigate("/dashboard/knowledge-base");
     } catch (error) {
       console.error("Create Article Error:", error);
       toast.error(
@@ -229,8 +231,7 @@ const CreateArticlePage = () => {
                   <option value="Hardware">Hardware & Peripherals</option>
                   <option value="Software">Software & OS</option>
                   <option value="Jaringan">Jaringan & Internet</option>
-                  <option value="Aplikasi">Aplikasi SILADAN</option>
-                  <option value="Kepegawaian">Layanan Kepegawaian</option>
+                  <option value="Account">Akun & Password</option>
                 </FormSelect>
 
                 <FormSelect
@@ -315,7 +316,7 @@ const CreateArticlePage = () => {
 
         {/* --- RIGHT FORM (Support) --- */}
         <div className="lg:col-span-1 space-y-6">
-          {/* Reference Panel (Optional, tidak dikirim ke backend tapi berguna buat UI) */}
+          {/* Reference Panel */}
           <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
             <h3 className="font-semibold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
               <FiMonitor size={20} className="text-[#F7AD19]" /> Referensi
@@ -331,7 +332,7 @@ const CreateArticlePage = () => {
                   </p>
                 </div>
               )}
-              <p className="text-xs text-slate-500">
+              <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400">
                 Artikel ini akan dibuat dengan status awal{" "}
                 <strong>Menunggu Review</strong> oleh Admin OPD sebelum
                 dipublikasikan.
@@ -346,18 +347,10 @@ const CreateArticlePage = () => {
             </h3>
             <div className="flex flex-col gap-3">
               <button
-                onClick={() => handleSubmit("review")}
+                onClick={handleSubmit}
                 className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#053F5C] text-white font-bold rounded-lg hover:bg-[#075075] transition-all active:scale-95 cursor-pointer"
               >
                 <FiSend size={18} /> Kirim ke Admin
-              </button>
-              {/* Draft button logic is same for backend (POST /articles), 
-                  status management usually handled by backend default or update later */}
-              <button
-                onClick={() => handleSubmit("draft")}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-slate-100 text-slate-700 font-semibold rounded-lg hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 transition-all cursor-pointer"
-              >
-                <FiSave size={18} /> Simpan Draft
               </button>
             </div>
           </div>

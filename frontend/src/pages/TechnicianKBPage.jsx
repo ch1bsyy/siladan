@@ -15,8 +15,7 @@ import {
 import { useLoading } from "../context/LoadingContext";
 import { getArticles } from "../features/knowledge-base/services/articleService";
 import toast from "react-hot-toast";
-import { format } from "date-fns";
-import { id as localeId } from "date-fns/locale";
+import ArticleDetailPage from "./ArticleDetailPage";
 
 // --- Sub Components ---
 
@@ -56,68 +55,30 @@ const VisibilityBadge = ({ type }) => {
 const ReadArticleModal = ({ article, onClose }) => {
   if (!article) return null;
 
-  // Format Date Safe
-  const formattedDate = article.updated_at
-    ? format(new Date(article.updated_at), "dd MMM yyyy", { locale: localeId })
-    : "-";
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6 bg-black/70 backdrop-blur-sm">
-      <div className="bg-white dark:bg-slate-800 w-full max-w-3xl max-h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-bounce-in">
-        <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-start bg-slate-50 dark:bg-slate-900/50">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <VisibilityBadge type={article.visibility} />
-              <span className="text-[13px] text-slate-500 dark:text-slate-400">
-                Updated: {formattedDate}
-              </span>
-            </div>
-            <h2 className="text-xl font-bold text-slate-800 dark:text-white">
-              {article.title}
-            </h2>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-1 flex min-h-11 min-w-11 items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full transition-colors"
-          >
-            <FiX size={20} className="text-slate-500 dark:text-slate-400" />
-          </button>
-        </div>
-        <div className="p-6 overflow-y-auto flex-1 prose dark:prose-invert dark:text-white max-w-none">
-          {/* Render HTML Content from Jodit */}
-          <div dangerouslySetInnerHTML={{ __html: article.content }} />
+      {/* Backdrop click to close */}
+      <div className="absolute inset-0" onClick={onClose}></div>
 
-          {/* Render Metadata Fields jika ada (optional) */}
-          {(article.symptoms || article.rootCause) && (
-            <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700 space-y-4">
-              {article.symptoms && (
-                <div>
-                  <h4 className="font-bold text-slate-700 dark:text-slate-300">
-                    Gejala:
-                  </h4>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">
-                    {article.symptoms}
-                  </p>
-                </div>
-              )}
-              {article.rootCause && (
-                <div>
-                  <h4 className="font-bold text-slate-700 dark:text-slate-300">
-                    Penyebab:
-                  </h4>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">
-                    {article.rootCause}
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
+      <div className="relative bg-white dark:bg-slate-900 w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-bounce-in z-10">
+        {/* --- TOMBOL CLOSE (Floating) --- */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 z-[60] p-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-white rounded-full transition-colors shadow-sm"
+          title="Tutup"
+        >
+          <FiX size={24} />
+        </button>
+
+        {/* --- KONTEN UTAMA (REUSE COMPONENT) --- */}
+        <div className="overflow-y-auto h-full scrollbar-thin relative z-10">
+          {/* Kita render ArticleDetailPage di sini agar tampilannya SAMA PERSIS dengan sisi User */}
+          <ArticleDetailPage article={article} />
         </div>
       </div>
     </div>
   );
 };
-
 /* ==========================================
    MAIN PAGE
    ========================================== */
@@ -132,25 +93,21 @@ const TechnicianKBPage = () => {
   // List Kategori (Bisa dibuat dinamis dari API unique category)
   const categories = [
     "Semua",
-    "Server & Cloud",
+    // "Server & Cloud",
     "Jaringan",
-    "Aplikasi",
+    "Software",
     "Hardware",
-    "Kepegawaian", // Tambahan sesuai CreateArticle
+    "Account",
   ];
 
   // Fetch Data
   const fetchKB = async () => {
     try {
       showLoading("Memuat Knowledge Base...");
-      // Ambil semua artikel yang statusnya Published (biasanya default endpoint get public/technician articles)
-      // Jika endpoint getArticles memuat semua status, filter di backend atau frontend.
-      // Asumsi getArticles menampilkan artikel yang boleh dilihat teknisi (Published & Internal)
+
       const response = await getArticles({ limit: 100 }); // Ambil banyak untuk client filter
 
       if (response.success && Array.isArray(response.data)) {
-        // Filter hanya yang published untuk referensi (atau sesuai kebijakan: teknisi bisa lihat draft sendiri?)
-        // Di sini kita tampilkan yang status 'Published' agar valid sebagai referensi
         const published = response.data.filter((a) => a.status === "Published");
         setArticles(published);
       }

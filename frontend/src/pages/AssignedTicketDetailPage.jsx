@@ -16,7 +16,7 @@ import {
 import { useLoading } from "../context/LoadingContext";
 import StatusBadge from "../features/tickets/components/StatusBadge";
 import FormTextArea from "../components/FormTextArea";
-import { format } from "date-fns";
+import { format, isValid } from "date-fns";
 import { id as localeId } from "date-fns/locale";
 import toast from "react-hot-toast";
 
@@ -25,6 +25,23 @@ import {
   getRequestDetail,
   updateTicketProgress,
 } from "../features/tickets/services/ticketService";
+
+// Helper Date Formatter (Handle null/invalid date)
+const formatDateSafe = (dateString, formatStr = "dd MMMM yyyy, HH:mm") => {
+  if (!dateString) return "-";
+
+  let safeDateString = dateString;
+  if (
+    typeof dateString === "string" &&
+    !dateString.endsWith("Z") &&
+    !dateString.includes("+")
+  ) {
+    safeDateString += "Z";
+  }
+
+  const date = new Date(safeDateString);
+  return isValid(date) ? format(date, formatStr, { locale: localeId }) : "-";
+};
 
 const AssignedTicketDetailPage = () => {
   const { ticketId } = useParams();
@@ -104,9 +121,7 @@ const AssignedTicketDetailPage = () => {
             sla: t.sla_due,
             pelapor: t.reporter?.full_name || "Tanpa Nama",
             lokasi: t.incident_location || "-",
-            tglLapor: format(new Date(t.created_at), "dd MMM yyyy, HH:mm", {
-              locale: localeId,
-            }),
+            tglLapor: formatDateSafe(t.created_at, "dd MMM yyyy, HH:mm"),
             worklogs: mappedLogs,
             // Flag khusus
             isChangeRequest: false, // Sesuaikan logic jika ada
@@ -431,9 +446,7 @@ const AssignedTicketDetailPage = () => {
                           {log.user}
                         </span>
                         <span className="text-xs sm:text-sm text-slate-500 dark:text-slate-500">
-                          {format(new Date(log.date), "dd MMM yyyy, HH:mm", {
-                            locale: localeId,
-                          })}
+                          {formatDateSafe(log.date, "dd MMM yyyy, HH:mm")}
                         </span>
                       </div>
                       <p className="text-slate-600 dark:text-slate-400 text-sm md:text-base bg-slate-50 dark:bg-slate-700/30 p-3 rounded-lg inline-block">
@@ -482,7 +495,7 @@ const AssignedTicketDetailPage = () => {
                   <>
                     <p className="text-sm text-slate-500 mt-3">Deadline:</p>
                     <p className="text-sm font-medium text-red-600 dark:text-red-400">
-                      {format(new Date(ticket.sla), "dd MMM yyyy, HH:mm")}
+                      {formatDateSafe(ticket.sla, "dd MMM yyyy, HH:mm")}
                     </p>
                   </>
                 )}

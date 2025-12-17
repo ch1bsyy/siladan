@@ -32,7 +32,17 @@ import {
 // Helper Date Formatter (Handle null/invalid date)
 const formatDateSafe = (dateString, formatStr = "dd MMMM yyyy, HH:mm") => {
   if (!dateString) return "-";
-  const date = new Date(dateString);
+
+  let safeDateString = dateString;
+  if (
+    typeof dateString === "string" &&
+    !dateString.endsWith("Z") &&
+    !dateString.includes("+")
+  ) {
+    safeDateString += "Z";
+  }
+
+  const date = new Date(safeDateString);
   return isValid(date) ? format(date, formatStr, { locale: localeId }) : "-";
 };
 
@@ -364,7 +374,12 @@ const DashboardTicketDetailPage = () => {
           </div>
           {/* Badge Status */}
           <div className="flex flex-col items-end gap-3">
-            <StatusBadge status={ticket.status} isFullWidth isIncreaseFont />
+            <StatusBadge
+              status={ticket.status}
+              stage={ticket.stage}
+              isFullWidth
+              isIncreaseFont
+            />
 
             {hasPermission(["reassign", "ticket"]) && isOngoing && (
               <button

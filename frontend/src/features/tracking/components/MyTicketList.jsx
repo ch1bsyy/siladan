@@ -3,38 +3,37 @@ import TicketStatusCard from "./TicketStatusCard";
 import FormSelect from "../../../components/FormSelect";
 import { getMyIncidents, getMyRequests } from "../services/trackService";
 import { FiSearch, FiRefreshCw } from "react-icons/fi";
+import Pagination from "../../../components/Pagination";
 
 // Set Filters
 const complaintStatuses = [
-  "Semua",
-  "Open",
-  "Pending",
-  "Verified",
-  "In Progress",
-  "Resolved",
-  "Closed",
-  "Rejected",
+  { value: "Semua", label: "Semua Status" },
+  { value: "Open", label: "Tiket Baru" },
+  { value: "assigned", label: "Ditugaskan" },
+  { value: "in_progress", label: "Sedang Dikerjakan" },
+  { value: "resolved", label: "Selesai" },
 ];
 
 const requestStatuses = [
-  "Semua",
-  "Open",
-  "Pending",
-  "Approved",
-  "In Progress",
-  "Completed",
-  "Rejected",
+  { value: "Semua", label: "Semua Status" },
+  { value: "Open", label: "Tiket Baru" },
+  { value: "assigned", label: "Ditugaskan" },
+  { value: "in_progress", label: "Sedang Dikerjakan" },
+  { value: "resolved", label: "Selesai" },
 ];
 
 const MyTicketList = () => {
   const [activeTab, setActiveTab] = useState("pengaduan");
   const [selectedStatus, setSelectedStatus] = useState("Semua");
-
   const [searchQuery, setSearchQuery] = useState("");
 
   const [tickets, setTickets] = useState([]);
   const [isFetching, setIsFetching] = useState(false);
   const [error, setError] = useState(null);
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   const statusOptions =
     activeTab === "pengaduan" ? complaintStatuses : requestStatuses;
@@ -63,6 +62,7 @@ const MyTicketList = () => {
             title: item.title,
             type: activeTab === "pengaduan" ? "Pengaduan" : "Permintaan",
             status: item.status,
+            stage: item.stage,
             updatedAt:
               item.updated_at || item.created_at || new Date().toISOString(),
           }))
@@ -90,6 +90,10 @@ const MyTicketList = () => {
     }
   };
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedStatus, searchQuery]);
+
   // Filter Logic
   const displayedTickets = useMemo(() => {
     return tickets.filter((ticket) => {
@@ -113,6 +117,12 @@ const MyTicketList = () => {
       return matchStatus && matchSearch;
     });
   }, [tickets, selectedStatus, searchQuery]);
+
+  // Pagination Logic
+  const paginatedTickets = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return displayedTickets.slice(startIndex, startIndex + itemsPerPage);
+  }, [displayedTickets, currentPage, itemsPerPage]);
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -166,7 +176,7 @@ const MyTicketList = () => {
           </div>
 
           {/* Dropdown Status */}
-          <div className="w-full md:max-w-40">
+          <div className="w-full md:max-w-50">
             <FormSelect
               id="status-filter"
               name="status-filter"
@@ -174,9 +184,9 @@ const MyTicketList = () => {
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
             >
-              {statusOptions.map((status) => (
-                <option key={status} value={status}>
-                  {status}
+              {statusOptions.map((statusObj) => (
+                <option key={statusObj.value} value={statusObj.value}>
+                  {statusObj.label}
                 </option>
               ))}
             </FormSelect>
@@ -214,16 +224,33 @@ const MyTicketList = () => {
               Coba Lagi
             </button>
           </div>
-        ) : displayedTickets.length > 0 ? (
+        ) : paginatedTickets.length > 0 ? (
           // Data Found
-          displayedTickets.map((ticket) => (
-            <TicketStatusCard key={ticket.id} ticket={ticket} />
-          ))
+          <>
+            <div className="space-y-4">
+              {paginatedTickets.map((ticket) => (
+                <TicketStatusCard key={ticket.id} ticket={ticket} />
+              ))}
+            </div>
+
+            {/* Pagination Component */}
+            <div className="mt-8 pt-4 border-t border-slate-200 dark:border-slate-700">
+              <Pagination
+                currentPage={currentPage}
+                totalItems={displayedTickets.length}
+                itemsPerPage={itemsPerPage}
+                onPageChange={setCurrentPage}
+              />
+            </div>
+          </>
         ) : (
           // Empty State
           <div className="text-center py-16 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-dashed border-slate-400 dark:border-slate-600">
             <p className="text-slate-600 dark:text-slate-400">
-              Tidak ada tiket {activeTab} dengan status "{selectedStatus}".
+              Tidak ada tiket {activeTab} dengan status "
+              {statusOptions.find((s) => s.value === selectedStatus)?.label ||
+                selectedStatus}
+              ".
             </p>
           </div>
         )}

@@ -13,7 +13,7 @@ const steps = [
     icon: <FiCheckSquare size={32} />,
     title: "2. Verifikasi Tim",
     description:
-      "Tim kami (Seksi, Bidang, dan pihak lainnya) akan memvalidasi pengaduan atau permintaan layanan Anda untuk ditindaklanjuti dan diteruskan ke tim teknis.",
+      "Tim kami yang bertugas sebagai Helpdesk akan memvalidasi pengaduan atau permintaan layanan Anda untuk ditindaklanjuti dan diteruskan ke tim teknis.",
   },
   {
     icon: <FiThumbsUp size={32} />,

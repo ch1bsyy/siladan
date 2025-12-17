@@ -40,6 +40,8 @@ const RequestForm = () => {
     lampiran: null,
   });
 
+  const today = new Date().toISOString().split("T")[0];
+
   // State for store data from API
   const [catalogOptions, setCatalogOptions] = useState([]);
   // State for fill dropdown option
@@ -408,6 +410,8 @@ const RequestForm = () => {
                 value={formData.tanggalPermintaan}
                 onChange={handleChange}
                 required
+                min={today}
+                max={today}
               />
 
               <div className="md:col-span-2">

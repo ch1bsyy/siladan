@@ -4,7 +4,7 @@ import TicketFilters from "../features/tickets/components/TicketFilters";
 import TicketTable from "../features/tickets/components/TicketTable";
 import Pagination from "../components/Pagination";
 import { useAuth } from "../context/AuthContext";
-// import { useLoading } from "../context/LoadingContext";
+import { useLoading } from "../context/LoadingContext";
 import {
   getIncidents,
   getRequests,
@@ -13,13 +13,15 @@ import toast from "react-hot-toast";
 
 const TicketManagementPage = () => {
   const { user } = useAuth();
-  // const { showLoading, hideLoading } = useLoading();
+  const { showLoading, hideLoading } = useLoading();
 
   const [activeTab, setActiveTab] = useState("pengaduan");
   const [tickets, setTickets] = useState([]);
 
   const [filters, setFilters] = useState({ search: "", status: "Semua" });
+
   const [currentPage, setCurrentPage] = useState(1);
+
   const [paginationInfo, setPaginationInfo] = useState({
     totalItems: 0,
     totalPages: 1,
@@ -75,9 +77,9 @@ const TicketManagementPage = () => {
 
   // --- FETCH DATA ---
   const fetchTickets = async () => {
-    // if (!user?.opd_id) return;
+    if (!user) return;
 
-    // showLoading("Memuat data tiket...");
+    showLoading("Memuat data tiket...");
     try {
       const apiParams = {
         page: currentPage,
@@ -90,6 +92,7 @@ const TicketManagementPage = () => {
       let response;
       if (activeTab === "pengaduan") {
         response = await getIncidents(apiParams);
+        console.log("tickets", response);
       } else {
         response = await getRequests(apiParams);
       }
@@ -112,20 +115,21 @@ const TicketManagementPage = () => {
 
       // Update Pagination State
       if (pagination) {
-        setPaginationInfo((prev) => ({
-          ...prev,
-          totalItems: pagination.total_items || 0,
-          totalPages: pagination.total_pages || 1,
-        }));
+        setPaginationInfo({
+          totalItems:
+            pagination.total || pagination.total_items || pagination.count || 0,
+          totalPages: pagination.total_pages || pagination.last_page || 1,
+          itemsPerPage: pagination.limit || pagination.per_page || 10,
+        });
       }
     } catch (error) {
       console.error(error);
       toast.error(error.message || "Gagal memuat tiket");
       setTickets([]);
+      setPaginationInfo({ totalItems: 0, totalPages: 1, itemsPerPage: 10 });
+    } finally {
+      hideLoading();
     }
-    // finally {
-    //   // hideLoading();
-    // }
   };
 
   // Trigger Fetch when dependencies change
@@ -172,14 +176,19 @@ const TicketManagementPage = () => {
       <TicketTable tickets={tickets} />
 
       {/* Pagination */}
-      <div className="max-w-5xl">
-        <Pagination
-          currentPage={currentPage}
-          totalItems={paginationInfo.totalItems}
-          itemsPerPage={paginationInfo.itemsPerPage}
-          onPageChange={setCurrentPage}
-        />
-      </div>
+      {paginationInfo.totalItems > 0 && (
+        <div className="flex justify-center max-w-5xl mt-6">
+          <Pagination
+            currentPage={currentPage}
+            totalItems={paginationInfo.totalItems}
+            itemsPerPage={paginationInfo.itemsPerPage}
+            onPageChange={(page) => {
+              window.scrollTo({ top: 0, behavior: "smooth" });
+              setCurrentPage(page);
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 };

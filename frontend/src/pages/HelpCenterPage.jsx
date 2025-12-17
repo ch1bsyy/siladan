@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-
+import React, { useState, useRef } from "react";
 import HeroSection from "../features/help/components/HeroSection";
 import FAQSection from "../features/help/components/FAQSection";
 import KnowledgeBaseGrid from "../features/help/components/KnowledgeBaseGrid";
@@ -7,20 +6,35 @@ import FloatingHelpButton from "../features/help/components/FloatingHelpButton";
 
 const HelpCenterPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  // Note:`searchQuery` can be pass to komponen FAQ and KnowledgeBase
+
+  const resultsRef = useRef(null);
+
+  const handleScrollToResults = () => {
+    if (resultsRef.current) {
+      resultsRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-800">
-      {/* 1. Hero & Search */}
-      <HeroSection searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+      {/* Hero & Search */}
+      <HeroSection
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        onSearch={handleScrollToResults}
+      />
 
-      {/* 2. FAQ Accordion */}
-      <FAQSection />
+      <div ref={resultsRef} className="scroll-mt-20">
+        {/* FAQ Accordion */}
+        <FAQSection searchQuery={searchQuery} />
+        {/* Knowledge Base Categories & Popular Articles */}
+        <KnowledgeBaseGrid searchQuery={searchQuery} />
+      </div>
 
-      {/* 3. Knowledge Base Categories & Popular Articles */}
-      <KnowledgeBaseGrid />
-
-      {/* 5. Floating Action Button */}
+      {/* Floating Action Button */}
       <FloatingHelpButton />
     </div>
   );

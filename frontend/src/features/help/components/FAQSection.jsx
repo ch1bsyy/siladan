@@ -5,7 +5,7 @@ import { useAuth } from "../../../context/AuthContext";
 import { getFAQs, getPublicFAQs } from "../../settings/services/faqService";
 import toast from "react-hot-toast";
 
-const FAQSection = () => {
+const FAQSection = ({ searchQuery }) => {
   const { isAuthenticated, user } = useAuth();
   const [faqs, setFaqs] = useState([]);
   const [selectedOpd, setSelectedOpd] = useState("Semua");
@@ -52,11 +52,29 @@ const FAQSection = () => {
 
   // Filter Logic
   const filteredFaq = useMemo(() => {
-    if (isInternal || selectedOpd === "Semua") {
-      return faqs;
+    let data = faqs;
+
+    // 1. Filter OPD (Internal/External logic)
+    if (!isInternal && selectedOpd !== "Semua") {
+      data = data.filter((item) => item.opd?.name === selectedOpd);
     }
-    return faqs.filter((item) => item.opd?.name === selectedOpd);
-  }, [faqs, selectedOpd, isInternal]);
+
+    // 2. Filter Search Query
+    if (searchQuery) {
+      const lowerQuery = searchQuery.toLowerCase();
+      data = data.filter(
+        (item) =>
+          item.question.toLowerCase().includes(lowerQuery) ||
+          item.answer.toLowerCase().includes(lowerQuery)
+      );
+    }
+
+    return data;
+  }, [faqs, selectedOpd, isInternal, searchQuery]);
+
+  if (searchQuery && filteredFaq.length === 0) {
+    return null;
+  }
 
   return (
     <div className="py-12 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
@@ -137,13 +155,13 @@ const FAQSection = () => {
                 </button>
 
                 {openId === item.id && (
-                  <div className="p-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/30 text-slate-600 dark:text-slate-300 text-sm leading-relaxed animate-fade-in-down">
+                  <div className="p-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/30 text-slate-600 dark:text-slate-300 text-sm md:text-base leading-relaxed animate-fade-in-down">
                     {!isInternal && item.opd?.name && (
                       <span className="inline-block px-2 py-1 mb-2 text-[10px] font-bold uppercase tracking-wider text-blue-700 bg-blue-100 rounded-full">
                         {item.opd.name}
                       </span>
                     )}
-                    <div className="whitespace-pre-wrap">{item.answer}</div>
+                    <div className="whitespace-pre-wrap ">{item.answer}</div>
                   </div>
                 )}
               </div>
@@ -151,7 +169,7 @@ const FAQSection = () => {
           ) : (
             <div className="text-center py-12 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-dashed border-slate-300 dark:border-slate-700">
               <p className="text-slate-500 dark:text-slate-400">
-                Belum ada FAQ yang tersedia untuk kategori ini.
+                Tidak ditemukan FAQ yang cocok.
               </p>
             </div>
           )}

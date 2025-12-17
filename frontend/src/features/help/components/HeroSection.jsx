@@ -1,14 +1,26 @@
 import React from "react";
-import { FiSearch } from "react-icons/fi";
+import { FiSearch, FiX } from "react-icons/fi";
 
-const quickTags = [
-  "Lupa Password",
-  "WiFi Kantor",
-  "Aplikasi E-Kinerja",
-  "Reset Akun",
-];
+const quickTags = ["Reset Password", "WiFi Kantor", "Aplikasi", "Panduan"];
 
-const HeroSection = ({ searchQuery, setSearchQuery }) => {
+const HeroSection = ({ searchQuery, setSearchQuery, onSearch }) => {
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      onSearch();
+    }
+  };
+
+  const handleTagClick = (tag) => {
+    setSearchQuery(tag);
+    setTimeout(() => {
+      onSearch();
+    }, 100);
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery("");
+  };
+
   return (
     <div className="bg-gradient-to-r from-[#053F5C] to-[#429EBD] dark:from-[#053F5C] dark:to-slate-800 py-16 px-4 sm:px-6 lg:px-8 text-center text-white relative overflow-hidden">
       {/* Background Decoration */}
@@ -30,11 +42,23 @@ const HeroSection = ({ searchQuery, setSearchQuery }) => {
           </div>
           <input
             type="text"
-            className="block w-full pl-12 pr-4 py-4 bg-white text-slate-900 rounded-full shadow-lg focus:ring-4 focus:ring-blue-300/30 outline-none text-base placeholder:text-slate-400 transition-all"
+            className="block w-full pl-12 pr-12 py-4 bg-white text-slate-900 rounded-full shadow-lg focus:ring-4 focus:ring-blue-300/30 outline-none text-base placeholder:text-slate-400 transition-all"
             placeholder="Ketik kendala Anda (contoh: WiFi tidak connect, Printer macet)..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={handleKeyDown}
           />
+
+          {/* Button Clear */}
+          {searchQuery && (
+            <button
+              onClick={handleClearSearch}
+              className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
+              title="Hapus pencarian"
+            >
+              <FiX className="h-5 w-5" />
+            </button>
+          )}
         </div>
 
         {/* Quick Tags */}
@@ -42,7 +66,7 @@ const HeroSection = ({ searchQuery, setSearchQuery }) => {
           {quickTags.map((tag) => (
             <button
               key={tag}
-              onClick={() => setSearchQuery(tag)}
+              onClick={() => handleTagClick(tag)}
               className="px-3 py-1 bg-white/10 hover:bg-white/20 border border-white/20 rounded-full text-sm transition-colors backdrop-blur-sm"
             >
               {tag}

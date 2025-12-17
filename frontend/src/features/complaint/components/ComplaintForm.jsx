@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useSearchParams } from "react-router-dom"; // Catch data from QR
+import { useSearchParams } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
 import { useLoading } from "../../../context/LoadingContext";
 import toast from "react-hot-toast";
@@ -15,6 +15,30 @@ import { FiSend } from "react-icons/fi";
 import { uploadToCloudinary } from "../../../services/storageServices";
 import { CLOUDINARY_FOLDER_TICKET } from "../../../config";
 import { createIncident, createGuestIncident } from "../services/ticketService";
+import { getOpdList } from "../../new-ticket/services/newTicketService";
+
+const SERVICE_TYPES = [
+  { value: "Hardware", label: "Perangkat Keras (Hardware)" },
+  { value: "Software", label: "Perangkat Lunak (Software)" },
+  { value: "Jaringan", label: "Jaringan & Internet" },
+  { value: "Sistem Informasi", label: "Sistem Informasi & Aplikasi" },
+  { value: "Keamanan", label: "Keamanan Informasi" },
+  { value: "Lainnya", label: "Layanan Lainnya" },
+];
+
+const ASSET_TYPES = [
+  { value: "Desktop", label: "Komputer Desktop" },
+  { value: "Laptop", label: "Laptop" },
+  { value: "Printer", label: "Printer & Scanner" },
+  { value: "Monitor", label: "Monitor" },
+  { value: "Router/Switch", label: "Router / Switch Network" },
+  { value: "WiFi Access Point", label: "WiFi Access Point" },
+  { value: "Projector", label: "Proyektor" },
+  { value: "UPS", label: "UPS" },
+  { value: "Telepon", label: "Telepon Kantor / PABX" },
+  { value: "Server", label: "Server Fisik" },
+  { value: "Aplikasi Web", label: "Aplikasi / Website" },
+];
 
 const ComplaintForm = () => {
   const { isAuthenticated, user } = useAuth();
@@ -23,6 +47,7 @@ const ComplaintForm = () => {
 
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [createdTicketId, setCreatedTicketId] = useState("");
+  const [opdList, setOpdList] = useState([]);
 
   const fileInputRef = useRef(null);
   const isPegawai = isAuthenticated && user?.role?.name === "pegawai_opd";
@@ -38,10 +63,28 @@ const ComplaintForm = () => {
     namaOpd: searchParams.get("opd") || "",
     judul: "",
     deskripsi: "",
-    tanggalKejadian: "",
+    tanggalKejadian: new Date().toISOString().split("T")[0],
     lokasiKejadian: "",
     lampiran: null,
   });
+
+  const today = new Date().toISOString().split("T")[0];
+
+  useEffect(() => {
+    const fetchOpd = async () => {
+      try {
+        const data = await getOpdList();
+        if (Array.isArray(data)) {
+          setOpdList(data);
+        }
+      } catch (error) {
+        console.error("Gagal memuat OPD", error);
+        toast.error("Gagal memuat daftar OPD");
+      }
+    };
+
+    fetchOpd();
+  }, []);
 
   useEffect(() => {
     if (isPegawai && user) {
@@ -52,7 +95,7 @@ const ComplaintForm = () => {
         alamat: user.address || "",
         email: user.email || "",
         telepon: user.phone || "",
-        namaOpd: user.opd?.value || prev.namaOpd,
+        namaOpd: user.opd?.id || user.opd_id || prev.namaOpd,
       }));
     }
   }, [isPegawai, user]);
@@ -65,7 +108,7 @@ const ComplaintForm = () => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file & (file.size > 5 * 1024 * 1024)) {
-      toast.error("Ukuran file maksimal 5MB");
+      toast.error("Ukuran Foto maksimal 5MB");
       e.target.value = null;
       return;
     }
@@ -87,11 +130,16 @@ const ComplaintForm = () => {
       let attachmentUrl = "";
       if (formData.lampiran) {
         toast.loading("Mengunggah lampiran...");
-        attachmentUrl = await uploadToCloudinary(formData.lampiran, CLOUDINARY_FOLDER_TICKET);
+        attachmentUrl = await uploadToCloudinary(
+          formData.lampiran,
+          CLOUDINARY_FOLDER_TICKET
+        );
         toast.dismiss();
       }
 
       let response;
+
+      const opdIdInt = parseInt(formData.namaOpd, 10);
 
       if (isPegawai) {
         const internalPayload = {
@@ -100,7 +148,7 @@ const ComplaintForm = () => {
           category: formData.layanan,
           incident_location: formData.lokasiKejadian,
           incident_date: formData.tanggalKejadian,
-          opd_id: parseInt(formData.namaOpd, 10),
+          opd_id: opdIdInt,
           asset_identifier: formData.namaAset,
           attachmentUrl: attachmentUrl,
         };
@@ -114,7 +162,7 @@ const ComplaintForm = () => {
           category: formData.layanan,
           incident_location: formData.lokasiKejadian,
           incident_date: formData.tanggalKejadian,
-          opd_id: parseInt(formData.namaOpd, 10),
+          opd_id: opdIdInt,
           asset_identifier: formData.namaAset,
           attachment_url: attachmentUrl,
 
@@ -275,15 +323,17 @@ const ComplaintForm = () => {
                 <option value="" disabled>
                   -- Pilih OPD --
                 </option>
-                <option value="1">Dinas Komunikasi dan Informatika</option>
-                <option value="2">Sekretariat DPRD</option>
-                <option value="3">
-                  Dinas Kebudayaan Kepemudaan dan Olahraga serta Pariwisata
-                </option>
-                <option value="4">
-                  Dinas Kependudukan dan Pencatatan Sipil
-                </option>
-                <option value="5">lainnya</option>
+                {opdList.length > 0 ? (
+                  opdList.map((opd) => (
+                    <option key={opd.id} value={opd.id}>
+                      {opd.name}
+                    </option>
+                  ))
+                ) : (
+                  <option value="" disabled>
+                    Memuat daftar OPD...
+                  </option>
+                )}
               </FormSelect>
               <FormSelect
                 id="layanan"
@@ -296,10 +346,11 @@ const ComplaintForm = () => {
                 <option value="" disabled>
                   -- Pilih Jenis Layanan --
                 </option>
-                <option value="Hardware">Pengaduan Aset TI</option>
-                <option value="Jaringan">Gangguan Jaringan</option>
-                <option value="Aplikasi">Masalah Sistem Informasi</option>
-                <option value="Lainnya">Lainnya</option>
+                {SERVICE_TYPES.map((service) => (
+                  <option key={service.value} value={service.value}>
+                    {service.label}
+                  </option>
+                ))}
               </FormSelect>
               <FormSelect
                 id="namaAset"
@@ -312,11 +363,11 @@ const ComplaintForm = () => {
                 <option value="" disabled>
                   -- Pilih Aset --
                 </option>
-                <option value="printer">Printer</option>
-                <option value="ac">AC</option>
-                <option value="Komputer">Komputer</option>
-                <option value="aplikasi_x">Aplikasi X</option>
-                <option value="lainnya">lainnya</option>
+                {ASSET_TYPES.map((asset) => (
+                  <option key={asset.value} value={asset.value}>
+                    {asset.label}
+                  </option>
+                ))}
               </FormSelect>
               <Input
                 id="tanggalKejadian"
@@ -326,6 +377,8 @@ const ComplaintForm = () => {
                 value={formData.tanggalKejadian}
                 onChange={handleChange}
                 required
+                min={today}
+                max={today}
               />
               <div className="md:col-span-2">
                 <Input

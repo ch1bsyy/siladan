@@ -12,18 +12,43 @@ import io from "socket.io-client";
 import { v4 as uuidv4 } from "uuid";
 
 // --- SOCKET URL (ROOT SERVER, BUKAN PATH API) ---
-// Socket.io server listen di root URL
 const SOCKET_URL =
   "https://siladan-rest-api-711057748791.asia-southeast2.run.app";
 
-// Kita inisialisasi di luar agar tidak re-render, TAPI kita set autoConnect false
 const socket = io(SOCKET_URL, {
   autoConnect: false,
-  transports: ["polling", "websocket"], // Biarkan diawali polling dulu agar aman
-  withCredentials: false, // Tambahkan polling untuk fallback
+  transports: ["polling", "websocket"],
+  withCredentials: false,
   reconnection: true,
   reconnectionAttempts: 5,
 });
+
+const formatMessageTime = (dateString) => {
+  if (!dateString) return "Now";
+  try {
+    let safeDateString = dateString;
+    if (
+      typeof dateString === "string" &&
+      !dateString.endsWith("Z") &&
+      !dateString.includes("+")
+    ) {
+      safeDateString += "Z";
+    }
+
+    const date = new Date(safeDateString);
+
+    // 2. Format to Indonesia (WIB)
+    return new Intl.DateTimeFormat("id-ID", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+      timeZone: "Asia/Jakarta",
+    }).format(date);
+    // eslint-disable-next-line no-unused-vars
+  } catch (_e) {
+    return "Now";
+  }
+};
 
 /* INTERNAL COMPONENT: CHAT WIDGET */
 const ChatWidget = ({ onClose }) => {
@@ -101,12 +126,7 @@ const ChatWidget = ({ onClose }) => {
         // Logic sender: Jika ID pengirim == ID saya, berarti "me"
         sender:
           String(msg.sender_id) === String(activeIdentity.id) ? "me" : "admin",
-        time: msg.created_at
-          ? new Date(msg.created_at).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            })
-          : "Now",
+        time: formatMessageTime(msg.created_at),
       }));
       setMessages(formatted);
     };
@@ -130,12 +150,9 @@ const ChatWidget = ({ onClose }) => {
               id: data.id || Date.now(),
               text: data.message,
               sender: isMyMessage ? "me" : "admin",
-              time: data.created_at
-                ? new Date(data.created_at).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })
-                : "Now",
+              time: formatMessageTime(
+                data.created_at || new Date().toISOString()
+              ),
             },
           ];
         });
@@ -308,7 +325,9 @@ const FloatingHelpButton = () => {
           <button
             onClick={() => setIsOpen(!isOpen)}
             className={`flex items-center justify-center w-14 h-14 rounded-full shadow-xl transition-transform duration-300 ${
-              isOpen ? "bg-red-500 rotate-90" : "bg-[#F7AD19] hover:scale-110"
+              isOpen
+                ? "bg-red-500 rotate-90"
+                : "bg-[#F7AD19] hover:scale-110 cursor-pointer"
             }`}
           >
             {isOpen ? (

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FiBell,
   FiCheck,
@@ -7,78 +7,109 @@ import {
   FiInfo,
   FiAlertCircle,
   FiCheckCircle,
+  FiLoader,
 } from "react-icons/fi";
 
-// MOCK DATA
-const initialNotifications = [
-  {
-    id: 1,
-    title: "Tiket #1234 Diperbarui",
-    message:
-      "Teknisi Budi telah menambahkan worklog baru pada tiket 'Printer Macet'.",
-    type: "info", // info, success, warning, error
-    isRead: false,
-    time: "5 menit yang lalu",
-  },
-  {
-    id: 2,
-    title: "Permintaan Disetujui",
-    message: "Permintaan laptop baru Anda telah disetujui oleh Kepala Dinas.",
-    type: "success",
-    isRead: false,
-    time: "1 jam yang lalu",
-  },
-  {
-    id: 3,
-    title: "SLA Warning",
-    message: "Tiket #TK-998 mendekati batas waktu SLA (kurang dari 2 jam).",
-    type: "warning",
-    isRead: true,
-    time: "3 jam yang lalu",
-  },
-  {
-    id: 4,
-    title: "Sistem Maintenance",
-    message: "Sistem akan mengalami downtime pada hari Sabtu pukul 22:00 WIB.",
-    type: "error",
-    isRead: true,
-    time: "1 hari yang lalu",
-  },
-  {
-    id: 5,
-    title: "Tiket Selesai",
-    message: "Tiket #TK-887 telah diselesaikan. Silakan beri rating.",
-    type: "success",
-    isRead: true,
-    time: "2 hari yang lalu",
-  },
-];
+import { useAuth } from "../context/AuthContext";
+import {
+  getUserNotifications,
+  deleteNotification,
+  getNotificationDetail,
+} from "../features/notifications/services/notificationService";
+import toast from "react-hot-toast";
+import { formatDistanceToNow } from "date-fns";
+import { id } from "date-fns/locale";
 
 const NotificationsPage = () => {
-  const [notifications, setNotifications] = useState(initialNotifications);
+  const { user } = useAuth();
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
 
-  // Derived State
-  const filteredNotifications = notifications.filter((n) =>
-    filter === "all" ? true : !n.isRead
-  );
+  // --- 1. FETCH DATA ---
+  const fetchNotifications = async () => {
+    if (!user?.id) return;
+    setLoading(true);
+    try {
+      const res = await getUserNotifications(user.id);
+      if (res.success && Array.isArray(res.data)) {
+        const sorted = res.data.sort(
+          (a, b) => new Date(b.created_at) - new Date(a.created_at)
+        );
+        setNotifications(sorted);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Gagal memuat notifikasi.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
+  useEffect(() => {
+    if (user?.id) {
+      fetchNotifications();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   // Handlers
-  const handleMarkAllRead = () => {
-    const updated = notifications.map((n) => ({ ...n, isRead: true }));
-    setNotifications(updated);
+  const handleDelete = async (id) => {
+    if (!window.confirm("Hapus notifikasi ini?")) return;
+
+    const notifToDelete = notifications.find((n) => n.id === id);
+    const previousNotifications = [...notifications];
+
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+
+    try {
+      if (notifToDelete && !notifToDelete.is_read) {
+        await getNotificationDetail(id);
+      }
+
+      await deleteNotification(id);
+      toast.success("Notifikasi dihapus.");
+    } catch (error) {
+      console.log("Error", error);
+      setNotifications(previousNotifications);
+      toast.error("Gagal menghapus notifikasi.");
+    }
   };
 
-  const handleDelete = (id) => {
-    setNotifications(notifications.filter((n) => n.id !== id));
-  };
+  const handleRead = async (notif) => {
+    if (notif.is_read) return;
 
-  const handleRead = (id) => {
-    setNotifications(
-      notifications.map((n) => (n.id === id ? { ...n, isRead: true } : n))
+    // Optimistic Update
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === notif.id ? { ...n, is_read: true } : n))
     );
+
+    try {
+      await getNotificationDetail(notif.id);
+      window.dispatchEvent(new Event("notificationUpdated"));
+    } catch (error) {
+      console.error("Gagal update status read", error);
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    const unreadItems = notifications.filter((n) => !n.is_read);
+    if (unreadItems.length === 0) return;
+
+    const updated = notifications.map((n) => ({ ...n, is_read: true }));
+    setNotifications(updated);
+
+    try {
+      await Promise.all(unreadItems.map((n) => getNotificationDetail(n.id)));
+
+      toast.success("Semua ditandai dibaca.");
+      window.dispatchEvent(new Event("notificationUpdated"));
+    } catch (error) {
+      console.error("Gagal mark all read:", error);
+      toast.error("Gagal sinkronisasi status ke server.");
+
+      fetchNotifications();
+    }
   };
 
   // Helper Icon
@@ -94,6 +125,34 @@ const NotificationsPage = () => {
         return <FiInfo className="text-blue-500" size={20} />;
     }
   };
+
+  const formatTime = (dateString) => {
+    try {
+      return formatDistanceToNow(new Date(dateString), {
+        addSuffix: true,
+        locale: id,
+      });
+      // eslint-disable-next-line no-unused-vars
+    } catch (_e) {
+      return "Baru saja";
+    }
+  };
+
+  // Filter Logic
+  const filteredNotifications = notifications.filter((n) =>
+    filter === "all" ? true : !n.is_read
+  );
+
+  const unreadCount = notifications.filter((n) => !n.is_read).length;
+
+  // --- 4. RENDER ---
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[60vh]">
+        <FiLoader className="animate-spin text-slate-400" size={40} />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 pt-5 pb-10 animate-fade-in">
@@ -152,13 +211,18 @@ const NotificationsPage = () => {
           filteredNotifications.map((notif) => (
             <div
               key={notif.id}
-              onClick={() => handleRead(notif.id)}
+              onClick={() => handleRead(notif)}
               className={`flex flex-col justify-center items-center sm:flex-row gap-4 p-4 rounded-xl border transition-all cursor-pointer ${
-                notif.isRead
+                notif.is_read
                   ? "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 opacity-80"
                   : "bg-blue-50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-800 shadow-sm"
               }`}
             >
+              {/* Dot Indicator for Unread */}
+              {!notif.is_read && (
+                <span className="absolute top-4 right-4 sm:top-1/2 sm:-translate-y-1/2 sm:right-auto sm:left-2 w-2 h-2 rounded-full bg-blue-500 block sm:hidden"></span>
+              )}
+
               {/* Icon */}
               <div
                 className={`mt-1 flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-slate-700 shadow-sm`}
@@ -171,7 +235,7 @@ const NotificationsPage = () => {
                 <div className="flex flex-col sm:flex-row justify-between items-start">
                   <h4
                     className={`text-base font-bold mb-1 sm:mb-0 ${
-                      notif.isRead
+                      notif.is_read
                         ? "text-slate-700 dark:text-slate-300"
                         : "text-slate-900 dark:text-white"
                     }`}
@@ -179,17 +243,17 @@ const NotificationsPage = () => {
                     {notif.title}
                   </h4>
                   <span className="text-xs text-slate-400 flex items-center gap-1 flex-shrink-0 ml-2">
-                    <FiClock size={12} /> {notif.time}
+                    <FiClock size={12} /> {formatTime(notif.created_at)}
                   </span>
                 </div>
                 <p
                   className={`text-sm mt-1 ${
-                    notif.isRead
+                    notif.is_read
                       ? "text-slate-500"
                       : "text-slate-700 dark:text-slate-200"
                   }`}
                 >
-                  {notif.message}
+                  {notif.message || "Status tiket Anda telah diperbarui."}
                 </p>
               </div>
 

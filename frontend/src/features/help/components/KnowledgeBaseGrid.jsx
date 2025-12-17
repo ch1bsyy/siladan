@@ -5,19 +5,17 @@ import {
   FiShield,
   FiFileText,
   FiX,
-  FiUser,
-  FiTag,
-  FiCalendar,
   FiArrowRight,
+  FiSearch,
 } from "react-icons/fi";
 import { LuAppWindow } from "react-icons/lu";
 import { useAuth } from "../../../context/AuthContext";
 import {
   getArticles,
-  getPublicArticles, // Import the new service
+  getPublicArticles,
 } from "../../knowledge-base/services/articleService";
+import ArticleDetailPage from "../../../pages/ArticleDetailPage";
 
-// Kategori Statis untuk Grid (Bisa diganti dinamis jika mau)
 const categories = [
   {
     id: 1,
@@ -33,13 +31,13 @@ const categories = [
   },
   {
     id: 3,
-    name: "Aplikasi",
+    name: "Software",
     icon: LuAppWindow,
     color: "text-purple-600 bg-purple-50",
   },
   {
     id: 4,
-    name: "Kepegawaian",
+    name: "Account",
     icon: FiShield,
     color: "text-red-600 bg-red-50",
   },
@@ -54,73 +52,18 @@ const ArticleDetailModal = ({ isOpen, onClose, article }) => {
         className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       ></div>
-      <div className="relative bg-white dark:bg-slate-900 w-full max-w-3xl max-h-[85vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-bounce-in">
-        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-start bg-white dark:bg-slate-900 z-10">
-          <div className="pr-8">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="px-3 py-1.5 rounded-full text-xs font-bold bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300 uppercase tracking-wide">
-                {article.category}
-              </span>
-              <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                <FiCalendar size={12} />{" "}
-                {new Date(article.created_at).toLocaleDateString("id-ID", {
-                  day: "numeric",
-                  month: "short",
-                  year: "numeric",
-                })}
-              </span>
-            </div>
-            <h2 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white leading-snug">
-              {article.title}
-            </h2>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-2 flex min-h-11 min-w-11 justify-center items-center text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors flex-shrink-0"
-          >
-            <FiX size={24} />
-          </button>
-        </div>
 
-        <div className="flex-1 overflow-y-auto p-6 md:p-8 scrollbar-thin">
-          <div className="flex items-center gap-3 mb-8 pb-6 border-b border-slate-100 dark:border-slate-800">
-            <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500">
-              <FiUser size={20} />
-            </div>
-            <div>
-              <p className="text-sm font-bold text-slate-800 dark:text-white">
-                Ditulis oleh {article.author}
-              </p>
-              <p className="text-xs md:text-[13px] text-slate-500">
-                Tim Teknis SILADAN
-              </p>
-            </div>
-          </div>
+      <div className="relative bg-white dark:bg-slate-900 w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-bounce-in">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 z-50 p-2 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md rounded-full text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 shadow-sm transition-all"
+          title="Tutup"
+        >
+          <FiX size={24} />
+        </button>
 
-          <div className="prose prose-slate dark:prose-invert dark:text-white max-w-none prose-headings:font-bold prose-h3:text-lg prose-a:text-blue-600">
-            <div dangerouslySetInnerHTML={{ __html: article.content }} />
-          </div>
-
-          {article.tags && (
-            <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800">
-              <p className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-3 flex items-center gap-2">
-                <FiTag size={16} /> Topik Terkait:
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {(Array.isArray(article.tags)
-                  ? article.tags
-                  : (article.tags || "").split(",")
-                ).map((tag, i) => (
-                  <span
-                    key={i}
-                    className="px-3 py-1 bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-lg text-sm"
-                  >
-                    #{tag.trim()}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
+        <div className="overflow-y-auto h-full scrollbar-thin">
+          <ArticleDetailPage article={article} />
         </div>
       </div>
     </div>
@@ -128,7 +71,7 @@ const ArticleDetailModal = ({ isOpen, onClose, article }) => {
 };
 
 // Main Component
-const KnowledgeBaseGrid = () => {
+const KnowledgeBaseGrid = ({ searchQuery }) => {
   const { user, isAuthenticated } = useAuth();
   const [selectedArticle, setSelectedArticle] = useState(null);
   const [articles, setArticles] = useState([]);
@@ -140,64 +83,61 @@ const KnowledgeBaseGrid = () => {
       setLoading(true);
       try {
         let response;
-        let visibleArticles = [];
+        let params = {
+          limit: 20,
+          page: 1,
+        };
+
+        if (searchQuery) {
+          params.search = searchQuery;
+        }
+
+        if (selectedCategory !== "Semua") {
+          params.category = selectedCategory;
+        }
 
         if (isAuthenticated) {
           // --- LOGIC PEGAWAI (LOGIN) ---
-          // Mengambil artikel internal dan publik via endpoint authenticated
-          // Asumsi backend getArticles mengembalikan semua artikel yang boleh dilihat user
-          let params = { limit: 20, status: "Published" };
-
+          params.status = "Published";
           if (user?.opd_id) {
             params.opd_id = user.opd_id;
           }
 
           response = await getArticles(params);
-
-          if (response.success && Array.isArray(response.data)) {
-            // Filter Client-Side untuk Pegawais
-            visibleArticles = response.data.filter((art) => {
-              if (art.status !== "Published") return false;
-              // Pegawai bisa lihat Public + Internal OPD
-              if (
-                art.visibility === "public" ||
-                art.visibility === "internal_opd"
-              )
-                return true;
-              return false;
-            });
-          }
         } else {
           // --- LOGIC MASYARAKAT (PUBLIC) ---
-          // Mengambil artikel via endpoint public baru
-          response = await getPublicArticles({ limit: 20 });
 
-          if (response.success && Array.isArray(response.data)) {
-            // Endpoint public seharusnya sudah memfilter hanya status=Published & visibility=public
-            // Tapi kita filter lagi untuk keamanan ganda
-            visibleArticles = response.data.filter(
-              (art) => art.status === "Published" && art.visibility === "public"
-            );
-          }
+          response = await getPublicArticles(params);
         }
 
-        setArticles(visibleArticles);
+        if (response.success && Array.isArray(response.data)) {
+          let visibleArticles = response.data;
+
+          if (isAuthenticated) {
+            visibleArticles = response.data.filter((art) => {
+              if (art.status !== "Published") return false;
+              return (
+                art.visibility === "public" || art.visibility === "internal_opd"
+              );
+            });
+          }
+
+          setArticles(visibleArticles);
+        } else {
+          setArticles([]);
+        }
       } catch (error) {
         console.error("Gagal memuat artikel:", error);
-        // toast.error("Gagal memuat artikel"); // Optional
+        setArticles([]);
       } finally {
         setLoading(false);
       }
     };
-
-    fetchData();
-  }, [isAuthenticated, user]);
-
-  // Filter berdasarkan Kategori yang diklik
-  const displayedArticles =
-    selectedCategory === "Semua"
-      ? articles
-      : articles.filter((a) => a.category === selectedCategory);
+    const timeoutId = setTimeout(() => {
+      fetchData();
+    }, 500);
+    return () => clearTimeout(timeoutId);
+  }, [isAuthenticated, user, selectedCategory, searchQuery]);
 
   return (
     <div className="py-12 px-4 sm:px-6 lg:px-8 bg-slate-50 dark:bg-slate-900/50">
@@ -263,9 +203,9 @@ const KnowledgeBaseGrid = () => {
             <div className="text-center py-10 text-slate-500 animate-pulse">
               Memuat artikel...
             </div>
-          ) : displayedArticles.length > 0 ? (
+          ) : articles.length > 0 ? (
             <div className="grid gap-4">
-              {displayedArticles.map((article) => (
+              {articles.map((article) => (
                 <div
                   key={article.id}
                   onClick={() => setSelectedArticle(article)}
@@ -306,8 +246,13 @@ const KnowledgeBaseGrid = () => {
             </div>
           ) : (
             <div className="text-center py-12 bg-white dark:bg-slate-800 rounded-xl border border-dashed border-slate-300 dark:border-slate-700">
+              <div className="mx-auto w-12 h-12 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mb-3">
+                <FiSearch className="text-slate-400" size={24} />
+              </div>
               <p className="text-slate-500">
-                Belum ada artikel di kategori ini.
+                {searchQuery
+                  ? `Tidak ditemukan artikel untuk pencarian "${searchQuery}"`
+                  : "Belum ada artikel di kategori ini."}
               </p>
             </div>
           )}

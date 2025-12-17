@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useLocation, useNavigate } from "react-router-dom";
-import { format } from "date-fns";
+import { format, isValid } from "date-fns";
 import { id as localeId } from "date-fns/locale";
 import { useLoading } from "../context/LoadingContext";
 import { useAuth } from "../context/AuthContext";
@@ -19,39 +19,137 @@ import {
   FiXCircle,
   FiArrowLeft,
   FiMessageSquare,
+  FiInbox,
+  FiClipboard,
+  FiRotateCcw,
+  FiSearch,
+  FiAlertCircle,
 } from "react-icons/fi";
 
-const getStatusInfo = (status) => {
-  const safeStatus = status ? status.toLowerCase() : "";
+// --- HELPER DATE FORMATTER (FIX TIMEZONE) ---
+const formatDateSafe = (dateString, formatStr = "dd MMMM yyyy, HH:mm") => {
+  if (!dateString) return "-";
 
-  if (safeStatus.includes("selesai") || safeStatus === "closed") {
+  // Fix Timezone: If no any Z or +, asumption UTC and add Z
+  let safeDateString = dateString;
+  if (
+    typeof dateString === "string" &&
+    !dateString.endsWith("Z") &&
+    !dateString.includes("+")
+  ) {
+    safeDateString += "Z";
+  }
+
+  const date = new Date(safeDateString);
+  return isValid(date) ? format(date, formatStr, { locale: localeId }) : "-";
+};
+
+const getStatusConfig = (ticket) => {
+  const safeStatus = ticket.status ? ticket.status.toLowerCase() : "";
+  const safeStage = ticket.stage ? ticket.stage.toLowerCase() : "";
+
+  // 1. OPEN
+  if (safeStatus === "open") {
     return {
-      icon: <FiCheckCircle size={20} />,
-      colorClass: "text-green-500",
+      icon: <FiInbox size={20} />,
+      colorClass:
+        "text-slate-600 dark:text-slate-400 border-slate-200 bg-slate-50",
+      label: "Baru Masuk",
     };
   }
-  if (safeStatus.includes("teknisi") || safeStatus.includes("progress")) {
-    return {
-      icon: <FiTool size={20} />,
-      colorClass: "text-[#429EBD] dark:text-[#9FE7F5]",
-    };
-  }
-  if (safeStatus.includes("setuju") || safeStatus.includes("diverifikasi")) {
-    return {
-      icon: <FiCheck size={20} />,
-      colorClass: "text-blue-500",
-    };
-  }
-  if (safeStatus.includes("tolak")) {
+
+  // 2. REJECTED
+  if (safeStatus === "rejected") {
     return {
       icon: <FiXCircle size={20} />,
-      colorClass: "text-red-500",
+      colorClass: "text-red-600 dark:text-red-400 border-red-200 bg-red-50",
+      label: "Ditolak",
     };
   }
+
+  // 3. ASSIGNED
+  if (safeStatus === "assigned") {
+    if (safeStage === "verification") {
+      return {
+        icon: <FiClipboard size={20} />,
+        colorClass:
+          "text-cyan-600 dark:text-cyan-400 border-cyan-200 bg-cyan-50",
+        label: "Ditugaskan (Verifikasi)",
+      };
+    }
+    if (safeStage === "revision") {
+      return {
+        icon: <FiRotateCcw size={20} />,
+        colorClass:
+          "text-orange-600 dark:text-orange-400 border-orange-200 bg-orange-50",
+        label: "Revisi / Ditolak Atasan",
+      };
+    }
+    return {
+      icon: <FiClipboard size={20} />,
+      colorClass: "text-cyan-600 dark:text-cyan-400 border-cyan-200 bg-cyan-50",
+      label: "Ditugaskan",
+    };
+  }
+
+  // 4. PENDING_APPROVAL
+  if (safeStatus === "pending_approval") {
+    const label =
+      safeStage === "approval_seksi"
+        ? "Menunggu Aprv. Seksi"
+        : safeStage === "approval_bidang"
+        ? "Menunggu Aprv. Bidang"
+        : "Menunggu Persetujuan";
+
+    return {
+      icon: <FiClock size={20} />,
+      colorClass:
+        "text-yellow-600 dark:text-yellow-400 border-yellow-200 bg-yellow-50",
+      label: label,
+    };
+  }
+
+  // 5. IN_PROGRESS
+  if (safeStatus === "in_progress") {
+    if (safeStage === "analysis") {
+      return {
+        icon: <FiSearch size={20} />,
+        colorClass:
+          "text-purple-600 dark:text-purple-400 border-purple-200 bg-purple-50",
+        label: "Perlu Analisa",
+      };
+    }
+    if (safeStage === "ready_to_execute") {
+      return {
+        icon: <FiCheck size={20} />,
+        colorClass:
+          "text-indigo-600 dark:text-indigo-400 border-indigo-200 bg-indigo-50",
+        label: "Disetujui (Siap Dikerjakan)",
+      };
+    }
+    return {
+      icon: <FiTool size={20} />,
+      colorClass:
+        "text-[#053F5C] dark:text-[#429EBD] border-blue-200 bg-blue-50",
+      label: "Sedang Dikerjakan",
+    };
+  }
+
+  // 6. RESOLVED / CLOSED
+  if (safeStatus === "resolved" || safeStatus === "closed") {
+    return {
+      icon: <FiCheckCircle size={20} />,
+      colorClass:
+        "text-green-600 dark:text-green-400 border-green-200 bg-green-50",
+      label: "Selesai",
+    };
+  }
+
   // Default
   return {
-    icon: <FiClock size={20} />,
-    colorClass: "text-slate-500",
+    icon: <FiAlertCircle size={20} />,
+    colorClass: "text-slate-500 border-slate-200 bg-slate-50",
+    label: ticket.status,
   };
 };
 
@@ -91,6 +189,7 @@ const TicketDetailPage = () => {
             title: data.title,
             type: "Permintaan",
             status: data.status,
+            atage: data.stage,
             createdAt: data.created_at,
             updatedAt: data.updated_at || data.created_at,
             description:
@@ -120,6 +219,7 @@ const TicketDetailPage = () => {
             title: data.title,
             type: "Pengaduan",
             status: data.status,
+            stage: data.stage,
             createdAt: data.created_at,
             updatedAt: data.updated_at || data.created_at,
             description: data.description,
@@ -147,6 +247,7 @@ const TicketDetailPage = () => {
               title: ticket_info.title,
               type: "Pengaduan",
               status: ticket_info.status,
+              stage: ticket_info.stage,
               createdAt: ticket_info.created_at,
               updatedAt: ticket_info.last_updated || ticket_info.created_at,
               description: ticket_info.description,
@@ -183,10 +284,6 @@ const TicketDetailPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ticketId, ticketTypeFromState, isAuthenticated]);
 
-  // if (isLoading) {
-  //   return null;
-  // }
-
   const handleRatingClick = () => {
     if (ticket) {
       navigate(`/ticket-rating/${ticket.ticketNumber || ticket.id}`);
@@ -201,7 +298,7 @@ const TicketDetailPage = () => {
     );
   }
 
-  if (error || !ticket) {
+  if (error) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center dark:text-white px-4 text-center">
         <FiXCircle size={48} className="text-slate-300 mb-4" />
@@ -215,15 +312,15 @@ const TicketDetailPage = () => {
     );
   }
 
-  const statusInfo = getStatusInfo(ticket.status);
+  const statusConfig = getStatusConfig(ticket);
+  const displayId = ticket.ticketNumber || ticket.id;
   const isRequest = ticket.type === "Permintaan";
   const applicantLabel = isRequest ? "Pemohon" : "Pelapor";
 
-  const displayId = ticket.ticketNumber || ticket.id;
-
   const isFinished =
     ticket.status?.toLowerCase().includes("selesai") ||
-    ticket.status === "Closed";
+    ticket.status === "Closed" ||
+    ticket.status === "resolved";
 
   return (
     <div className="py-12">
@@ -249,10 +346,10 @@ const TicketDetailPage = () => {
                 </h1>
               </div>
               <div
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${statusInfo.colorClass} bg-white dark:bg-slate-700 shadow-sm`}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${statusConfig.colorClass} bg-white dark:bg-slate-700 shadow-sm`}
               >
-                {statusInfo.icon}
-                <span className="font-bold">{ticket.status}</span>
+                {statusConfig.icon}
+                <span className="font-bold">{statusConfig.label}</span>
               </div>
             </div>
           </div>
@@ -341,9 +438,7 @@ const TicketDetailPage = () => {
                     Tanggal Dibuat
                   </p>
                   <p className="font-medium text-slate-700 dark:text-slate-200">
-                    {format(new Date(ticket.createdAt), "dd MMMM yyyy, HH:mm", {
-                      locale: localeId,
-                    })}
+                    {formatDateSafe(ticket.createdAt, "dd MMMM yyyy, HH:mm")}
                   </p>
                 </div>
 
@@ -352,9 +447,7 @@ const TicketDetailPage = () => {
                     Terakhir Diupdate
                   </p>
                   <p className="font-medium text-slate-700 dark:text-slate-200">
-                    {format(new Date(ticket.updatedAt), "dd MMMM yyyy, HH:mm", {
-                      locale: localeId,
-                    })}
+                    {formatDateSafe(ticket.updatedAt, "dd MMMM yyyy, HH:mm")}
                   </p>
                 </div>
 
