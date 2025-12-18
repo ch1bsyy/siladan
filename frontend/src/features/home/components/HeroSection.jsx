@@ -6,7 +6,7 @@ import HeroIlustration from "../../../assets/images/hero-section.png";
 const HeroSection = () => {
   return (
     <section className="relative bg-white/20 dark:bg-[#053F5C]/30 overflow-hidden">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-12 items-center py-4 md:pb-10">
           {/* Left Content */}
           <div className="text-center lg:text-left">
